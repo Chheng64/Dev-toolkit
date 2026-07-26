@@ -15,6 +15,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - [orchestrator](../AI/orchestrator.md) — the machine executor: pickup, routing, gates, loops, resume, Notion state
 - [brd-update-protocol](../AI/brd-update-protocol.md) — role-scoped Notion writes, living-doc rules
 - [mcp-setup](../AI/mcp-setup.md) — per-stage integrations + loud-degradation rules
+- [model-routing](../AI/model-routing.md) — model tier per stage, escalation rules, cross-model handoffs
 
 ## Workflows/ (stage procedures)
 - [business-analysis](../Workflows/business-analysis.md) · [product-planning](../Workflows/product-planning.md) · [ux-workflow](../Workflows/ux-workflow.md) · [ui-workflow](../Workflows/ui-workflow.md) · [design-system-workflow](../Workflows/design-system-workflow.md)

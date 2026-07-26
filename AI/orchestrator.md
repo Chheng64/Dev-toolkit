@@ -8,7 +8,7 @@
 ## 1. Responsibilities
 
 1. **Pickup** — select next BRD from `Ready` (priority order) when a slot is free (<3 in-flight).
-2. **Stage routing** — map `Status` → workflow module → skill; load only what the stage needs.
+2. **Stage routing** — map `Status` → workflow module → skill → model tier per [model-routing.md](model-routing.md); load only what the stage needs; log the model in the Stage-Enter S16 entry.
 3. **Input verification** — before running a stage, check `C_SECTIONS(required)`: required BRD sections exist and are non-empty. Missing input → back-transition to the producing stage, never improvise the input.
 4. **Gate enforcement** — never cross a human gate without the approval token in `Approvals`; revoke tokens when gated content changes (stale-approval rule).
 5. **Loop accounting** — increment `Loop Count` before re-entry; enforce ceilings; on breach set `Blocked` + escalation summary in S16, never loop silently.

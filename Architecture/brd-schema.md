@@ -24,6 +24,7 @@ One database for all projects. Every page is a Living BRD.
 | `Branch` | Text | `feat/<brd-id>-<slug>` | Git link |
 | `PR` | URL | GitHub PR link | Git link |
 | `Approvals` | Multi-select | `direction`, `design`, `final` | Human gates granted |
+| `Prototype` | URL | served prototype / Figma ref | Design artifact quick link (optional; added v1.1) |
 | `Loop Count` | Number | int | Revision-loop ceiling tracking |
 | `Blocked Reason` | Text | — | Set when Status = Blocked |
 | `Toolkit Version` | Text | semver | Toolkit version the BRD ran under |

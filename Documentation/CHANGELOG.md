@@ -4,6 +4,15 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-07-26
+
+### Added
+- `AI/model-routing.md` — Model Routing Strategy: tier table (Haiku/Sonnet/Opus/frontier) per workflow stage, 7 escalation rules (retry +1 tier, loop escalates producer, debug triggers, no mid-stage downgrade, de-escalation, T4 reserve, ceiling posture), cross-model verification pairs (producer ≠ verifier), 6 handoff rules across model/session boundaries (BRD-only channel, fresh-session verify stages, escalation receives failure evidence), cost posture.
+- `Architecture/brd-schema.md` — optional `Prototype` URL property (design artifact quick link); live in the BRDs database.
+
+### Changed
+- `AI/orchestrator.md` — stage routing consults model-routing and logs the model tier in Stage-Enter S16 entries.
+
 ## [1.0.0] — 2026-07-26
 
 Phase 6 — Meta. Toolkit complete.
