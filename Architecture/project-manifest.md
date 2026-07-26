@@ -77,7 +77,24 @@ screen_contract:
 context_package:                   # v1.3 — generated AI context summaries
   path: context/
   generated: 2026-07-26            # regenerate when older than onboarding.last_validated
+
+communication:                     # v1.4 — optional integrations; asked ONCE at onboarding
+  telegram:
+    enabled: false                 # false = never ask again (re-open only via
+                                   # "toolkit configure communication" / "toolkit onboard --update")
+    # when enabled:
+    # mode: topic                  # private | group | topic (recommended)
+    # chat_id: "-1001234567890"
+    # topic_id: 42                 # topic mode only
+    # notifications:
+    #   approvals: true            # direction/design gates + PR-ready
+    #   failures: true             # pipeline failed
+    #   pipeline: true
+    #   daily_summary: false       # v2 — declared, not implemented
+  # slack / discord / email: future — same shape, sibling adapters
 ```
+
+**Secrets rule:** bot tokens NEVER enter the manifest or repo — `TELEGRAM_BOT_TOKEN` env var only ([extensions/telegram/README.md](../extensions/telegram/README.md); [Standards/security.md](../Standards/security.md) rule 5). Manifest holds routing (chat/topic ids) — non-secret.
 
 ## 3. Consumption Rules
 

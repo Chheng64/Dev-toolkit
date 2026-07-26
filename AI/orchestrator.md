@@ -16,6 +16,11 @@
 6. **Notion updates** — advance `Status`, set `Stage Owner`, write the S16 transition entry after every transition (atomic: status + log together).
 7. **Resume** — reconstruct everything from Notion properties + S16. Session memory is never machine state.
 8. **Surfacing** — at stage entry, list open S16 `Affects:` entries targeting sections this stage owns; the stage must address or explicitly defer them.
+9. **Telegram adapter duties** (v1.4 — only when `manifest.communication.telegram.enabled`; contract: [../extensions/telegram/README.md](../extensions/telegram/README.md)):
+   - Write an outbox event at exactly four triggers: Direction gate raised, Design gate raised, PR ready (Human Review), pipeline failure (`Blocked`/CI red).
+   - Refresh `.toolkit/telegram/status.json` at every transition (project, BRD, stage, owner, progress `n/13`, pending gate).
+   - Read `.toolkit/telegram/inbox/` at session entry AND before every gate check: each approval event = the human's gate decision — apply under normal gate rules (stale-approval + scope checks still run), log S16 with `source: telegram`, delete the event file. `pause` → `Blocked (paused-by-user)`; `resume` → clear.
+   - The plugin is an adapter; the orchestrator remains the only component that advances state.
 
 ## 2. Session Entry Procedure
 

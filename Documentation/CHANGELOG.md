@@ -4,6 +4,16 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-07-26
+
+Telegram Plugin v1 (extension) + communication integrations in onboarding.
+
+### Added
+- `extensions/telegram/` — communication adapter (NOT core): `telegram-plugin.mjs` (zero-dependency Node daemon — outbox flush, long-poll, /status, inline Approve/Reject/Pause/Resume; chat allow-list; `--test`/`--once`) + README with the file-spool event contract (`.toolkit/telegram/{outbox,inbox}/`, `status.json`). Four notification triggers only: Direction gate, Design gate, PR ready, pipeline failed. Approvals are recorded intents — orchestrator applies them under normal gate rules (`source: telegram` in S16). v2 seams declared (AI chat, notes, voice, daily summaries; Slack/Discord/email as sibling adapters over the same spool).
+- `Architecture/project-manifest.md` — `communication.telegram` block (routing only; tokens env-only, never in repo).
+- `Workflows/project-onboarding.md` — step 7b: communication integrations asked ONCE (Yes / No / Configure later); test-send required before `enabled: true`; never re-asked except explicit "toolkit configure communication" / "toolkit onboard --update".
+- `AI/orchestrator.md` — responsibility 9: outbox events at the four triggers, status.json refresh per transition, inbox read at session entry + before gate checks.
+
 ## [1.3.0] — 2026-07-26
 
 Onboarding enhancements — incremental, existing flow remains the default shape.

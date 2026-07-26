@@ -55,6 +55,9 @@ Every module, one line. Load only what the task needs — this index is the map,
 ## Playbooks/ (compositions — the only composing layer)
 - [full-feature](../Playbooks/full-feature.md) · [parallel-brds](../Playbooks/parallel-brds.md) · [hotfix](../Playbooks/hotfix.md) · [design-only](../Playbooks/design-only.md)
 
+## extensions/ (opt-in, not core)
+- [telegram](../extensions/telegram/README.md) — mobile gate approvals + notifications via file-spool adapter; `telegram-plugin.mjs`
+
 ## Documentation/ (meta)
 - [onboarding](onboarding.md) — add the toolkit to a project + run the first BRD
 - [notion-setup](notion-setup.md) — exact BRD database spec
