@@ -4,6 +4,16 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-07-26
+
+Phase 3 — Standards.
+
+### Added
+- `Standards/` — 17 opinionated tech standards, each with rules + anti-patterns: typescript (strict, discriminated unions, boundary parsing), react (composition, state altitude, effect discipline), nextjs (RSC-default, explicit caching, S09 framework homes), tailwind (v4 tokens-first, no arbitrary values), design-system (3 layers, API discipline, quality bar), accessibility (WCAG 2.2 AA floor, non-negotiable), responsive-design (mobile-first, container queries), naming-conventions (semantic honesty, UX-name traceability), folder-structure (feature modules, import direction), component-structure (altitude split, state rendering), api-design (zod contracts, normalized errors, idempotency), code-quality (gates, testing layers, rule of three), performance (measure-first, structural waste banned), security (trust boundaries, default deny, defensive floor), internationalization (i18n-ready floor + full i18n), documentation (routing table, same-commit updates), git-strategy (trunk-based, 1 BRD = 1 branch = 1 PR).
+
+### Note
+- Forward links to `Templates/`/`Checklists/` resolve in 0.5.0.
+
 ## [0.3.0] — 2026-07-26
 
 Phase 2 — Roles.
