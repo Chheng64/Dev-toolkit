@@ -1,0 +1,71 @@
+# Workflow — Implementation
+
+> **Module:** Workflows
+> **Stage:** `Implementation` (lifecycle state 06)
+> **Skill:** Frontend / Backend / Full Stack Engineer (as scoped; one declared role per write)
+> **Machine:** [workflow-state-machine.md](../Architecture/workflow-state-machine.md) §2
+
+## Purpose
+
+Build exactly what S10/S11 plan, on the BRD branch, to Standards/, with tests — while keeping the BRD live: progress, deviations, and findings land as they happen.
+
+## Inputs
+
+- S10/S11 valid; branch `feat/<brd-id>-<slug>` created (git workflow)
+- Frozen prototype + traceability (UI reference), S09 (state handling reference)
+- Standards/: react, nextjs, typescript, tailwind, design-system, naming, folder/component structure + `project-overrides.md`
+- Open S16 `Affects:` entries targeting S12; change requests from QA/review loops
+
+## Outputs
+
+- Code on the branch: components, logic, tests per plan — commits per [integration-map.md](../Architecture/integration-map.md) §3 convention
+- S12 — dated progress entries (≥1 per work session); every deviation from plan with reason
+- S16 — deviations, discovered constraints, cross-domain findings
+
+## BRD Sections It May Update
+
+S10 (edit — plan corrections, logged), S11 (edit — same), S12 (edit/append), S04 (append), S05 (append), S16 (append).
+
+## Responsibilities
+
+1. Work the plan in its slice order. Deviation needed → allowed when it stays inside plan intent; write S12 entry + S16 with reason. Deviation that changes contracts/scope → stop, route back to planning.
+2. Compose UI from DS + shadcn/ui per S11 mapping; token references, no hardcoded values; no feature-local styling forks.
+3. Implement every S09 state named in the plan — loading/error/empty/interrupted are AC-bearing code, not polish.
+4. Write tests alongside code per the S11 test plan; every implemented AC has its named test passing locally.
+5. Run typecheck + lint + tests before claiming complete; fix, don't suppress (`any`, `eslint-disable`, `@ts-ignore` need written justification in S12).
+6. Keep commits atomic and honest — one logical change each, convention format, no "wip" on shared history.
+7. New reusable pattern emerges → note in S16; candidate for toolkit/DS, don't inline-fork it.
+
+## Completion Criteria
+
+- [ ] Every S11 planned component/endpoint implemented or its deviation logged
+- [ ] Every planned S09 state implemented and manually reachable
+- [ ] All planned tests written and passing; typecheck + lint clean
+- [ ] Zero unjustified suppressions
+- [ ] S12 current: progress entries + all deviations logged
+- [ ] Branch pushed; commits follow convention
+- [ ] S16 stage-exit entry written (claim: ready for QA)
+
+## Failure & Loops
+
+- Plan proves wrong mid-build → small correction: fix + log S12/S16. Contract-level: back-transition to `Dev Planning`.
+- QA bounces blockers back (`L_QA`, ceiling 3) → fix against S13 bug entries, log S12.
+- Blocked on external dependency → `Blocked` + reason, never stub-and-forget silently.
+
+## Common Mistakes
+
+- Silent deviation — code drifts from plan, BRD says nothing; the #1 trust killer. Log or route back.
+- Skipping non-happy-path states under time pressure — QA will bounce it; ceiling burns.
+- Hardcoding tokens "to see it work" — becomes permanent; DS conformance is a review dimension.
+- Test-after-everything — batch-written tests test the code, not the ACs.
+- Suppression creep: `any`/`@ts-ignore` without justification.
+- Giant mixed commits — untraceable in review, unrevertable in rollback.
+- Building "while I'm here" improvements outside plan scope — new BRD or S16 note; not this branch.
+
+## Best Practices
+
+- Vertical slices: one flow working end-to-end (with its error states) beats all components half-wired.
+- Reuse plan/UX names in code — file names, state names, test names mirror S07/S11; traceability free.
+- S12 entry at session end minimum: done / next / open questions — the resume anchor for any future session.
+- Read the standard before deviating from it; then deviate via `project-overrides.md`, not silently.
+- Keep the prototype open while building — drift caught at build time is free; caught at Design QA it costs a loop.

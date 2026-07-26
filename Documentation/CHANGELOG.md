@@ -4,6 +4,25 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-07-26
+
+Phase 1 — Workflow spine.
+
+### Added
+- `Workflows/business-analysis.md` — Analysis stage; runs design states 01–02; Clarification Gate.
+- `Workflows/product-planning.md` — Planning stage; design state 03; proceed/re-scope/stop + Direction Gate.
+- `Workflows/ux-workflow.md` — Design states 04–05; tasks, IA, flows, ≥3 non-happy paths per task, a11y strategy.
+- `Workflows/ui-workflow.md` — Design states 06–08; DS-first planning, prototype, self-audit.
+- `Workflows/design-system-workflow.md` — supporting workflow; Extension Note triage, smallest-altitude extensions.
+- `Workflows/frontend-planning.md` — Dev Planning (FE); S10/S11, touched-areas conflict check, test plan per AC.
+- `Workflows/backend-planning.md` — Dev Planning (BE); API/error contracts, idempotency, authz default-deny.
+- `Workflows/implementation.md` — build per plan; logged deviations; DS composition; suppression justification.
+- `Workflows/qa.md` — evidence-based AC verification; S09 walk; severity discipline; L_QA loop.
+- `Workflows/code-review.md` — 7 review dimensions; plan-conformance; L_REVIEW loop.
+- `Workflows/git.md` — branch/commit/PR contracts; CI gate; stale-approval merge protection.
+- `Workflows/release.md` — deploy + smoke-check; S15 notes; deferred-items sweep; BRD freeze.
+- `Workflows/debug.md` — off-path; reproduce→falsify→root-cause→smallest fix→regression test.
+
 ## [0.1.0] — 2026-07-26
 
 Phase 0 — Foundation.

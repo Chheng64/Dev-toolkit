@@ -8,7 +8,7 @@ Reusable AI product-development toolkit. Global operating system for all persona
 |-----|-------|--------|
 | `Architecture/` | Contracts: BRD schema, permission matrix, lifecycle + design state machines, integration map, versioning | ✅ Phase 0 |
 | `AI/` | Claude runtime: entry contract, workflow orchestrator, BRD update protocol, MCP setup | ✅ Phase 0 |
-| `Workflows/` | 13 stage procedures (business analysis → release, debug) | Phase 1 |
+| `Workflows/` | 13 stage procedures (business analysis → release, debug) | ✅ Phase 1 |
 | `Skills/` | 16 role definitions | Phase 2 |
 | `Standards/` | 17 tech standards (React, Next.js, TS, Tailwind, …) | Phase 3 |
 | `Templates/` | 11 artifact templates | Phase 4 |
