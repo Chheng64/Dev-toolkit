@@ -78,11 +78,6 @@ function readProjectName(lines) {
 
 function fail(msg) { console.error(`[telegram-plugin] ${msg}`); process.exit(1); }
 
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-if (!TOKEN) fail("TELEGRAM_BOT_TOKEN env var not set. Create a bot via @BotFather; export the token. It is never stored in the repo.");
-const CFG = readTelegramConfig();
-const API = `https://api.telegram.org/bot${TOKEN}`;
-
 // ---------- telegram api ----------
 
 async function tg(method, payload) {
@@ -222,13 +217,20 @@ async function pollLoop() {
 // ---------- entry ----------
 
 const arg = process.argv[2];
+if (arg === "--help") {
+  console.log("telegram-plugin: (no args) daemon · --once flush outbox · --test connection test");
+  process.exit(0);
+}
+const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+if (!TOKEN) fail("TELEGRAM_BOT_TOKEN env var not set. Create a bot via @BotFather; export the token. It is never stored in the repo.");
+const CFG = readTelegramConfig();
+const API = `https://api.telegram.org/bot${TOKEN}`;
+
 if (arg === "--test") {
   await tg("sendMessage", baseMsg(`✅ ${esc(CFG.projectName)} has been successfully connected to the Dev Toolkit.`));
   console.log("[telegram-plugin] test message sent.");
 } else if (arg === "--once") {
   await flushOutbox();
-} else if (arg === "--help") {
-  console.log("telegram-plugin: (no args) daemon · --once flush outbox · --test connection test");
 } else {
   await pollLoop();
 }
