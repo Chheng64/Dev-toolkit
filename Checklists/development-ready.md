@@ -3,6 +3,7 @@
 > **Gate for:** `Dev Planning` → `Implementation` ([frontend-planning](../Workflows/frontend-planning.md) / [backend-planning](../Workflows/backend-planning.md) exit). Implementation entered below this bar burns loop ceilings.
 
 ## Upstream state
+- [ ] `C_CONTRACT` passed: [screen-contract checklist](screen-contract.md) all-green for this BRD's screens (orchestrator ran it at stage entry)
 - [ ] `Approvals` contains `design` (current, not stale)
 - [ ] All Extension Notes on S08 resolved (`extended`/`rejected`) — none `open`
 - [ ] Open S16 `Affects: S10/S11` entries addressed

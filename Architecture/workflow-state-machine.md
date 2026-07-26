@@ -19,6 +19,17 @@ The 13-stage lifecycle every BRD moves through. Machine state lives in Notion pr
 | Bounded | Every loop has a ceiling and an escalation path. |
 | Auditable | Every transition = one S16 Decision Log entry. |
 
+## 1b. Project Pre-Pipeline (per project, before any BRD)
+
+BRD stages run per-BRD; these run **once per project** (re-run on evolution) and gate the whole pipeline:
+
+```
+PROJECT_ONBOARDING → INTEGRATION_VALIDATION → MANIFEST_GENERATED
+```
+
+- Executed by [../Workflows/project-onboarding.md](../Workflows/project-onboarding.md) + [../Workflows/integration-validation.md](../Workflows/integration-validation.md); state lives in `project-manifest.yaml` (`onboarding.status`), not in Notion Status values.
+- Guard **`C_MANIFEST`** (see §4) blocks BRD pickup for any project without a complete, validated manifest. No BRD, workflow, or skill executes before it.
+
 ## 2. State Catalog
 
 Each state maps to one Workflow module (Phase 1 build). Format per state: primary workflow, entry requires, exit produces, gate.
@@ -53,7 +64,8 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | Planning | recommendation `stop` + human confirms | Stopped |
 | Design | design machine reaches SELF_AUDIT `pass` | Design Review |
 | Design | design machine HALT | Blocked |
-| Design Review | approval `design` | Dev Planning |
+| Design Review | approval `design` ∧ `C_CONTRACT` pass | Dev Planning |
+| Design Review | approval `design` ∧ `C_CONTRACT` fail | owning stage per validator report (Design / Dev Planning owners), S16 logged |
 | Design Review | change requests | Design (design machine REVISION routing) |
 | Design Review | reject (direction wrong) | Analysis |
 | Dev Planning | plan validated | Implementation |
@@ -79,6 +91,8 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | `C_LOOP_OK(loop)` | `Loop Count` < ceiling for that loop. |
 | `C_SLOT_FREE` | In-flight BRDs (Status between Analysis and Human Review) < 3. |
 | `C_SECTIONS(ids)` | Required BRD sections exist and are non-empty. |
+| `C_MANIFEST` | Project's `project-manifest.yaml` exists, schema-valid, `onboarding.status: complete`, required integrations `validated`, `last_validated` ≤ 30 days (else re-validate first). Checked at every BRD pickup. |
+| `C_CONTRACT` | Screen-contract validation passes for the BRD's owned screens ([../Checklists/screen-contract.md](../Checklists/screen-contract.md) — all six checks). Checked at Dev Planning entry. Fail → stop + missing-mappings report + route to owning stage. |
 
 A forward transition fires only when its guard conjunction holds; otherwise the stage's failure path runs (retry → escalate → Blocked).
 

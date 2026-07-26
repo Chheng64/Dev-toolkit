@@ -4,6 +4,27 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-07-26
+
+Project Onboarding System + Screen Contract System. Two new hard guards; no breaking changes (Status values untouched — both stages run as guards/pre-pipeline).
+
+### Added
+- `Architecture/project-manifest.md` — per-project config contract (`project-manifest.yaml`): project info, stack, design, Notion, git, integrations, screen-contract state. Single source of truth for project configuration; workflows read it instead of re-asking.
+- `Architecture/screen-contract.md` — `screens/` registry (SCR-nnn, never reused) + per-screen contracts with 5 mapping blocks (design/prototype/frontend/API/QA); Figma-optional rule; ownership per role; six-check validation.
+- `Architecture/stack-profiles.md` — manifest stack → applicable Standards; honest gap declarations; design-stage collapse for headless profiles.
+- `Workflows/project-onboarding.md` — detect-first interview → resource validation → manifest generation → scaffolds. Once per project; targeted re-runs on evolution.
+- `Workflows/integration-validation.md` — per-integration checks (required vs optional), manifest recording, per-stage degradation warnings; 30-day staleness re-check.
+- `Checklists/screen-contract.md` — `C_CONTRACT` executable validator (registry, design, frontend, API, QA mappings; failure reporting format).
+- `Templates/project-configuration.md`, `design-mapping.md`, `frontend-mapping.md`, `api-mapping.md`.
+
+### Changed
+- `Architecture/workflow-state-machine.md` — §1b project pre-pipeline (Onboarding → Integration Validation → Manifest); guards `C_MANIFEST` (every pickup) + `C_CONTRACT` (Dev Planning entry); Design Review transition split on contract pass/fail.
+- `AI/orchestrator.md` — responsibility 0: manifest gate before any project work; `C_CONTRACT` run at Dev Planning entry with `SCR-id · block · gap` reporting.
+- `AI/CLAUDE-global.md` — project stub now points at the manifest; onboarding is the only permitted work without one.
+- `Architecture/integration-map.md` — three-sources-of-truth table (manifest / BRD / screen contract).
+- `Architecture/brd-schema.md` — SCR-ID reference rule (sections cite IDs; mappings live in the contract).
+- `Workflows/ui-workflow.md` (screen registration step 0), `frontend-planning.md` (+frontend mapping duty), `backend-planning.md` (+API mapping duty), `Checklists/development-ready.md` (+`C_CONTRACT` precondition).
+
 ## [1.1.0] — 2026-07-26
 
 ### Added

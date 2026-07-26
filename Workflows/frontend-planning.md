@@ -34,6 +34,7 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append — discovered technical constra
 4. Plan non-happy-path implementation explicitly — S09 states are requirements, not decoration.
 5. Write the test plan: which ACs → unit / component / e2e; name the test files.
 6. List touched areas; orchestrator cross-checks other in-flight BRDs (serialize on overlap).
+6b. Fill the **Frontend mapping block** of every owned `screens/SCR-<nnn>.md` ([frontend-mapping template](../Templates/frontend-mapping.md)) — `C_CONTRACT` already verified design blocks; your blocks complete the contract.
 7. Estimate honestly; plan too big for one implementation pass → split into ordered slices in S10.
 
 ## Completion Criteria

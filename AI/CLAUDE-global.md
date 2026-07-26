@@ -13,11 +13,12 @@
 This project uses the Dev-toolkit (submodule at `toolkit/`, pinned — check `git submodule status`).
 Operate per `toolkit/AI/CLAUDE-global.md`. Read it before acting on any BRD work.
 
-- Project code: `<XX>` (BRD IDs: BRD-<XX>-nnn)
-- Notion: BRD database "<db name>", Project = "<project select value>"
+- Manifest: `project-manifest.yaml` — single source of truth for project config
+  (code, stack, design, Notion, git, integrations). Read it before asking anything.
 - Overrides: `project-overrides.md` (project-specific deviations from toolkit Standards/)
-- Stack notes: <one-liners: framework versions, package manager, run commands>
 ```
+
+No manifest, or `onboarding.status != complete` → the ONLY permitted work is running `toolkit/Workflows/project-onboarding.md`.
 
 ## Operating Contract (Claude reads this)
 

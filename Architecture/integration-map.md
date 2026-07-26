@@ -14,6 +14,15 @@
 
 **Knowledge separation rule (hard):** feature knowledge → Notion BRD. Global process knowledge → toolkit. Project-specific technical knowledge (stack quirks, env setup, project conventions that override standards) → project repo `CLAUDE.md` + `project-overrides.md`. Anything written in the wrong layer gets moved, not duplicated.
 
+**Three sources of truth (v1.2):**
+| Artifact | Truth for | Lives in |
+|----------|-----------|----------|
+| [`project-manifest.yaml`](project-manifest.md) | project configuration | project repo root |
+| Living BRD | feature requirements + decisions | Notion |
+| [Screen Contract](screen-contract.md) (`screens/`) | design→development traceability | project repo |
+
+Workflows consume these; they never re-collect or duplicate their content. Config change → manifest; requirement change → BRD; mapping change → contract.
+
 ## 2. Wiring Diagram
 
 ```

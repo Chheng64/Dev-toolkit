@@ -65,6 +65,10 @@ Sections are H2 headings in the page body, in this order. Each heading carries i
 - `append` — new entries added at end; existing entries never modified.
 - `append-only` — hard rule, applies to every role including humans-via-Claude.
 
+### Screen Contract references (v1.2)
+
+Screens are contract entities, not BRD content: S07 flows name screens; UI planning registers them as `SCR-<nnn>` in the project's `screens/registry.md`; S08/S11/S13 cite SCR-IDs. Mapping detail lives in the [Screen Contract](screen-contract.md), never duplicated into sections. Guard `C_CONTRACT` blocks Dev Planning on incomplete mappings.
+
 ## 3. Decision Log Entry Format (S16)
 
 Every stage exit, every cross-domain finding, every human gate outcome writes one entry:

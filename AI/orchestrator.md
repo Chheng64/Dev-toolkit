@@ -7,10 +7,11 @@
 
 ## 1. Responsibilities
 
-1. **Pickup** — select next BRD from `Ready` (priority order) when a slot is free (<3 in-flight).
+0. **Manifest gate** — before ANY project work: `C_MANIFEST` ([../Architecture/project-manifest.md](../Architecture/project-manifest.md)). Missing/incomplete manifest → refuse BRD work, offer [project-onboarding](../Workflows/project-onboarding.md). Stale `last_validated` → run [integration-validation](../Workflows/integration-validation.md) first. Project facts come from the manifest — never re-ask the user for manifest-held values.
+1. **Pickup** — select next BRD from `Ready` (priority order) when a slot is free (<3 in-flight) and `C_MANIFEST` holds for its project.
 2. **Stage routing** — map `Status` → workflow module → skill → model tier per [model-routing.md](model-routing.md); load only what the stage needs; log the model in the Stage-Enter S16 entry.
 3. **Input verification** — before running a stage, check `C_SECTIONS(required)`: required BRD sections exist and are non-empty. Missing input → back-transition to the producing stage, never improvise the input.
-4. **Gate enforcement** — never cross a human gate without the approval token in `Approvals`; revoke tokens when gated content changes (stale-approval rule).
+4. **Gate enforcement** — never cross a human gate without the approval token in `Approvals`; revoke tokens when gated content changes (stale-approval rule). At Dev Planning entry additionally run `C_CONTRACT` ([../Checklists/screen-contract.md](../Checklists/screen-contract.md)): any missing mapping → stop, report `SCR-id · block · gap` lines, route to the owning stage, log S16. No implementation on an incomplete Screen Contract.
 5. **Loop accounting** — increment `Loop Count` before re-entry; enforce ceilings; on breach set `Blocked` + escalation summary in S16, never loop silently.
 6. **Notion updates** — advance `Status`, set `Stage Owner`, write the S16 transition entry after every transition (atomic: status + log together).
 7. **Resume** — reconstruct everything from Notion properties + S16. Session memory is never machine state.

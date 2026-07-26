@@ -33,7 +33,8 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 4. Failure planning is the core deliverable: timeouts, retries, idempotency keys for mutations, webhook delay/out-of-order handling, partial-failure recovery mapped to S09 states.
 5. Authz matrix: who may call what; default deny.
 6. Security pass with Standards/security: input validation boundaries, secrets handling, rate limits on exposed surfaces. High-risk findings → S06 via `Affects:`.
-7. Contracts frozen before implementation — frontend plans against them.
+7. Fill the **API mapping block** of every owned `screens/SCR-<nnn>.md` ([api-mapping template](../Templates/api-mapping.md)) — screens without server needs get explicit `api: none`.
+8. Contracts frozen before implementation — frontend plans against them.
 
 ## Completion Criteria
 

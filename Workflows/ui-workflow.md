@@ -30,6 +30,7 @@ S08 (edit), S07 (append), S09 (append), S05 (append), S14 design-audit subsectio
 ## Responsibilities
 
 **UI_PLANNING (state 06):**
+0. **Register screens:** every screen the flows imply gets a `SCR-<nnn>` row in `screens/registry.md` (allocate from manifest `next_id`) and a contract file with the Design block started ([design-mapping template](../Templates/design-mapping.md)). Overlays are screens too.
 1. Decompose each flow state into UI regions/components.
 2. Map to existing DS primitives/components first; every `new` component carries a written justification.
 3. Define layout + hierarchy rules per state; tokens by reference (spacing/color/type/motion), never ad-hoc values.

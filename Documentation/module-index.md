@@ -9,6 +9,9 @@ Every module, one line. Load only what the task needs — this index is the map,
 - [design-state-machine](../Architecture/design-state-machine.md) — design sub-machine (states 01–11), artifacts→BRD remapping
 - [integration-map](../Architecture/integration-map.md) — Notion↔Claude↔Git wiring, naming contracts, knowledge layers, onboarding
 - [versioning](../Architecture/versioning.md) — semver, submodule pin/upgrade, compatibility promise
+- [project-manifest](../Architecture/project-manifest.md) — per-project config contract; `C_MANIFEST` gates all BRD work
+- [screen-contract](../Architecture/screen-contract.md) — SCR registry + 5 mapping blocks; `C_CONTRACT` gates Dev Planning
+- [stack-profiles](../Architecture/stack-profiles.md) — manifest stack → applicable Standards + honest gaps
 
 ## AI/ (runtime)
 - [CLAUDE-global](../AI/CLAUDE-global.md) — per-project entry contract + CLAUDE.md stub
@@ -21,6 +24,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - [business-analysis](../Workflows/business-analysis.md) · [product-planning](../Workflows/product-planning.md) · [ux-workflow](../Workflows/ux-workflow.md) · [ui-workflow](../Workflows/ui-workflow.md) · [design-system-workflow](../Workflows/design-system-workflow.md)
 - [frontend-planning](../Workflows/frontend-planning.md) · [backend-planning](../Workflows/backend-planning.md) · [implementation](../Workflows/implementation.md)
 - [qa](../Workflows/qa.md) · [code-review](../Workflows/code-review.md) · [git](../Workflows/git.md) · [release](../Workflows/release.md) · [debug](../Workflows/debug.md)
+- Per-project: [project-onboarding](../Workflows/project-onboarding.md) · [integration-validation](../Workflows/integration-validation.md)
 
 ## Skills/ (roles)
 - Pipeline: [business-analyst](../Skills/business-analyst.md) · [product-manager](../Skills/product-manager.md) · [ux-designer](../Skills/ux-designer.md) · [ui-designer](../Skills/ui-designer.md) · [frontend-engineer](../Skills/frontend-engineer.md) · [backend-engineer](../Skills/backend-engineer.md) · [fullstack-engineer](../Skills/fullstack-engineer.md) · [qa-engineer](../Skills/qa-engineer.md) · [code-reviewer](../Skills/code-reviewer.md) · [git-manager](../Skills/git-manager.md)
@@ -37,10 +41,12 @@ Every module, one line. Load only what the task needs — this index is the map,
 ## Templates/ (fill-in structures)
 - BRD: [feature-request](../Templates/feature-request.md) · [product-requirement](../Templates/product-requirement.md) · [technical-specification](../Templates/technical-specification.md) · [development-plan](../Templates/development-plan.md) · [bug-report](../Templates/bug-report.md) · [release-notes](../Templates/release-notes.md)
 - Artifacts: [design-handoff](../Templates/design-handoff.md) · [component-documentation](../Templates/component-documentation.md) · [api-specification](../Templates/api-specification.md) · [pull-request](../Templates/pull-request.md) · [retrospective](../Templates/retrospective.md)
+- Onboarding + contract: [project-configuration](../Templates/project-configuration.md) · [design-mapping](../Templates/design-mapping.md) · [frontend-mapping](../Templates/frontend-mapping.md) · [api-mapping](../Templates/api-mapping.md)
 
 ## Checklists/ (gates)
 - Stage exits: [analysis](../Checklists/analysis.md) · [ux-review](../Checklists/ux-review.md) · [ui-review](../Checklists/ui-review.md) · [design-qa](../Checklists/design-qa.md) · [development-ready](../Checklists/development-ready.md) · [qa-testing](../Checklists/qa-testing.md) · [code-review](../Checklists/code-review.md) · [release](../Checklists/release.md)
 - Dimensions: [accessibility](../Checklists/accessibility.md) · [performance](../Checklists/performance.md) · [security](../Checklists/security.md)
+- Guards: [screen-contract](../Checklists/screen-contract.md) (`C_CONTRACT` validator)
 
 ## Prompts/ (invocation patterns)
 - [planning](../Prompts/planning.md) · [research](../Prompts/research.md) · [architecture](../Prompts/architecture.md) · [design](../Prompts/design.md) · [development](../Prompts/development.md) · [refactoring](../Prompts/refactoring.md) · [testing](../Prompts/testing.md) · [debugging](../Prompts/debugging.md) · [documentation](../Prompts/documentation.md) · [review](../Prompts/review.md) · [prompt-improvement](../Prompts/prompt-improvement.md)
