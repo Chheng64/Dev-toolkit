@@ -4,6 +4,15 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-26
+
+Phase 4 — Gates: templates + checklists.
+
+### Added
+- `Templates/` — 11 fill-in structures: feature-request (BRD seed), product-requirement (S03 entry format, R/AC IDs), technical-specification (S10 with failure table + slices), development-plan (S11 with AC→test mapping), bug-report (S13 entry, repro-or-nothing), design-handoff (links-not-copies, NOT-authoritative list), component-documentation (DS doc beside code), api-specification (contract of record, error→S09 mapping), pull-request (Final Gate decision package), release-notes (S15 outcome language), retrospective (evidence-based, feeds toolkit).
+- `Checklists/` — 11 machine-checkable gates: analysis, ux-review, ui-review, design-qa (self-audit), development-ready, code-review (7 dimensions + absences), qa-testing (evidence per verdict), accessibility (mechanism-level), performance (banned-waste sweep + budgets), security (boundary/authz/leakage/closure), release (smoke-check + deferred sweep).
+- Phase 3 forward links now resolve.
+
 ## [0.4.0] — 2026-07-26
 
 Phase 3 — Standards.
