@@ -28,6 +28,7 @@ project:
   description: <one line>
   product_type: website            # website | mobile-app | desktop | backend-service | api | library | other:<name>
   stage: mvp                       # idea | discovery | mvp | production | maintenance
+  registered: 2026-07-26           # v1.3 — Project Registration date (identity reserved in Notion pre-repo)
 
 stack:
   frontend: nextjs                 # nextjs | react | vue | angular | flutter | react-native | android | ios | none | other:<name>
@@ -72,6 +73,10 @@ integrations:                      # written by integration-validation, per run
 screen_contract:
   path: screens/                   # registry + per-screen contracts live here
   next_id: 1                       # next SCR number to allocate
+
+context_package:                   # v1.3 — generated AI context summaries
+  path: context/
+  generated: 2026-07-26            # regenerate when older than onboarding.last_validated
 ```
 
 ## 3. Consumption Rules

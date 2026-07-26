@@ -3,12 +3,15 @@
 > **Use:** [project-onboarding workflow](../Workflows/project-onboarding.md) step 1. Detect-first: fields marked ⚙ are auto-detected from the repo and only confirmed. Answers land in [project-manifest.yaml](../Architecture/project-manifest.md) — this template never becomes a standalone document.
 
 ```markdown
-## Project Information
+## Project Registration   (step 0 — may run BEFORE the repo exists; recorded in Notion immediately)
 - Name:
 - Code (2–4 uppercase, unique — BRD-<code>-nnn):
 - Short description (one line):
 - Product type: website | mobile-app | desktop | backend-service | api | library | other:<name>
 - Development stage: idea | discovery | mvp | production | maintenance
+- Intended tech stack (headline, refined in Stack section later):
+
+## Project Information   (pre-filled from registration; confirm only)
 
 ## Technology Stack   ⚙ detect from package.json / lockfile / config files first
 - Frontend: nextjs | react | vue | angular | flutter | react-native | android | ios | none | other:<name>
@@ -39,6 +42,12 @@
 - Branch naming: (toolkit default feat/<brd-id>-<slug> unless overridden)
 - PR strategy: squash | merge | rebase
 - Release strategy: tag | vercel | manual-deploy | none
+
+## Initial Screens   (optional seed — Screen Contract init, step 6)
+- Known top-level screens to register now (name + route each; product-type
+  defaults offered, e.g. website → Home /, Settings /settings):
+  - <Screen name> — /<route>
+  - …
 ```
 
 ## Rules

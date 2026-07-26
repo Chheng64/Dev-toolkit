@@ -17,22 +17,25 @@ Establish all project metadata, validate every required integration, and generat
 
 ## Outputs
 
-- `project-manifest.yaml` at repo root, complete + validated
-- `screens/registry.md` scaffold (empty registry, header row)
+- **Registration record** (Notion): code + name reserved in `Project` select; identity page in Project Database when declared
+- `project-manifest.yaml` at repo root, complete + validated (`project.registered` stamped)
+- `screens/registry.md` — initialized registry; seeded screens (if any) as `planned`/`unassigned` with allocated SCR-IDs
+- `context/` — 5 generated summaries per [context-package](../Architecture/context-package.md)
 - `project-overrides.md` scaffold (if absent)
-- Project `CLAUDE.md` toolkit block (if absent) — now references the manifest
-- Notion: project added to BRD DB `Project` select; entry in Project Database if manifest declares one
+- Project `CLAUDE.md` toolkit block (if absent) — references manifest + context/
 - Onboarding record: manifest `onboarding.*` stamped
 
 ## Procedure
 
-1. **Collect** — walk the [project-configuration template](../Templates/project-configuration.md) sections: Project Info → Stack → Design → Notion → Git. Ask only for what can't be detected; **detect first** (package.json → stack + package manager; git remote → repository; existing tokens file → token source). Confirm detections, don't re-ask them.
+0. **Project Registration** (v1.3 — runs BEFORE repository initialization; repo may not exist yet). Establish stable identity: Project Name, Code (2–4 uppercase, uniqueness-checked), Short Description, Product Type, Development Stage, intended Tech Stack. Record it durably in Notion immediately: reserve the code + name in the BRD DB `Project` select; write an identity page in the Project Database when the manifest declares one. Registration output seeds steps 1–5; the identity fields copy into `manifest.project.*` with `registered: <date>` at generation. A registered-but-not-yet-initialized project is a valid resting state — the repo can come days later; the identity and code allocations don't move.
+1. **Collect** — walk the [project-configuration template](../Templates/project-configuration.md) sections: Project Info (pre-filled from registration) → Stack → Design → Notion → Git. Ask only for what can't be detected; **detect first** (package.json → stack + package manager; git remote → repository; existing tokens file → token source). Confirm detections, don't re-ask them.
 2. **Resolve stack profile** — per [stack-profiles](../Architecture/stack-profiles.md); surface coverage gaps immediately (user should know what the toolkit won't cover before work starts).
 3. **Validate integrations** — run [integration-validation](integration-validation.md) full pass. Failures on *required* integrations (Notion MCP, git access) block completion; optional ones (Figma, browser automation) record warnings.
 4. **Validate resources** — every declared design resource fetch-checked (Figma file opens, DS file accessible); Notion databases exist and match expected schema (BRD DB checked against [brd-schema](../Architecture/brd-schema.md) §1 — property names + option values); git repository reachable + default branch exists.
 5. **Generate manifest** — write `project-manifest.yaml` per schema; `onboarding.status: complete` only when §Completion passes.
-6. **Scaffold** — `screens/registry.md`, `project-overrides.md`, CLAUDE.md block. Commit: `chore: project onboarding — toolkit <version>`.
-7. **Register** — Notion Project select option added; code uniqueness checked.
+6. **Initialize Screen Contract** (v1.3 — first-class step, not just a scaffold). Create `screens/registry.md`; set `manifest.screen_contract.next_id`. Then offer to **seed known screens now**: obvious top-level screens the product type implies (e.g. website → Home, Settings) plus any the user already knows. Each seeded screen gets a real `SCR-<nnn>` row, status `planned`, owner `unassigned` — Screen IDs exist before any design or development begins; UI planning later *claims* rows (owner ← BRD) instead of creating them from zero. Seeding is optional and small — register what's known, never speculate a sitemap.
+7. **Generate AI Context Package** (v1.3) — `context/` per [context-package](../Architecture/context-package.md): `design.md`, `stack.md`, `integrations.md`, `conventions.md`, `model-routing.md`. Generated summaries with source pointers; stamped with toolkit version + date.
+8. **Scaffold & commit** — `project-overrides.md`, CLAUDE.md block. Commit: `chore: project onboarding — toolkit <version>`.
 
 ## Re-Onboarding (project evolves)
 
@@ -45,6 +48,9 @@ Targeted, not full: stack change → steps 1–2 (affected fields) + 3; new desi
 - [ ] Stack profile resolved; gaps (if any) recorded in manifest and acknowledged by user
 - [ ] Required integrations `validated`; optional failures recorded as warnings, not silently
 - [ ] All declared design/Notion/git resources access-checked (no dead URLs in the manifest)
+- [ ] Registration durable in Notion (code reserved; identity page if Project DB declared); `project.registered` stamped
+- [ ] `screens/registry.md` initialized; seeded screens (if any) have valid SCR-IDs, `planned`/`unassigned`; `next_id` consistent
+- [ ] `context/` generated: all 5 files present, stamped with toolkit version + date, headers marked GENERATED
 - [ ] `screens/registry.md` + `project-overrides.md` + CLAUDE.md block exist
 - [ ] Manifest + scaffolds committed
 - [ ] `onboarding.status: complete` + dates stamped

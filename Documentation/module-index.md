@@ -12,6 +12,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - [project-manifest](../Architecture/project-manifest.md) — per-project config contract; `C_MANIFEST` gates all BRD work
 - [screen-contract](../Architecture/screen-contract.md) — SCR registry + 5 mapping blocks; `C_CONTRACT` gates Dev Planning
 - [stack-profiles](../Architecture/stack-profiles.md) — manifest stack → applicable Standards + honest gaps
+- [context-package](../Architecture/context-package.md) — generated `context/` session-bootstrap summaries (derived cache, never edited)
 
 ## AI/ (runtime)
 - [CLAUDE-global](../AI/CLAUDE-global.md) — per-project entry contract + CLAUDE.md stub

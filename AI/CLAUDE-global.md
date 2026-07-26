@@ -15,8 +15,13 @@ Operate per `toolkit/AI/CLAUDE-global.md`. Read it before acting on any BRD work
 
 - Manifest: `project-manifest.yaml` — single source of truth for project config
   (code, stack, design, Notion, git, integrations). Read it before asking anything.
+- Context: `context/` — GENERATED session-bootstrap summaries (design, stack,
+  integrations, conventions, model routing). Read first for orientation; never
+  edit; manifest + toolkit stay authoritative.
 - Overrides: `project-overrides.md` (project-specific deviations from toolkit Standards/)
 ```
+
+Session bootstrap order: CLAUDE.md → `context/` → manifest (config facts) → full toolkit module only when the stage needs its procedure ([context-package](../Architecture/context-package.md) §2).
 
 No manifest, or `onboarding.status != complete` → the ONLY permitted work is running `toolkit/Workflows/project-onboarding.md`.
 

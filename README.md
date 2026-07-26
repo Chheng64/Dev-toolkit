@@ -17,7 +17,7 @@ Reusable AI product-development toolkit. Global operating system for all persona
 | `Playbooks/` | End-to-end compositions (full feature, parallel BRDs, hotfix, design-only) | ✅ Phase 5 |
 | `Documentation/` | Toolkit meta: module index, changelog, onboarding, Notion setup | ✅ Phase 6 |
 
-**Status: v1.2.0.** 9 contracts, 5 runtime, 15 workflows, 16 skills, 17 standards, 15 templates, 12 checklists, 11 prompts, 4 playbooks. Since v1.0: model routing (v1.1), project onboarding + manifest + screen contract with hard guards `C_MANIFEST`/`C_CONTRACT` (v1.2).
+**Status: v1.3.0.** 10 contracts, 5 runtime, 15 workflows, 16 skills, 17 standards, 15 templates, 12 checklists, 11 prompts, 4 playbooks. Since v1.0: model routing (v1.1); onboarding + manifest + screen contract with guards `C_MANIFEST`/`C_CONTRACT` (v1.2); project registration, onboarding-time screen seeding, generated `context/` package (v1.3).
 
 ## Start Here
 

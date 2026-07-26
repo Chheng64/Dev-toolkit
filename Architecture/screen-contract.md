@@ -27,7 +27,11 @@ BRD sections reference screens by ID only (S07 flows name them, S08/S11/S13 cite
 | Status | `planned → designed → prototyped → implemented → verified` (regression: allowed, logged in owning BRD S16) |
 | Owner | current stage owner role |
 
-Registry row created at **UX workflow** (flow states become screens at UI planning altitude — UX names them, UI planning registers them). One screen serving multiple flows lists all parent flows.
+Registry rows are created two ways (v1.3):
+- **At onboarding** — known top-level screens seeded with real SCR-IDs, status `planned`, owner `unassigned`, parent flow empty. IDs exist before design/development begin.
+- **At UI planning** — flow-implied screens registered per BRD (UX names them, UI planning registers them).
+
+UI planning **claims** seeded rows when a BRD's flows cover them (owner ← BRD-ID, parent flow filled) rather than creating duplicates — one screen, one ID, forever. One screen serving multiple flows lists all parent flows. `C_CONTRACT` validation only evaluates rows owned by the BRD under validation; `unassigned` rows are inert until claimed.
 
 ## 3. Per-Screen Contract (`screens/SCR-<nnn>.md`)
 

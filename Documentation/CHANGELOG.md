@@ -4,6 +4,23 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-07-26
+
+Onboarding enhancements — incremental, existing flow remains the default shape.
+
+### Added
+- `Architecture/context-package.md` — AI Context Package spec: `context/` with 5 generated summaries (design, stack, integrations, conventions, model-routing); derived-only rule, regeneration triggers, session bootstrap order, staleness check.
+- Onboarding step 0 **Project Registration** — stable identity (name, code, product type, stage, intended stack) established and reserved in Notion BEFORE repository initialization; registered-not-initialized is a valid resting state; `manifest.project.registered` stamp.
+- Onboarding step 6 **Screen Contract initialization** — registry created at onboarding; known screens optionally seeded with real SCR-IDs (`planned`/`unassigned`); UI planning claims seeded rows instead of creating duplicates.
+- Onboarding step 7 **Context Package generation**.
+
+### Changed
+- `Workflows/project-onboarding.md` — procedure now 0–8; outputs + completion criteria extended.
+- `Architecture/screen-contract.md` — two registration paths (onboarding seed / UI planning); claim semantics; `C_CONTRACT` evaluates owned rows only, `unassigned` rows inert.
+- `Architecture/project-manifest.md` — `project.registered`, `context_package` block.
+- `Templates/project-configuration.md` — Registration section (pre-repo) + optional Initial Screens seed section.
+- `AI/CLAUDE-global.md` — context/ in project stub + session bootstrap order.
+
 ## [1.2.0] — 2026-07-26
 
 Project Onboarding System + Screen Contract System. Two new hard guards; no breaking changes (Status values untouched — both stages run as guards/pre-pipeline).
