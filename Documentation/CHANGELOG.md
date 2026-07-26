@@ -4,6 +4,13 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-07-26
+
+Phase 2 — Roles.
+
+### Added
+- `Skills/` — 16 role definitions, each: role identity, responsibilities, decision boundaries (decides / escalates / never), BRD rights (matrix-referenced), expected output, handoff. Business Analyst, Product Manager, UX Designer, UI Designer, Design System Engineer, Frontend Engineer, Backend Engineer, Full Stack Engineer, QA Engineer, Code Reviewer, Technical Writer, Git Manager, Debug Specialist, Performance Optimizer, Accessibility Specialist, Security Reviewer.
+
 ## [0.2.0] — 2026-07-26
 
 Phase 1 — Workflow spine.
