@@ -4,6 +4,11 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.4.1] — 2026-07-26
+
+### Changed
+- `README.md` — rewritten as a complete getting-started guide: three core ideas, one-time setup, start-a-project runbook (register → pin → onboard → first BRD → run), daily-use phrase table, enforced-rules summary, repo map with reading order, upgrade + toolkit-improvement flow.
+
 ## [1.4.0] — 2026-07-26
 
 Telegram Plugin v1 (extension) + communication integrations in onboarding.
