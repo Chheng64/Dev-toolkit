@@ -13,8 +13,8 @@ Reusable AI product-development toolkit. Global operating system for all persona
 | `Standards/` | 17 tech standards (React, Next.js, TS, Tailwind, …) | ✅ Phase 3 |
 | `Templates/` | 11 artifact templates | ✅ Phase 4 |
 | `Checklists/` | 11 gate checklists | ✅ Phase 4 |
-| `Prompts/` | 11 reusable prompt patterns | Phase 5 |
-| `Playbooks/` | End-to-end compositions (full feature, parallel BRDs, hotfix, design-only) | Phase 5 |
+| `Prompts/` | 11 reusable prompt patterns | ✅ Phase 5 |
+| `Playbooks/` | End-to-end compositions (full feature, parallel BRDs, hotfix, design-only) | ✅ Phase 5 |
 | `Documentation/` | Toolkit meta: module index, changelog, onboarding | Phase 6 |
 
 ## Start Here

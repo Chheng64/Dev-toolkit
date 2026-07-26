@@ -4,6 +4,14 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-07-26
+
+Phase 5 — Prompts + Playbooks.
+
+### Added
+- `Prompts/` — 11 reusable invocation patterns, each binding a task to its workflow/skill/checklist with required inputs and bounce rules: planning, research (citations-or-nothing), architecture (options + recommendation), design (per machine-state cluster), development (slice sessions), refactoring (characterize-first), testing (QA + gap modes), debugging (hypothesis ledger), documentation (layer routing), review (full + dimension modes), prompt-improvement (evidence-based toolkit self-repair).
+- `Playbooks/` — 4 compositions (the only composing layer): full-feature (13 stages + loop wiring + session pattern), parallel-brds (cap 3, conflict rules, gate batching), hotfix (compressed ceremony, gates-that-matter preserved, mandatory prevention sweep), design-only (design-terminal path + staleness check on build resume).
+
 ## [0.5.0] — 2026-07-26
 
 Phase 4 — Gates: templates + checklists.
