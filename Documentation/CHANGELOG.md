@@ -4,6 +4,18 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-07-26
+
+Phase 6 — Meta. Toolkit complete.
+
+### Added
+- `Documentation/module-index.md` — every module, one line, grouped by layer.
+- `Documentation/onboarding.md` — new project in ~10 minutes + first-BRD health signs.
+- `Documentation/notion-setup.md` — exact BRD database recipe (properties, views, page scaffold, MCP-driven create).
+
+### Milestone
+- All 9 layers complete: Architecture (6), AI (4), Workflows (13), Skills (16), Standards (17), Templates (11), Checklists (11), Prompts (11), Playbooks (4) — 93 modules + meta. Contracts frozen at 1.0: BRD schema S01–S16, permission matrix, Status values, gate tokens. Breaking changes from here follow versioning.md majors.
+
 ## [0.6.0] — 2026-07-26
 
 Phase 5 — Prompts + Playbooks.

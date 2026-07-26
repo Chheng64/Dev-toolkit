@@ -15,14 +15,18 @@ Reusable AI product-development toolkit. Global operating system for all persona
 | `Checklists/` | 11 gate checklists | ✅ Phase 4 |
 | `Prompts/` | 11 reusable prompt patterns | ✅ Phase 5 |
 | `Playbooks/` | End-to-end compositions (full feature, parallel BRDs, hotfix, design-only) | ✅ Phase 5 |
-| `Documentation/` | Toolkit meta: module index, changelog, onboarding | Phase 6 |
+| `Documentation/` | Toolkit meta: module index, changelog, onboarding, Notion setup | ✅ Phase 6 |
+
+**Status: v1.0.0 — complete.** All 9 layers built: 6 contracts, 4 runtime, 13 workflows, 16 skills, 17 standards, 11 templates, 11 checklists, 11 prompts, 4 playbooks.
 
 ## Start Here
 
+- New project in 10 minutes: [Documentation/onboarding.md](Documentation/onboarding.md)
+- One-time Notion DB: [Documentation/notion-setup.md](Documentation/notion-setup.md)
+- Map of every module: [Documentation/module-index.md](Documentation/module-index.md)
 - Operating contract for Claude: [AI/CLAUDE-global.md](AI/CLAUDE-global.md)
 - How everything connects: [Architecture/integration-map.md](Architecture/integration-map.md)
 - The lifecycle: [Architecture/workflow-state-machine.md](Architecture/workflow-state-machine.md)
-- Add to a project: [Architecture/versioning.md](Architecture/versioning.md) §3 + [Architecture/integration-map.md](Architecture/integration-map.md) §5
 
 ## Rules of the Repo
 
