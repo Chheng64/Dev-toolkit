@@ -2,7 +2,48 @@
 
 A reusable AI product-development operating system for solo builders working with Claude, Notion, and Git. It turns feature development into a deterministic 13-stage state machine with living documents, hard quality gates, and full resumability — any session can die at any moment and the next one picks up exactly where it left off.
 
-**Version: v1.4.0** · consumed by projects as a version-pinned git submodule · improve a rule once here, every project inherits it at its next pin bump.
+**Version: v1.4.1** · consumed by projects as a version-pinned git submodule · improve a rule once here, every project inherits it at its next pin bump.
+
+---
+
+## High-Level Architecture
+
+```
+                        ┌─────────────────────────────┐
+                        │      YOU  (three gates)      │
+                        │  direction · design · final  │
+                        └──────▲───────────────▲───────┘
+                       terminal│               │Telegram plugin
+                               │               │(extensions/, opt-in)
+┌──────────────────────────────┴───────────────┴──────────────────────────────┐
+│                          WORKFLOW ORCHESTRATOR                              │
+│         state-machine executor · stage routing · model routing ·            │
+│         gate enforcement · loop ceilings · resume-from-state                │
+│                             AI/orchestrator.md                              │
+└───────┬───────────────────────┬───────────────────────┬─────────────────────┘
+        │ reads config          │ reads/writes state    │ loads process
+┌───────▼────────────┐  ┌───────▼────────────┐  ┌───────▼─────────────────────┐
+│ PROJECT MANIFEST   │  │ LIVING BRD         │  │ Workflows/  (15 stages)     │
+│ project repo       │  │ Notion, per feature│  │ Skills/     (16 roles)      │
+│                    │  │ properties = state │  │ Standards/  Templates/      │
+│ SCREEN CONTRACT    │  │ S01–S16 = content  │  │ Checklists/ Prompts/        │
+│ project repo       │  │                    │  │ Playbooks/                  │
+└────────────────────┘  └─────────▲──────────┘  └─────────────────────────────┘
+                                  │ MCP
+                     External services: Notion (MCP) · GitHub (gh) ·
+                     browser (prototype review) · your project repo
+```
+
+The orchestrator is the only component that advances state. Everything it needs to resume lives in the three sources of truth — never in the session. Full wiring: [Architecture/integration-map.md](Architecture/integration-map.md).
+
+## Design Philosophy
+
+- **Single source of truth** — every fact has exactly one home (manifest, BRD, or Screen Contract). Workflows consume, never re-ask, never duplicate.
+- **AI executes, human directs** — Claude runs all 13 stages; you decide at three gates. See [Decision Boundaries](#decision-boundaries).
+- **Stage-based development** — features move through a gated state machine with checklisted exits, not freeform prompting.
+- **Resume from state, not session** — machine position is reconstructed from Notion properties + the S16 Decision Log. Kill any session, nothing is lost.
+- **Modular & versioned** — single-responsibility modules, semver-tagged, consumed as a pinned submodule. Projects upgrade deliberately.
+- **Plugin-based integrations** — the core never depends on extensions; adapters (Telegram today) talk only to the orchestrator.
 
 ---
 
@@ -29,6 +70,51 @@ Implementation → QA → Tech Review → PR → Human Review → Merged → Rel
 Claude runs every stage; **you only act at the three gates** (approve scope → review the running prototype → approve the PR). Everything else — research with citations, edge-case enumeration, prototype, code, evidence-based QA, 7-dimension review — executes and logs itself to the BRD. Loops are bounded (no infinite revision), approvals go stale if content changes after them, and nothing ships with unmet acceptance criteria.
 
 **3. State lives in Notion, never in the session.** Every transition writes the BRD's Decision Log (S16) and its status properties. Kill any session; the next one reconstructs everything from Notion alone.
+
+## Runtime Execution Model
+
+What actually happens when you say "pick up the ready BRD" — every stage, every session:
+
+```
+User request
+  ↓
+Workflow Orchestrator (AI/orchestrator.md)
+  ↓  manifest gate: load + validate project-manifest.yaml
+  ↓  load Living BRD — properties give exact machine position
+  ↓  check Screen Contract (blocks Dev Planning if mappings incomplete)
+  ↓  load the stage's Workflow + Skill + referenced Standards, at routed model tier
+  ↓
+Execute current stage  →  findings written to the BRD as discovered
+  ↓
+Run exit validation (Checklists/) — fail → bounded retry with corrective constraint
+  ↓
+Update BRD: status + S16 transition entry (atomic)
+  ↓
+Next stage — or stop and present a decision package if a human gate is pending
+```
+
+The orchestrator loads only what the current stage needs; nothing global sits in context. Contract details: [AI/orchestrator.md](AI/orchestrator.md) · [Architecture/workflow-state-machine.md](Architecture/workflow-state-machine.md).
+
+## Toolkit Layer Architecture
+
+```
+Layer 1 · CORE ENGINE            orchestrator, state machines, model routing
+         fires transitions, enforces gates — the only writer of machine state
+                                    ↓
+Layer 2 · PROJECT CONFIGURATION  project-manifest.yaml, project-overrides.md
+         tells the engine what this project is; validated before any work
+                                    ↓
+Layer 3 · DEVELOPMENT SYSTEM     Living BRD, Screen Contract, Workflows,
+         Skills, Standards — what each stage does and to what quality bar
+                                    ↓
+Layer 4 · COMMUNICATION          extensions/ — Telegram v1 (Slack/Discord
+         possible later); adapters that relay gates, never advance state
+                                    ↓
+Layer 5 · EXTERNAL SERVICES      Notion (MCP), GitHub (gh), browser
+         where state, code, and review surfaces physically live
+```
+
+Lower layers never depend on higher ones; extensions and services are replaceable without touching the engine.
 
 ---
 
@@ -63,8 +149,8 @@ npx create-next-app@latest <project> --typescript --tailwind --eslint --app --sr
 cd <project>
 
 git submodule add https://github.com/Chheng64/Dev-toolkit.git toolkit
-cd toolkit && git fetch --tags && git checkout v1.4.0 && cd ..
-git add -A && git commit -m "chore: pin toolkit v1.4.0"
+cd toolkit && git fetch --tags && git checkout v1.4.1 && cd ..
+git add -A && git commit -m "chore: pin toolkit v1.4.1"
 ```
 
 ### Step 2 — Onboard (mandatory; nothing runs without it)
@@ -103,6 +189,26 @@ The machine runs. You'll be stopped at the Direction Gate first: a summary of th
 
 Up to **3 BRDs run in parallel** (one branch + one PR each); the orchestrator serializes anything whose planned code areas overlap.
 
+## Execution Lifecycle
+
+End-to-end, from nothing to shipped — the three 🚦 marks are the only places you act:
+
+```
+Register → Onboard → Create BRD (Ready)
+   ↓
+Analysis ──🚦 Direction Gate (approve scope)
+   ↓
+Planning → Design → Design Review ──🚦 Design Gate (review running prototype)
+   ↓
+Dev Planning → Implementation → QA → Tech Review → PR
+   ↓
+Human Review ──🚦 Final Gate (approve PR)
+   ↓
+Merged → Released
+```
+
+Approvals are scoped to what you saw — if gated content changes afterward, the approval is revoked and the gate re-raises.
+
 ---
 
 ## Rules the Machine Enforces (the point of all this)
@@ -116,27 +222,54 @@ Up to **3 BRDs run in parallel** (one branch + one PR each); the orchestrator se
 - Approvals are scoped to what you saw — content changes revoke them automatically.
 - Model routing: heavyweight reasoning (Opus-tier) only where wrong judgment cascades — Planning, UX, Dev Planning, Review; mechanical work rides cheap tiers. ([AI/model-routing.md](AI/model-routing.md))
 
+## Decision Boundaries
+
+| Human decides | AI executes |
+|---------------|-------------|
+| Business direction & scope (Direction Gate) | Analysis, research with citations |
+| Design approval (Design Gate) | Planning, UX, prototype, implementation |
+| Merge approval (Final Gate) | QA with evidence, 7-dimension review, documentation |
+
+If a decision isn't at a gate, it's Claude's — bounded by the permission matrix and logged in S16. ([Architecture/permission-matrix.md](Architecture/permission-matrix.md))
+
 ---
 
-## Repository Map
+## Repository Map & Module Responsibilities
 
-| Dir | Holds |
-|-----|-------|
-| [Architecture/](Architecture/) | Contracts: BRD schema (S01–S16), permission matrix, state machines, manifest, screen contract, stack profiles, versioning |
-| [AI/](AI/) | Runtime: orchestrator, entry contract, BRD update protocol, model routing, MCP setup |
-| [Workflows/](Workflows/) | 15 stage procedures (analysis → release, debug, onboarding) |
-| [Skills/](Skills/) | 16 roles with decision boundaries |
-| [Standards/](Standards/) | 17 tech standards (TS, React, Next.js, Tailwind v4, a11y, security, …) |
-| [Templates/](Templates/) | 15 artifact formats (requirements, PR, bug report, mappings, …) |
-| [Checklists/](Checklists/) | 12 machine-checkable gates |
-| [Prompts/](Prompts/) | 11 invocation patterns |
-| [Playbooks/](Playbooks/) | full-feature · parallel-brds · hotfix · design-only |
-| [extensions/](extensions/telegram/README.md) | Opt-in adapters (Telegram v1) |
-| [Documentation/](Documentation/) | [Module index](Documentation/module-index.md) · [Onboarding](Documentation/onboarding.md) · [Notion setup](Documentation/notion-setup.md) · [Changelog](Documentation/CHANGELOG.md) |
+Dependencies point **down toward `Architecture/`** — it depends on nothing; `Playbooks/` alone composes across modules.
+
+| Dir | Purpose | Depends on | Edit when | Claude loads |
+|-----|---------|-----------|-----------|--------------|
+| [Architecture/](Architecture/) | Contracts: BRD schema (S01–S16), permission matrix, state machines, manifest, screen contract, stack profiles, versioning | nothing (foundation) | contract changes — semver-gated | always (via orchestrator) |
+| [AI/](AI/) | Runtime: orchestrator, entry contract, BRD update protocol, model routing, MCP setup | Architecture | runtime behavior changes | every session entry |
+| [Workflows/](Workflows/) | 15 stage procedures (analysis → release, debug, onboarding) | Architecture | a stage's procedure improves | per stage |
+| [Skills/](Skills/) | 16 roles with decision boundaries | Architecture | a role's judgment improves | per stage |
+| [Standards/](Standards/) | 17 tech standards (TS, React, Next.js, Tailwind v4, a11y, security, …) | Architecture | a quality bar changes | as referenced by stage |
+| [Templates/](Templates/) | 15 artifact formats (requirements, PR, bug report, mappings, …) | Architecture | an artifact format changes | when producing that artifact |
+| [Checklists/](Checklists/) | 12 machine-checkable gates | Architecture | an exit criterion changes | at stage exit |
+| [Prompts/](Prompts/) | 11 invocation patterns | Architecture | an invocation improves | when you invoke one |
+| [Playbooks/](Playbooks/) | full-feature · parallel-brds · hotfix · design-only | everything (composition layer) | a composed flow changes | when a playbook is invoked |
+| [extensions/](extensions/telegram/README.md) | Opt-in adapters (Telegram v1) | orchestrator contract only | adding/changing an adapter | only if enabled in manifest |
+| [Documentation/](Documentation/) | [Module index](Documentation/module-index.md) · [Onboarding](Documentation/onboarding.md) · [Notion setup](Documentation/notion-setup.md) · [Changelog](Documentation/CHANGELOG.md) | — | docs drift | on demand |
+
+New functionality goes where its single responsibility says: process → `Workflows/`, judgment → `Skills/`, quality bar → `Standards/`, contract → `Architecture/`, adapter → `extensions/`.
 
 Deep-dive order for a new reader: this file → [integration-map](Architecture/integration-map.md) → [workflow-state-machine](Architecture/workflow-state-machine.md) → [module-index](Documentation/module-index.md).
 
+## Extension Architecture
+
+The core toolkit never depends on an extension. Extensions are adapters — they relay gate events out and approvals in **through the Workflow Orchestrator**, which remains the only component that advances state. Telegram ships today ([extensions/telegram/README.md](extensions/telegram/README.md)); Slack, Discord, email, or custom MCP adapters follow the same contract: outbox events at the four triggers, inbox events applied under normal gate rules, nothing else.
+
 ---
+
+## Project Lifecycle
+
+```
+Register → Onboard → Configure → Develop features (BRD loop, above)
+   → Maintain (debug/hotfix playbooks) → Upgrade toolkit pin → Archive
+```
+
+A project can rest at any point — registered-without-repo is valid, and an archived project's history stays fully readable in Notion.
 
 ## Upgrading a Project
 
@@ -157,3 +290,4 @@ Lessons flow back: retro findings → edit the module here → changelog entry �
 - Dependencies point down toward `Architecture/` only.
 - Zero project-specific business logic — project deviations live in each project's `project-overrides.md`.
 - No secrets, ever (tokens are env-only).
+- This README stays an entry point — overviews link out; detail lives in modules.
