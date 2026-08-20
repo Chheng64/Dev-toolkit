@@ -1,6 +1,6 @@
 # AI Context Package
 
-> **Module:** Architecture / Foundation (v1.3)
+> **Module:** Architecture / Foundation (v1.5)
 > **Status:** Stable
 > **Purpose:** `context/` — small generated summaries a session reads at bootstrap for consistent AI behavior, without loading the full toolkit. **Generated, never hand-edited.** The manifest and toolkit stay authoritative; `context/` is a derived cache.
 
@@ -10,7 +10,7 @@
 
 | File | Summarizes | Source of truth |
 |------|-----------|-----------------|
-| `design.md` | Design config: Figma refs (or prototype-only mode), component library, token source, icon/typography, DS state + where the DS lives | manifest `design.*` + DS docs |
+| `design.md` | Design config: Figma bindings (or prototype-only mode), component library, token source, icon/typography, DS state + where the DS lives | manifest `design.*` + `resources.figma.*` + DS docs |
 | `stack.md` | Stack + resolved profile + the exact list of applicable Standards/ files + declared gaps | manifest `stack.*` + [stack-profiles](stack-profiles.md) |
 | `integrations.md` | Last validation results per integration + per-stage degradation consequences of anything unavailable | manifest `integrations.*` + [../Workflows/integration-validation.md](../Workflows/integration-validation.md) |
 | `conventions.md` | Naming/branch/commit/PR contracts resolved for this project + pointer to `project-overrides.md` entries | manifest `git.*` + [integration-map](integration-map.md) §3 + overrides |

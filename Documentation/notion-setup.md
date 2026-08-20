@@ -70,6 +70,10 @@ and report what you built with links.
 
 Verify against §1 before first real use (option spelling matters — the orchestrator matches values exactly).
 
+## 3b. Write the Toolkit Registry (required — closes the setup)
+
+Immediately after the DB exists (created or connected), record its identity in the **Toolkit Registry** — `~/.toolkit/registry.yaml` per [toolkit-registry](../Architecture/toolkit-registry.md): database id, data source, workspace; optionally a projects parent page (durable home for project identity pages — recommended if you register projects before their repos exist). Project registration and Resource Binding read this file; **without it, onboarding stops at step 0 by design** — the toolkit never searches your workspace to find the DB. On a new machine, re-run this section against the existing DB (connect, not create).
+
 ## 4. Invariants (re-stated from schema)
 
 - Status values are machine states — never rename casually (rename = toolkit major version).

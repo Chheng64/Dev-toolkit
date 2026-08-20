@@ -1,6 +1,6 @@
 # Screen Contract
 
-> **Module:** Architecture / Foundation (v1.2)
+> **Module:** Architecture / Foundation (v1.5)
 > **Status:** Stable
 > **Purpose:** Single source of truth for **design-to-development traceability**. Canonical mapping per screen: BRD requirements ↔ user flows ↔ Figma ↔ prototype ↔ frontend ↔ API ↔ QA. **Implementation may not begin while the contract is incomplete** — enforced by guard `C_CONTRACT` at Dev Planning entry ([workflow-state-machine.md](workflow-state-machine.md); validator: [../Checklists/screen-contract.md](../Checklists/screen-contract.md)).
 
@@ -28,7 +28,7 @@ BRD sections reference screens by ID only (S07 flows name them, S08/S11/S13 cite
 | Owner | current stage owner role |
 
 Registry rows are created two ways (v1.3):
-- **At onboarding** — known top-level screens seeded with real SCR-IDs, status `planned`, owner `unassigned`, parent flow empty. IDs exist before design/development begin.
+- **At onboarding** — known top-level screens seeded with real SCR-IDs, owner `unassigned`, parent flow empty. Greenfield screens seed as `planned`; screens that already exist in a shipped app seed as **`implemented (pre-toolkit)`** — an honest state, not a false `planned`. When a BRD first claims a pre-toolkit screen, `C_CONTRACT` requires mappings only for the parts that BRD touches (backfill, not retro-design).
 - **At UI planning** — flow-implied screens registered per BRD (UX names them, UI planning registers them).
 
 UI planning **claims** seeded rows when a BRD's flows cover them (owner ← BRD-ID, parent flow filled) rather than creating duplicates — one screen, one ID, forever. One screen serving multiple flows lists all parent flows. `C_CONTRACT` validation only evaluates rows owned by the BRD under validation; `unassigned` rows are inert until claimed.
@@ -49,13 +49,16 @@ Screens with no API dependencies state `api: none` explicitly — absence is dec
 
 ## 4. Figma-Optional Rule
 
-`manifest.design.figma_file: null` → Design block maps to **prototype + DS components only**; Figma fields marked `n/a (no figma in manifest)`. Contract validation adapts: the "exists in Figma" check becomes "exists in served prototype". When Figma exists, both prototype and Figma mappings are required and must agree — divergence is a design-qa finding.
+**No healthy Figma binding** — `manifest.resources.figma.product_design_file` skipped, null, or `health: unreachable` ([project-manifest](project-manifest.md) §3) — → Design block maps to **prototype + DS components only**; Figma fields marked `n/a (no figma in manifest)`. Contract validation adapts: the "exists in Figma" check becomes "exists in served prototype". When a healthy binding exists, both prototype and Figma mappings are required and must agree — divergence is a design-qa finding.
+
+Binding added or restored later: existing `n/a` Design blocks on `verified` screens stay valid as-is; screens not yet past Design Review acquire Figma mappings at their next design touch.
 
 ## 5. Ownership & Edit Rules
 
 - Contract files follow the same role discipline as BRD sections: each block edited by its owning role (table §3); cross-block findings route via owning BRD's S16 `Affects:`.
 - Registry Status advanced only by the stage that completed the work (UI → `designed`/`prototyped`, Implementation → `implemented`, QA → `verified`).
 - Contract changes after Design Gate approval = design change → stale-approval rule fires on the owning BRD.
+- **Rebind fallout:** a registry mutation replacing or unbinding a resource that Design/API blocks reference ([project-manifest](project-manifest.md) §3) marks those mappings invalid, regresses the affected screens' status (logged in the owning BRD's S16), and fires the stale-approval rule — a swapped design file is a design change, never silent.
 
 ## 6. Validation (the six checks — guard `C_CONTRACT`)
 

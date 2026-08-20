@@ -7,12 +7,14 @@ Every module, one line. Load only what the task needs — this index is the map,
 - [permission-matrix](../Architecture/permission-matrix.md) — 16 roles × 16 sections rights; cross-domain `Affects:` protocol
 - [workflow-state-machine](../Architecture/workflow-state-machine.md) — 13-stage lifecycle: transitions, guards, loops, gates, parallelism
 - [design-state-machine](../Architecture/design-state-machine.md) — design sub-machine (states 01–11), artifacts→BRD remapping
-- [integration-map](../Architecture/integration-map.md) — Notion↔Claude↔Git wiring, naming contracts, knowledge layers, onboarding
+- [integration-map](../Architecture/integration-map.md) — Notion↔Claude↔Git wiring, naming contracts, knowledge layers, Project Boundary Rule (§2b), onboarding
 - [versioning](../Architecture/versioning.md) — semver, submodule pin/upgrade, compatibility promise
-- [project-manifest](../Architecture/project-manifest.md) — per-project config contract; `C_MANIFEST` gates all BRD work
+- [project-manifest](../Architecture/project-manifest.md) — per-project config contract + Project Resource Registry (stable-ID bindings, health, Resource Decision, §3); `C_MANIFEST` gates all BRD work
+- [toolkit-registry](../Architecture/toolkit-registry.md) — user-global config (`~/.toolkit/registry.yaml`): BRD DB identity, projects parent page; inherited by every manifest
 - [screen-contract](../Architecture/screen-contract.md) — SCR registry + 5 mapping blocks; `C_CONTRACT` gates Dev Planning
 - [stack-profiles](../Architecture/stack-profiles.md) — manifest stack → applicable Standards + honest gaps
 - [context-package](../Architecture/context-package.md) — generated `context/` session-bootstrap summaries (derived cache, never edited)
+- [ecosystem-map](../Architecture/ecosystem-map.md) — concept bridge to paul/gsd-core/carl (informational only, no runtime dependency)
 
 ## AI/ (runtime)
 - [CLAUDE-global](../AI/CLAUDE-global.md) — per-project entry contract + CLAUDE.md stub

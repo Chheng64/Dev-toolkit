@@ -7,7 +7,14 @@
 
 ## 1. Responsibilities
 
-0. **Manifest gate** — before ANY project work: `C_MANIFEST` ([../Architecture/project-manifest.md](../Architecture/project-manifest.md)). Missing/incomplete manifest → refuse BRD work, offer [project-onboarding](../Workflows/project-onboarding.md). Stale `last_validated` → run [integration-validation](../Workflows/integration-validation.md) first. Project facts come from the manifest — never re-ask the user for manifest-held values.
+0. **Manifest Gate** — at session entry, before ANY project work (pickup **and** resume alike). A fixed pipeline; each step's failure action is the only permitted next move:
+   1. Load the **Toolkit Registry** (`~/.toolkit/registry.yaml`, [../Architecture/toolkit-registry.md](../Architecture/toolkit-registry.md)). Missing → offer one-time setup (README); nothing else runs.
+   2. Load `project-manifest.yaml`. Missing / `onboarding.status: incomplete` → refuse BRD work, offer [project-onboarding](../Workflows/project-onboarding.md).
+   3. `manifest_version` older than current → run **Migration** ([project-onboarding §Migration](../Workflows/project-onboarding.md)) — automatic offer, seeded from the old fields, resumable; runs **before** staleness/validation (those need registry ids the old manifest lacks). In-flight BRDs resume normally once it completes.
+   4. `last_validated` stale (>30 days) → run [integration-validation](../Workflows/integration-validation.md).
+   5. `C_MANIFEST` full check ([../Architecture/workflow-state-machine.md](../Architecture/workflow-state-machine.md) §4) → fail: report exactly what unblocks.
+   Project facts come from the manifest — never re-ask the user for manifest-held values.
+0b. **Resource boundary** (v1.5 — [Project Boundary Rule](../Architecture/integration-map.md) §2b). All external access resolves through the Project Resource Registry by **stable identifier**. Never workspace-search Notion, browse Figma, or list repositories; never guess a resource. A stage requiring a slot that is missing, skipped, or `health: unreachable` → raise a **Resource Decision** ([project-manifest §3](../Architecture/project-manifest.md)): *connect existing / create new / confirm absence*. While it is pending, set `Status: Blocked`, `Blocked Reason: resource: <slot> — <reason>` — this makes the stop resumable at session entry (§2) and fires the Telegram failure trigger (responsibility 9). Log the decision S16; clear `Blocked` on resolution.
 1. **Pickup** — select next BRD from `Ready` (priority order) when a slot is free (<3 in-flight) and `C_MANIFEST` holds for its project.
 2. **Stage routing** — map `Status` → workflow module → skill → model tier per [model-routing.md](model-routing.md); load only what the stage needs; log the model in the Stage-Enter S16 entry.
 3. **Input verification** — before running a stage, check `C_SECTIONS(required)`: required BRD sections exist and are non-empty. Missing input → back-transition to the producing stage, never improvise the input.
@@ -26,7 +33,8 @@
 
 On any session start (or `resume <brd-id>` request):
 
-1. Query the BRD DB: in-flight pages (Status ∈ Analysis…Human Review) + `Ready` pages, filtered to this project unless told otherwise.
+0. Run the **Manifest Gate** (responsibility 0, all five steps). Only after it passes may any external system be touched.
+1. Query the BRD DB — via the registry binding (`resources.notion.brd_database.id`): in-flight pages (Status ∈ Analysis…Human Review) + `Ready` pages, filtered to this project unless told otherwise.
 2. If a specific BRD named → load it. Else: continue oldest in-flight first; pick up new `Ready` BRDs only when slots free and user confirms pickup.
 3. Read BRD properties + S16 tail (last 10 entries) → determine exact machine position, pending gates, open loops.
 4. Announce: BRD, stage, pending gates/blockers, planned action. Then run the stage.
@@ -82,3 +90,4 @@ Multiple pending gates across parallel BRDs → batch, oldest first.
 - Never advances Status without the exit check passing.
 - Never carries approvals across content changes.
 - Never holds state only in conversation. If it isn't in Notion, it didn't happen.
+- Never touches a resource outside the Project Resource Registry — no workspace searches, no repo listing, no unregistered files. Missing resource → connect/create offer, never a guess (responsibility 0b).

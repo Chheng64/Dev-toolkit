@@ -44,7 +44,7 @@ function readTelegramConfig() {
     if (!line.trim()) continue;
     const indent = line.length - line.trimStart().length;
     const [key, ...rest] = line.trim().split(":");
-    const val = rest.join(":").trim();
+    const val = rest.join(":").trim().replace(/^(["'])(.*)\1$/, "$2");
     if (indent === 0) { inComm = key === "communication"; inTg = inNotif = false; continue; }
     if (inComm && indent === 2) { inTg = key === "telegram"; inNotif = false; continue; }
     if (inTg && indent === 4) {
@@ -60,7 +60,7 @@ function readTelegramConfig() {
   return {
     chatId: cfg.chat_id,
     topicId: cfg.mode === "topic" && cfg.topic_id ? Number(cfg.topic_id) : undefined,
-    notifications: cfg.notifications ?? { approvals: true, failures: true, pipeline: true },
+    notifications: cfg.notifications ?? { approvals: true, failures: true },
     projectName: readProjectName(lines),
   };
 }
@@ -71,7 +71,10 @@ function readProjectName(lines) {
     const indent = raw.length - raw.trimStart().length;
     const t = raw.trim();
     if (indent === 0) inProject = t.startsWith("project:");
-    else if (inProject && indent === 2 && t.startsWith("name:")) return t.slice(5).trim();
+    else if (inProject && indent === 2 && t.startsWith("name:")) {
+      const v = t.slice(5).replace(/#.*$/, "").trim().replace(/^(["'])(.*)\1$/, "$2");
+      return v || "Project";
+    }
   }
   return "Project";
 }

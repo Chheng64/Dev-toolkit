@@ -24,11 +24,15 @@ The 13-stage lifecycle every BRD moves through. Machine state lives in Notion pr
 BRD stages run per-BRD; these run **once per project** (re-run on evolution) and gate the whole pipeline:
 
 ```
+TOOLKIT_SETUP (once ever: BRD DB + Toolkit Registry)
+        ↓
 PROJECT_ONBOARDING → INTEGRATION_VALIDATION → MANIFEST_GENERATED
+        ↑
+MANIFEST_V1 ──(Manifest Gate detects old version)──→ MIGRATION ──→ MANIFEST_GENERATED (v2)
 ```
 
-- Executed by [../Workflows/project-onboarding.md](../Workflows/project-onboarding.md) + [../Workflows/integration-validation.md](../Workflows/integration-validation.md); state lives in `project-manifest.yaml` (`onboarding.status`), not in Notion Status values.
-- Guard **`C_MANIFEST`** (see §4) blocks BRD pickup for any project without a complete, validated manifest. No BRD, workflow, or skill executes before it.
+- Executed by [../Workflows/project-onboarding.md](../Workflows/project-onboarding.md) (+ its §Migration) + [../Workflows/integration-validation.md](../Workflows/integration-validation.md); state lives in `project-manifest.yaml` (`onboarding.status`, `manifest_version`) and `~/.toolkit/registry.yaml` ([toolkit-registry](toolkit-registry.md)), not in Notion Status values.
+- Guard **`C_MANIFEST`** (see §4) blocks all project work without a complete, validated, current-version manifest. No BRD, workflow, or skill executes before it. Version migration is a *gate outcome*, not a user chore — the Manifest Gate runs it automatically ([../AI/orchestrator.md](../AI/orchestrator.md) responsibility 0).
 
 ## 2. State Catalog
 
@@ -52,6 +56,8 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 
 **Off-path states:** `Blocked` (resumable; `Blocked Reason` set), `Stopped` (deliberate terminal, rationale in S16), `Backlog` (pre-Ready).
 
+**`Blocked Reason` taxonomy (typed, machine-readable prefix):** `resource: <slot> — <missing|skipped-but-required|unreachable>` (Resource Decision pending — [project-manifest](project-manifest.md) §3) · `paused-by-user` · `ceiling: <loop>` · `ambiguity: <question>` · `error: <note>`. Session entry surfaces every Blocked BRD with its typed reason and unblock action; the Telegram failure trigger fires on every entry into `Blocked`.
+
 ## 3. Transition Table
 
 | From | Trigger | To |
@@ -68,7 +74,8 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | Design Review | approval `design` ∧ `C_CONTRACT` fail | owning stage per validator report (Design / Dev Planning owners), S16 logged |
 | Design Review | change requests | Design (design machine REVISION routing) |
 | Design Review | reject (direction wrong) | Analysis |
-| Dev Planning | plan validated | Implementation |
+| Dev Planning | plan validated ∧ `C_RESOURCES` pass | Implementation |
+| Dev Planning | `C_RESOURCES` fail | Blocked (`resource: <slot>`) until Resource Decision resolves |
 | Dev Planning | plan exposes design gap | Design |
 | Implementation | complete claim + S12 current | QA |
 | QA | all ACs verified, zero open blockers | Tech Review |
@@ -80,6 +87,7 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | Human Review | change requests | Implementation (loop `L_HUMAN`) |
 | Human Review | reject | Analysis |
 | Merged | release steps done | Released |
+| any in-flight | required resource missing / skipped-but-required / unreachable → Resource Decision raised | Blocked (`resource: <slot>`) — cleared by the decision, stage resumes where it stopped |
 | any | unrecoverable error / ceiling breach | Blocked |
 
 ## 4. Guards
@@ -91,8 +99,9 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | `C_LOOP_OK(loop)` | `Loop Count` < ceiling for that loop. |
 | `C_SLOT_FREE` | In-flight BRDs (Status between Analysis and Human Review) < 3. |
 | `C_SECTIONS(ids)` | Required BRD sections exist and are non-empty. |
-| `C_MANIFEST` | Project's `project-manifest.yaml` exists, schema-valid, `onboarding.status: complete`, required integrations `validated`, `last_validated` ≤ 30 days (else re-validate first). Checked at every BRD pickup. |
+| `C_MANIFEST` | Toolkit Registry present ([toolkit-registry](toolkit-registry.md)); `project-manifest.yaml` exists, `manifest_version` current (older → Manifest Gate runs Migration first, automatically), schema-valid, `onboarding.status: complete`, `resources.status: bound` with required bindings validated and `health: ok` ([project-manifest](project-manifest.md) §3), required integrations `validated`, `last_validated` ≤ 30 days (else re-validate first). Checked at **session entry for any project work — pickup and resume alike**. |
 | `C_CONTRACT` | Screen-contract validation passes for the BRD's owned screens ([../Checklists/screen-contract.md](../Checklists/screen-contract.md) — all six checks). Checked at Dev Planning entry. Fail → stop + missing-mappings report + route to owning stage. |
+| `C_RESOURCES` | Every registry slot the plan implies is bound and healthy: repos named by S10/S11, design file behind Design blocks, APIs' backing repo, doc targets the plan writes to. Checked at **Dev Planning exit** — moves resource gaps to the cheapest stop point instead of mid-Implementation. Fail → Resource Decision ([project-manifest](project-manifest.md) §3). |
 
 A forward transition fires only when its guard conjunction holds; otherwise the stage's failure path runs (retry → escalate → Blocked).
 

@@ -69,7 +69,7 @@ Orchestrator duty (when `telegram.enabled`): write outbox events at the four tri
 ## Setup
 
 1. @BotFather → create bot → token. `export TELEGRAM_BOT_TOKEN=…` (shell profile / `.env.local`). **Token never enters manifest or repo.**
-2. Onboarding communication step (or re-run: "run onboarding communication section") fills `manifest.communication.telegram` — mode `private` | `group` | `topic` (recommended), `chat_id`, `topic_id`.
+2. Onboarding **Resource Binding** stage ([project-onboarding](../../Workflows/project-onboarding.md) step 3; re-open only via "toolkit configure communication" / "toolkit onboard --update") fills `manifest.communication.telegram` — mode `private` | `group` | `topic` (recommended), `chat_id`, `topic_id`.
 3. Test: `node toolkit/extensions/telegram/telegram-plugin.mjs --test` → "✅ <Project> has been successfully connected to the Dev Toolkit."
 4. Run daemon: `node toolkit/extensions/telegram/telegram-plugin.mjs` (keep alive via launchd/pm2/tmux as preferred). `--once` flushes outbox without the daemon.
 

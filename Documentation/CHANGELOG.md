@@ -4,6 +4,43 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-08-21
+
+**Project Resource Binding** — every project explicitly owns and binds its external resources; the toolkit never searches the user's workspace once a project is onboarded.
+
+### Added — architecture (flow-review hardening)
+- `Architecture/ecosystem-map.md` — **Ecosystem Map**: concept-level bridge between this toolkit and the `paul` / `gsd-*` / `carl-mcp` systems the user also runs (equivalence table, state-ownership boundaries). Informational — no runtime dependency, not executed by the orchestrator.
+- `Architecture/toolkit-registry.md` — **Toolkit Registry** (`~/.toolkit/registry.yaml`): user-global config layer owning the BRD DB identity (one DB, all projects = toolkit-level resource), projects parent page, bot presence. Written at one-time setup; inherited by every manifest. Kills the registration↔binding bootstrap circularity — step 0 reads it, never searches.
+- **Resource lifecycle model** (`project-manifest.md` §3): `binding` (disposition — immutable decision) split from `health` (`ok`/`unreachable` — runtime, restamped by validation). One **Resource Decision** primitive (connect / create / confirm-absence) covers missing, skipped-but-required, and unreachable slots; per-slot **absence behavior** table generalizes the Figma prototype-only rule; rebind-fallout + rebind-logging rules.
+- **Manifest Gate pipeline** (`orchestrator.md` responsibility 0): fixed order — Toolkit Registry → manifest → **version migration** → staleness → C_MANIFEST — at session entry, pickup and resume alike. `Migration (v1→v2)` is now an orchestrator-triggered, seeded, resumable procedure (`project-onboarding.md` §Migration, with per-field seeding table); the "v1 remains pickable" contradiction removed.
+- **State machine**: `Blocked Reason` taxonomy (typed: `resource:` / `paused-by-user` / `ceiling:` / `ambiguity:` / `error:`); missing-resource transition (any in-flight → Blocked, resumable, fires Telegram trigger); new guard **`C_RESOURCES`** at Dev Planning exit (plan-implied slots must be bound + healthy — gaps stop at the cheap point, not mid-Implementation).
+- **Onboarding end-to-end fixes**: step 0 reads the registry + creates the identity page (circularity gone); GitHub create-new pushes so the default branch exists for validation; step 6 writes `incomplete`, step 9 scaffolds CI + pushes + applies branch protection (`gh api`, actor defined) + stamps complete; unified rebind rule (any mutation = step 3+4+5 for the slot); re-open phrases defined as say-to-Claude routes; Telegram yes-path made executable (user creates chat, `getUpdates` discovery, test-send after manifest write, failure → `deferred` without consuming ask-once).
+- Screen contract: pre-existing screens seed as `implemented (pre-toolkit)` (backfill-on-claim rule); §4 keys off "no **healthy** Figma binding"; multi-repo BRD branch/PR contract (`integration-map.md` §3).
+
+### Added
+- `Architecture/project-manifest.md` §3 — **Project Resource Registry**: `resources:` block (manifest_version 2) as the sole home of external resource identity. Slots per provider — Notion (BRD DB **required**, project page, sprint/decision-log DBs), Figma (product design file, design-system library), GitHub (frontend/backend — ≥1 **required** — + optional infrastructure repo), documentation (API/architecture/product), communication (Telegram, stable `communication.*` path kept for the plugin), other MCP-backed resources. Uniform binding record: **stable identifier** (database id / file key / numeric repo id / chat id — never display names) + `binding: connected | created | skipped` + `bound`/`validated` stamps. Explicit-skip rule: optional slots are resolved or skipped, never silently absent, never re-asked, never guessed.
+- `Architecture/integration-map.md` §2b — **Project Boundary Rule (hard)**: after onboarding, orchestrator + workflows access only registry resources; workspace-wide Notion search, Figma browsing, and repo listing are forbidden. Missing resource → stop + *connect existing / create new* offer (targeted rebind). §6 gains a per-integration boundary-scope column.
+- `Workflows/project-onboarding.md` step 3 — **Project Resource Binding stage**: per-slot Connect Existing / Create New / Skip table with per-provider stable-ID resolution; step 5 binding validation with verbatim `✓ / ○ Skipped` checklist; "After Onboarding — the Boundary Holds" section. Communication step (v1.4 7b) folded into the binding stage; asked-once rule unchanged.
+- `AI/orchestrator.md` responsibility 0b + anti-rule — resource-boundary enforcement: registry-scoped access, connect/create escalation, S16 logging.
+- Manifest v1→v2 migration path (`project-manifest.md` §1): first pickup offers a binding re-run seeded from existing `notion.*`/`design.*`/`git.repository` values.
+
+### Changed
+- `Architecture/project-manifest.md` — `design:` reduced to code-side config (figma resource identity → `resources.figma`); `notion:` block dissolved into `resources.notion`; `git:` keeps behavior only (`primary_repository` names the manifest-hosting repo slot; identity → `resources.github`); consumption rule 2 (registry-only access) + validation §5 require `resources.status: bound` and stable ids.
+- `Architecture/workflow-state-machine.md` — `C_MANIFEST` now also requires `resources.status: bound` with required bindings validated.
+- `Workflows/integration-validation.md` — checks resolve via registry ids; new registry re-check row (staleness re-validates bindings, restamps `resources.*.validated`); validation never becomes workspace discovery.
+- `Templates/project-configuration.md` — Design/Notion/Git resource questions replaced by a Project Resource Binding section (connect/create/skip per slot); Git Behavior section retains strategy-only fields.
+- `Architecture/screen-contract.md` §4 + `Checklists/screen-contract.md` — Figma-optional rule keys off `resources.figma.product_design_file` binding.
+- `AI/mcp-setup.md` — Notion toolset drops `notion-search` (boundary); Figma MCP applicability keyed to the registry binding, not BRD mentions; all rows note registry scope.
+- `Architecture/context-package.md` — `design.md` source of truth includes `resources.figma.*`.
+- `extensions/telegram/README.md` — setup points at the Resource Binding stage; re-open phrases limited to the sanctioned two.
+- `Documentation/onboarding.md`, `README.md` — Resource Binding + boundary as first-class architecture concepts; v1.5.0 pins.
+
+### Fixed
+- `extensions/telegram/telegram-plugin.mjs` — manifest reader now strips surrounding quotes from values; previously `chat_id: "-100…"` (as the schema shows) yielded literal quote characters — every send targeted an invalid chat and the allow-list never matched.
+- Manifest schema — undefined `notifications.pipeline` flag removed (no event type maps to it; `failures` already covers pipeline-failed).
+- `extensions/telegram/telegram-plugin.mjs` — project-name reader now strips inline comments and surrounding quotes; `name: "My Project"` previously reached every notification with literal quote characters.
+- `extensions/telegram/telegram-plugin.mjs` — dead `pipeline: true` key dropped from the notifications default (only `approvals` and `failures` are read).
+
 ## [1.4.1] — 2026-07-26
 
 ### Changed
