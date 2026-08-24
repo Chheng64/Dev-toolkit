@@ -10,6 +10,9 @@
  *   Telegram button/command ──▶ .toolkit/telegram/inbox/*.json ◀──reads── orchestrator
  *   orchestrator ──writes──▶ .toolkit/telegram/status.json ──▶ /status reply
  *
+ * Free-text messages are spooled as `type: "command"` events. Running them is
+ * executor.mjs's job, in its own process — this file never spawns anything.
+ *
  * Config: project-manifest.yaml `communication.telegram` (chat routing, non-secret)
  * Token:  TELEGRAM_BOT_TOKEN env var (never stored in the repo/manifest)
  *
@@ -20,7 +23,10 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, renameSync, existsSync } from "node:fs";
-import { join, basename } from "node:path";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import { readTelegramConfig } from "./config.mjs";
+import { chunkForTelegram } from "./executor.mjs";
 
 const ROOT = process.cwd();
 const SPOOL = join(ROOT, ".toolkit", "telegram");
@@ -29,55 +35,6 @@ const INBOX = join(SPOOL, "inbox");
 const SENT = join(SPOOL, "sent");
 const STATUS_FILE = join(SPOOL, "status.json");
 const OFFSET_FILE = join(SPOOL, ".offset");
-
-// ---------- config ----------
-
-function readTelegramConfig() {
-  const manifestPath = join(ROOT, "project-manifest.yaml");
-  if (!existsSync(manifestPath)) fail(`project-manifest.yaml not found in ${ROOT} — run from the project root.`);
-  const lines = readFileSync(manifestPath, "utf8").split("\n");
-  // Minimal indentation-scoped reader for the known communication.telegram block.
-  const cfg = {};
-  let inComm = false, inTg = false, inNotif = false;
-  for (const raw of lines) {
-    const line = raw.replace(/#.*$/, "").trimEnd();
-    if (!line.trim()) continue;
-    const indent = line.length - line.trimStart().length;
-    const [key, ...rest] = line.trim().split(":");
-    const val = rest.join(":").trim().replace(/^(["'])(.*)\1$/, "$2");
-    if (indent === 0) { inComm = key === "communication"; inTg = inNotif = false; continue; }
-    if (inComm && indent === 2) { inTg = key === "telegram"; inNotif = false; continue; }
-    if (inTg && indent === 4) {
-      if (key === "notifications") { inNotif = true; continue; }
-      inNotif = false;
-      cfg[key] = val;
-      continue;
-    }
-    if (inTg && inNotif && indent === 6) (cfg.notifications ??= {})[key] = val === "true";
-  }
-  if (cfg.enabled !== "true") fail("communication.telegram.enabled is not true in project-manifest.yaml — nothing to do.");
-  if (!cfg.chat_id) fail("communication.telegram.chat_id missing.");
-  return {
-    chatId: cfg.chat_id,
-    topicId: cfg.mode === "topic" && cfg.topic_id ? Number(cfg.topic_id) : undefined,
-    notifications: cfg.notifications ?? { approvals: true, failures: true },
-    projectName: readProjectName(lines),
-  };
-}
-
-function readProjectName(lines) {
-  let inProject = false;
-  for (const raw of lines) {
-    const indent = raw.length - raw.trimStart().length;
-    const t = raw.trim();
-    if (indent === 0) inProject = t.startsWith("project:");
-    else if (inProject && indent === 2 && t.startsWith("name:")) {
-      const v = t.slice(5).replace(/#.*$/, "").trim().replace(/^(["'])(.*)\1$/, "$2");
-      return v || "Project";
-    }
-  }
-  return "Project";
-}
 
 function fail(msg) { console.error(`[telegram-plugin] ${msg}`); process.exit(1); }
 
@@ -112,33 +69,57 @@ const GATE_BUTTONS = (gate, brd) => ({
   ]],
 });
 
-function formatEvent(ev) {
-  const head = `<b>${esc(ev.project ?? CFG.projectName)}</b> · ${esc(ev.brd ?? "")}`;
+export function formatEvent(ev, notifications = {}) {
+  const head = `<b>${esc(ev.project ?? PROJECT_NAME())}</b> · ${esc(ev.brd ?? "")}`;
   switch (ev.type) {
     case "gate": {
       const label = ev.gate === "direction" ? "Direction Approval" : "Design Approval";
       return {
         text: `🚦 <b>Waiting for ${label}</b>\n${head}\n${esc(ev.title ?? "")}\n\n${esc(ev.detail ?? "")}${ev.url ? `\n\n🔗 ${esc(ev.url)}` : ""}`,
         keyboard: GATE_BUTTONS(ev.gate, ev.brd),
-        wanted: CFG.notifications.approvals !== false,
+        wanted: notifications.approvals !== false,
       };
     }
     case "pr":
       return {
         text: `🔀 <b>Pull Request Ready</b>\n${head}\n${esc(ev.title ?? "")}${ev.url ? `\n\n🔗 ${esc(ev.url)}` : ""}`,
         keyboard: GATE_BUTTONS("final", ev.brd),
-        wanted: CFG.notifications.approvals !== false,
+        wanted: notifications.approvals !== false,
       };
     case "failure":
       return {
         text: `🛑 <b>Pipeline Failed</b>\n${head}\n${esc(ev.title ?? "")}\n\n${esc(ev.detail ?? "")}`,
         keyboard: undefined,
-        wanted: CFG.notifications.failures !== false,
+        wanted: notifications.failures !== false,
       };
+    case "exec_started":
+      return { text: `🤖 <b>Running</b>\n${esc(ev.request ?? "")}`, keyboard: undefined, wanted: true };
+    case "exec_progress":
+      return { text: `⚙️ ${esc(ev.detail ?? "")}`, keyboard: undefined, wanted: notifications.exec_progress !== false };
+    case "exec_result":
+      return { text: `✅ <b>Done</b>\n\n${esc(ev.detail ?? "")}`, keyboard: undefined, wanted: true };
+    case "exec_error":
+      return { text: `🛑 <b>Failed</b>\n\n${esc(ev.detail ?? "")}`, keyboard: undefined, wanted: true };
+    case "exec_denied":
+      return { text: `⛔️ <b>Refused</b> — ${esc(ev.detail ?? "")}`, keyboard: undefined, wanted: true };
+    case "exec_busy":
+      return { text: `⏳ ${esc(ev.detail ?? "")}`, keyboard: undefined, wanted: true };
     default:
       return { text: `ℹ️ ${head}\n${esc(ev.title ?? JSON.stringify(ev))}`, keyboard: undefined, wanted: true };
   }
 }
+
+/** Route an incoming Telegram text message. Pure: no I/O, no config. */
+export function classifyMessage(text) {
+  const body = String(text ?? "").trim();
+  if (!body) return { kind: "ignore" };
+  const command = body.match(/^\/([a-z_]+)(?:@\S+)?$/i)?.[1]?.toLowerCase();
+  if (command === "status") return { kind: "status" };
+  if (command === "cancel") return { kind: "cancel" };
+  return { kind: "command", text: body };
+}
+
+const PROJECT_NAME = () => CFG?.projectName ?? "Project";
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -150,8 +131,14 @@ async function flushOutbox() {
     let ev;
     try { ev = JSON.parse(readFileSync(p, "utf8")); }
     catch { console.error(`[telegram-plugin] bad event ${f} — skipped`); renameSync(p, join(SENT, `bad-${f}`)); continue; }
-    const { text, keyboard, wanted } = formatEvent(ev);
-    if (wanted) await tg("sendMessage", baseMsg(text, keyboard ? { reply_markup: keyboard } : {}));
+    const { text, keyboard, wanted } = formatEvent(ev, CFG.notifications);
+    if (wanted) {
+      const chunks = chunkForTelegram(text);
+      for (const [i, chunk] of chunks.entries()) {
+        const last = i === chunks.length - 1;
+        await tg("sendMessage", baseMsg(chunk, last && keyboard ? { reply_markup: keyboard } : {}));
+      }
+    }
     renameSync(p, join(SENT, f));
     console.log(`[telegram-plugin] sent ${f} (${ev.type})`);
   }
@@ -161,7 +148,7 @@ async function flushOutbox() {
 
 function writeInbox(event) {
   mkdirSync(INBOX, { recursive: true });
-  const name = `${Date.now()}-${event.action}-${event.brd ?? "na"}.json`;
+  const name = `${Date.now()}-${event.action ?? event.type}-${event.brd ?? "na"}.json`;
   writeFileSync(join(INBOX, name), JSON.stringify({ ...event, ts: new Date().toISOString(), source: "telegram" }, null, 2));
   console.log(`[telegram-plugin] inbox ← ${name}`);
 }
@@ -182,9 +169,23 @@ function statusText() {
 }
 
 async function handleUpdate(u) {
-  if (u.message?.text?.startsWith("/status")) {
+  if (u.message?.text !== undefined) {
     if (String(u.message.chat.id) !== String(CFG.chatId)) return; // ignore foreign chats
-    await tg("sendMessage", baseMsg(statusText()));
+    const routed = classifyMessage(u.message.text);
+    if (routed.kind === "status") { await tg("sendMessage", baseMsg(statusText())); return; }
+    if (routed.kind === "cancel") {
+      writeInbox({ type: "cancel", from_id: u.message.from?.id });
+      await tg("sendMessage", baseMsg("⏹ Cancel requested."));
+      return;
+    }
+    if (routed.kind === "command") {
+      if (!CFG.exec.enabled) {
+        await tg("sendMessage", baseMsg("⛔️ Remote execution is off for this project (set <code>communication.telegram.exec.enabled: true</code>)."));
+        return;
+      }
+      writeInbox({ type: "command", text: routed.text, from_id: u.message.from?.id });
+      await tg("sendMessage", baseMsg("📥 Queued."));
+    }
     return;
   }
   if (u.callback_query) {
@@ -219,21 +220,30 @@ async function pollLoop() {
 
 // ---------- entry ----------
 
-const arg = process.argv[2];
-if (arg === "--help") {
-  console.log("telegram-plugin: (no args) daemon · --once flush outbox · --test connection test");
-  process.exit(0);
-}
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-if (!TOKEN) fail("TELEGRAM_BOT_TOKEN env var not set. Create a bot via @BotFather; export the token. It is never stored in the repo.");
-const CFG = readTelegramConfig();
-const API = `https://api.telegram.org/bot${TOKEN}`;
+let TOKEN, CFG, API;
 
-if (arg === "--test") {
-  await tg("sendMessage", baseMsg(`✅ ${esc(CFG.projectName)} has been successfully connected to the Dev Toolkit.`));
-  console.log("[telegram-plugin] test message sent.");
-} else if (arg === "--once") {
-  await flushOutbox();
-} else {
-  await pollLoop();
+async function main() {
+  const arg = process.argv[2];
+  if (arg === "--help") {
+    console.log("telegram-plugin: (no args) daemon · --once flush outbox · --test connection test");
+    return;
+  }
+  TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  if (!TOKEN) fail("TELEGRAM_BOT_TOKEN env var not set. Create a bot via @BotFather; export the token. It is never stored in the repo.");
+  try { CFG = readTelegramConfig(join(ROOT, "project-manifest.yaml")); }
+  catch (err) { fail(err.message); }
+  API = `https://api.telegram.org/bot${TOKEN}`;
+
+  if (arg === "--test") {
+    await tg("sendMessage", baseMsg(`✅ ${esc(CFG.projectName)} has been successfully connected to the Dev Toolkit.`));
+    console.log("[telegram-plugin] test message sent.");
+  } else if (arg === "--once") {
+    await flushOutbox();
+  } else {
+    await pollLoop();
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await main();
 }

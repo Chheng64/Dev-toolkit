@@ -2,7 +2,7 @@
 
 A reusable AI product-development operating system for solo builders working with Claude, Notion, and Git. It turns feature development into a deterministic 13-stage state machine with living documents, hard quality gates, and full resumability — any session can die at any moment and the next one picks up exactly where it left off.
 
-**Version: v1.5.0** · consumed by projects as a version-pinned git submodule · improve a rule once here, every project inherits it at its next pin bump.
+**Version: v1.6.0** · consumed by projects as a version-pinned git submodule · improve a rule once here, every project inherits it at its next pin bump.
 
 ---
 
@@ -112,7 +112,7 @@ Layer 2 · PROJECT CONFIGURATION  project-manifest.yaml (config + Resource
 Layer 3 · DEVELOPMENT SYSTEM     Living BRD, Screen Contract, Workflows,
          Skills, Standards — what each stage does and to what quality bar
                                     ↓
-Layer 4 · COMMUNICATION          extensions/ — Telegram v1 (Slack/Discord
+Layer 4 · COMMUNICATION          extensions/ — Telegram v2 (Slack/Discord
          possible later); adapters that relay gates, never advance state
                                     ↓
 Layer 5 · EXTERNAL SERVICES      Notion (MCP), GitHub (gh), browser
@@ -159,8 +159,8 @@ npx create-next-app@latest <project> --typescript --tailwind --eslint --app --sr
 cd <project>
 
 git submodule add https://github.com/Chheng64/Dev-toolkit.git toolkit
-cd toolkit && git fetch --tags && git checkout v1.5.0 && cd ..
-git add -A && git commit -m "chore: pin toolkit v1.5.0"
+cd toolkit && git fetch --tags && git checkout v1.6.0 && cd ..
+git add -A && git commit -m "chore: pin toolkit v1.6.0"
 ```
 
 ### Step 2 — Onboard (mandatory; nothing runs without it)
@@ -261,7 +261,7 @@ Dependencies point **down toward `Architecture/`** — it depends on nothing; `P
 | [Checklists/](Checklists/) | 12 machine-checkable gates | Architecture | an exit criterion changes | at stage exit |
 | [Prompts/](Prompts/) | 11 invocation patterns | Architecture | an invocation improves | when you invoke one |
 | [Playbooks/](Playbooks/) | full-feature · parallel-brds · hotfix · design-only | everything (composition layer) | a composed flow changes | when a playbook is invoked |
-| [extensions/](extensions/telegram/README.md) | Opt-in adapters (Telegram v1) | orchestrator contract only | adding/changing an adapter | only if enabled in manifest |
+| [extensions/](extensions/telegram/README.md) | Opt-in adapters (Telegram v2) | orchestrator contract only | adding/changing an adapter | only if enabled in manifest |
 | [Documentation/](Documentation/) | [Module index](Documentation/module-index.md) · [Onboarding](Documentation/onboarding.md) · [Notion setup](Documentation/notion-setup.md) · [Changelog](Documentation/CHANGELOG.md) | — | docs drift | on demand |
 
 New functionality goes where its single responsibility says: process → `Workflows/`, judgment → `Skills/`, quality bar → `Standards/`, contract → `Architecture/`, adapter → `extensions/`.

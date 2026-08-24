@@ -4,6 +4,26 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-08-24
+
+**Telegram remote execution** — the chat adapter gains an opt-in executor daemon: a message in the bound chat can run Claude Code headless on the host, default-closed behind two independent switches.
+
+### Added — Telegram remote execution (extension v2, opt-in)
+- `extensions/telegram/executor.mjs` — **inbox executor daemon**: consumes `type: "command"` spool events and runs them through Claude Code headless (`claude -p --output-format stream-json`) in the project root, streaming `exec_started` / `exec_progress` / `exec_result` / `exec_error` back through the outbox. Separate process from the adapter — the filesystem spool stays the whole contract, so the executor is optional and removable.
+- `extensions/telegram/config.mjs` — shared `communication.telegram` manifest reader, now the single parser for both processes (the adapter's inline copy is gone). Adds the `exec` block: `enabled`, `allowed_user_ids`, `permission_mode`, `allowed_tools`, `timeout_minutes`.
+- Chat surface: free text → queued command, `/new <text>` → fresh Claude session, `/cancel` → SIGTERM the running command. `/status` unchanged. One Claude session is reused per project (`.toolkit/telegram/.session`) so follow-ups keep context.
+- `extensions/telegram/*.test.mjs` — 81 `node --test` cases covering parsing, message routing, authorization, session lifecycle, single-flight locking, timeout, and cancellation.
+
+### Security
+- Remote execution is **default-closed on two independent switches** — `exec.enabled: true` and a non-empty `exec.allowed_user_ids`; an empty allow-list authorizes nobody and a missing block refuses all free text. Chat identity (adapter, `chat_id`) and sender identity (executor, `allowed_user_ids`) are enforced separately.
+- `permission_mode` defaults to `acceptEdits`; the executor never passes `--dangerously-skip-permissions`. `bypassPermissions` remains available but is documented as granting unrestricted execution to anyone who can post in the bound chat.
+- Prompts are passed as a single argv entry to a shell-less spawn; `cwd` is pinned to the project root with no `--add-dir`. Runs are bounded by a single-flight lock (reclaimed if the holder dies) and a `timeout_minutes` SIGTERM.
+- The executor never consumes `approval` events — gate decisions remain the orchestrator's, under its stale-approval and scope rules.
+
+### Changed
+- `extensions/telegram/telegram-plugin.mjs` — free-text messages are now spooled as `command` events instead of being silently dropped; outbox sends are chunked to Telegram's 4096-character limit; `formatEvent` takes notifications explicitly and gained the `exec_*` cases; module entry is guarded so the file can be imported by tests without connecting.
+- `Architecture/project-manifest.md` §2 — documents `communication.telegram.exec` and the remote-execution rule.
+
 ## [1.5.0] — 2026-08-21
 
 **Project Resource Binding** — every project explicitly owns and binds its external resources; the toolkit never searches the user's workspace once a project is onboarded.

@@ -17,7 +17,7 @@
 
 ```yaml
 manifest_version: 2                # v1.5 — Project Resource Binding (resources: registry)
-toolkit_version: v1.5.0            # toolkit the project is pinned to
+toolkit_version: v1.6.0            # toolkit the project is pinned to
 onboarding:
   status: complete                 # incomplete | complete — the master gate
   completed: 2026-07-26
@@ -147,8 +147,17 @@ communication:                     # COMMUNICATION section of the resource regis
     #   approvals: true            # direction/design gates + PR-ready
     #   failures: true             # pipeline failed
     #   daily_summary: false       # v2 — declared, not implemented
+    #   exec_progress: true        # relay per-step progress of a remote run
+    # exec:                        # remote execution — OFF unless every field below is set
+    #   enabled: false             # master switch; false = free-text messages are refused
+    #   allowed_user_ids: [111]    # Telegram user ids permitted to run commands; empty = nobody
+    #   permission_mode: acceptEdits   # acceptEdits (default) | plan | dontAsk | bypassPermissions
+    #   allowed_tools: ["Read", "Edit", "Bash(git *)"]   # omit to allow the mode's defaults
+    #   timeout_minutes: 10        # run is SIGTERMed past this
   # slack / discord / email: future — same shape, sibling adapters
 ```
+
+**Remote execution rule (v1.6):** `communication.telegram.exec` turns a chat message into a `claude -p` run on the machine hosting the executor. It is default-closed on two independent switches — `exec.enabled` and a non-empty `exec.allowed_user_ids` — and both must be set deliberately. `permission_mode: bypassPermissions` grants unrestricted tool and shell access to anyone who can post in the bound chat; treat enabling it as equivalent to handing that chat a terminal on the host. Run the executor only on a machine you control, and only for a chat whose membership you control ([extensions/telegram/README.md](../extensions/telegram/README.md)).
 
 **Secrets rule:** bot tokens NEVER enter the manifest or repo — `TELEGRAM_BOT_TOKEN` env var only ([extensions/telegram/README.md](../extensions/telegram/README.md); [Standards/security.md](../Standards/security.md) rule 5). Manifest holds routing (chat/topic ids) — non-secret.
 
