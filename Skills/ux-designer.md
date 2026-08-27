@@ -16,6 +16,8 @@ Owns what the user experiences structurally: tasks, IA, states, transitions, rec
 - Build flows: triggers, guards, mutually exhaustive branches, recovery routes, no dead ends
 - Define accessibility + reduced-motion strategy at feature level
 - Preserve user intent across interruptions (auth boundaries, async waits, redirects)
+- Carry unruled guards as open decisions (`o-<id>`) instead of defaulting a branch
+- Ratify (or refuse) routes that design state 12's derivation reports as unratified — flows are ruled here, never in the design file
 
 ## Decision Boundaries
 

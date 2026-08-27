@@ -75,6 +75,12 @@ Establish all project metadata, **bind every external resource the project owns*
 
 8. **Generate AI Context Package** (v1.3) — `context/` per [context-package](../Architecture/context-package.md): `design.md`, `stack.md`, `integrations.md`, `conventions.md`, `model-routing.md`. Generated summaries with source pointers; stamped with toolkit version + date.
 
+8b. **Bootstrap the design harness** (v1.10) — the design machine's tools read files that the pipeline **reads but never produces**; a project without them cannot run states 08 or 12 at all:
+   - Generate `toolkit.config.json` at the repo root from the manifest `design:` block ([validation-engine §2](../Architecture/validation-engine.md)). **Generated, never hand-authored** — regenerate whenever the manifest changes.
+   - Seed `design/navmap/` from the vendored templates: `nav-lanes.json`, `state-vocabulary.md`, `state-machines.json`, `edge-annotations.json`, `audit-plan.json` ([design-toolkit/templates/](../design-toolkit/templates/)).
+   - Create `design/prototype/` and copy the review player in from [Templates/prototype/](../Templates/prototype/) at the first prototype, per [ui-workflow §B.6](ui-workflow.md).
+   - Verify Node ≥ 22 and Chrome resolvable (`audit.chrome` or `$TOOLKIT_CHROME`) — a missing Chrome makes every rendering-class check **exit 2**, which is *unevaluable*, not passing.
+
 9. **Scaffold, wire & complete** — the closing step owns everything that makes the project runnable and stamps completion:
    - Scaffold `project-overrides.md`, CLAUDE.md block.
    - **CI**: no workflow file in a bound repo → scaffold one from the stack profile (minimum: typecheck, lint, test, build) — the PR → Human Review transition requires CI green, so a repo without CI can never pass the pipeline.
@@ -123,6 +129,7 @@ Triggered **only** by the Manifest Gate ([../AI/orchestrator.md](../AI/orchestra
 - [ ] Required integrations `validated`; optional failures recorded as warnings, not silently
 - [ ] All bound resources access-checked this run via stable id (no dead bindings in the registry)
 - [ ] Validation checklist (step 5 format) shown to the user, skips listed
+- [ ] **Design harness bootstrapped**: `toolkit.config.json` generated from the manifest, `design/navmap/` seeded from templates, Node + Chrome resolvable (or the gap recorded — an unavailable checker is a recorded gap, never a silent pass)
 - [ ] Registration durable in Notion (code reserved; identity page if bound); `project.registered` stamped
 - [ ] `screens/registry.md` initialized; seeded screens (if any) have valid SCR-IDs, `planned`/`unassigned`; `next_id` consistent
 - [ ] `context/` generated: all 5 files present, stamped with toolkit version + date, headers marked GENERATED
