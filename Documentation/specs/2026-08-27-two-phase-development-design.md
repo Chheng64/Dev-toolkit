@@ -2,9 +2,9 @@
 
 > **Status:** approved design, not yet implemented
 > **Date:** 2026-08-27
-> **Scope:** lifecycle states 05–11 (`Dev Planning` → `Merged`), the Screen Contract API block,
-> the BRD schema, and the four workflows that run those states. Design sub-machine states 01–12
-> are **unchanged**.
+> **Scope:** lifecycle states 05–11 (`Dev Planning` → `Merged`), a new Shared Contract artifact,
+> the Screen Contract API block, the BRD schema, and the workflows that run those states. Design
+> sub-machine states 01–12 are **unchanged**.
 > **Spec location note:** filed under `Documentation/` for the reason given in
 > [2026-08-26-feature-prototype-design.md](2026-08-26-feature-prototype-design.md) — a second
 > docs root in a toolkit this opinionated about structure is a defect, not a convenience.
@@ -43,6 +43,8 @@ Five decisions were settled during brainstorming and constrain everything below.
 | **D3** | The contract handed to Phase 2 is **documented** (S11), not an executable swap-suite | Parity is pinned where it is free — see §4.3 |
 | **D4** | Phase 1 keeps **two** human stops: Design Gate on the prototype, Product Gate on the running FE | A wrong design is caught before FE code exists; the product is approved on real code |
 | **D5** | **Two branches, two PRs.** FE merges to `main` behind an exposure control | The approved front-end is frozen in `main` as the spec |
+| **D6** | The contract is a **third artifact** — not a file in the front-end's tree, not a BRD section | Front-end and back-end each implement it; neither reads the other's working context |
+| **D7** | Contract home follows project shape: `contracts/<brd-id>/` at a single repo's root, or a bound `resources.contracts` slot when front-end and back-end are separate repos | A monorepo pays for no extra repo; a split project gets no artifact living in one side's house |
 
 ## 3. Machine shape
 
@@ -104,47 +106,103 @@ Additions and changes to [workflow-state-machine §3](../../Architecture/workflo
 `Merged (FE)` **does not** reach `Released`. Release is a Phase-2 event; a front-end on mocks is
 not a shipped product.
 
-## 4. The Product Contract
+## 4. The Shared Contract
 
-The seam between the phases. Frozen at `Merged (FE)`.
+The seam between the phases, and **a third artifact**. Front-end and back-end each implement it;
+neither reads the other's working context.
 
-### 4.1 What it consists of
+```
+Front-end ──implements──┐
+                        ├──►  Shared Contract  ──►  Integration
+Back-end  ──implements──┘      CTR-<brd-id>-v<n>
+```
 
-| Part | Location | Written by |
+This is the discipline the toolkit already runs on. The Screen Contract holds design-to-development
+mappings that neither the BRD nor the code duplicates, and pasting mapping content into the BRD is
+listed as an anti-pattern. A back-end planner reading `src/services/**` to learn what the API must
+return is the same defect wearing different clothes: it couples two phases through a working tree
+instead of through an artifact.
+
+### 4.1 Where it lives
+
+| Project shape | Location |
+|---|---|
+| Single repo (front-end and back-end in one tree) | `contracts/<brd-id>/` at the repo root — symmetric, both sides are already there |
+| Separate bound repos (`repos.frontend` ≠ `repos.backend`) | its own bound registry slot **`resources.contracts`**, consumed by both at a pinned ref |
+
+The manifest decides, so a monorepo never onboards a repo it does not need and a split project never
+gets an artifact living in one side's house. Onboarding binds `resources.contracts` only when the
+split shape is detected — connect existing / create new, **never skip**: once the shape requires the
+slot, it is a required binding and `C_RESOURCES` treats it as one.
+
+### 4.2 What it consists of
+
+| File | Content | Written by |
 |---|---|---|
-| Adapter interface + entity types (TypeScript) | `src/services/<domain>/types.ts` (default; overridable per stack profile) | FE, Phase 1 |
-| Mock adapter + fixtures — including error, empty, and slow cases | `src/services/<domain>/mock.ts`, `fixtures/` | FE, Phase 1 |
-| **S11.1 Observed Contract** — per adapter method: inputs, outputs, every error variant, ordering and latency assumptions, and **which S09 state each error renders** | BRD S11 subsection | FE, at Phase-1 exit |
-| Screen Contract API block: `demanded` at Phase-1 exit → `provided` + agreement in Phase 2 | `screens/SCR-<nnn>.md` | FE demands, BE provides |
+| `contract.ts` | the interface and entity types **both** adapters implement | FE, at Phase-1 exit |
+| `contract.md` | per method: inputs, outputs, every error variant, ordering and idempotency assumptions, latency tolerance, and **which S09 state each error renders** | FE, at Phase-1 exit |
+| `fixtures/` | the recorded example set — happy, empty, error, slow. Shared examples, not the front-end's private test data | FE, at Phase-1 exit |
+| `VERSION` | `CTR-<brd-id>-v<n>` and the product freeze sha it was issued against | FE, at Phase-1 exit |
 
-S11.1 is written **from what the front-end actually does** — read out of the mock adapter and the
-running app, never from the Phase-1 plan. A contract written from the plan reintroduces exactly the
+Written **from what the front-end actually does** — read out of the running app and its mock
+adapter, never out of the Phase-1 plan. A contract written from the plan reintroduces exactly the
 guessing this design removes.
 
-### 4.2 The freeze
+The front-end's mock adapter and the back-end's real adapter both implement `contract.ts`. The mock
+stays private to the front-end; the interface never was.
 
-The FE merge commit sha is the **product freeze**, recorded in S08 and S16. It is the artifact the
-`product` approval token is scoped to. Any later change to front-end behaviour fires the existing
-stale-approval rule: the `product` token is removed and Phase 2 stops until it is re-granted.
+### 4.3 Identity, versioning, freeze
 
-### 4.3 How parity is actually enforced (given D3)
+- Identity `CTR-<brd-id>-v<n>`, issued at Phase-1 exit, frozen by the FE merge sha it names.
+- **Superseded, never edited.** A change issues `v<n+1>` naming what it supersedes and why — the
+  same discipline as the append-only Decision Log. An edit in place destroys the record of what
+  Phase 2 was actually built against.
+- BRD **S11 cites** the contract id and version; it does not hold the contract. (This replaces the
+  `S11.1 Observed Contract` subsection an earlier draft proposed — same reason the Screen Contract
+  keeps mappings out of the BRD: one fact, one home.)
+- The Screen Contract API block still carries `demanded` → `provided`, both naming **contract
+  methods** — the per-screen view of the same artifact, by reference.
+
+### 4.4 Ownership and isolation
+
+| Role | Reads | Writes |
+|---|---|---|
+| Front-end, Phase 1 | S03/S06/S07/S09, screen contracts, its own tree | its own tree; **issues** the contract at phase exit |
+| Back-end, Phase 2 | **the contract**, S03/S06/S07/S09, screen-contract `demanded` blocks | its own tree; the `provided` blocks |
+| Back-end, Phase 2 | — | **never** the contract, **never** front-end behaviour |
+
+New guard **`C_ISOLATION`**, checked at each phase's **Tech Review**, mechanically, off the
+touched-areas list S10 already requires:
+
+1. A `Phase: BE` branch touches no front-end paths and no contract files.
+2. A `Phase: FE` branch touches no server paths.
+3. Violations fail Tech Review with the offending paths named — caught there, not at merge, and
+   never settled by discussion.
+
+**Integration is the one bounded exception.** Swapping the real adapter in for the mock touches
+front-end *wiring* — the adapter selection point, which `contract.md` names — and never front-end
+behaviour. That allowance is declared in the Phase-2 S10 touched-areas list and is one file per
+domain. Anything wider is a violation, not a bigger allowance.
+
+### 4.5 How parity is actually enforced (given D3)
 
 The contract is documented, so there is no swap-the-adapter test suite. Three mechanisms carry the
 weight instead, in order of cost:
 
-1. **Free — the type system.** The real adapter implements the *same* TypeScript interface as the
-   mock. Shape drift is a compile error, not a review opinion.
-2. **Cheap — S11.1.** Semantics that types cannot express (ordering, idempotency, latency
-   tolerance, which error renders which S09 state) live in the Observed Contract, and backend
-   planning is required to answer every line of it.
+1. **Free — the type system.** Both adapters implement the *same* interface, and it lives in the
+   contract rather than in either tree. Shape drift is a compile error, not a review opinion.
+2. **Cheap — `contract.md`.** Semantics types cannot express (ordering, idempotency, latency
+   tolerance, which error renders which S09 state) live there, and backend planning is required to
+   answer every line of it.
 3. **Paid once — QA.** Every acceptance criterion verified on mocks in Phase 1 is **re-verified
    integrated** in Phase 2. S13 gains a `Verified on: mocks | integrated` column per AC.
 
-### 4.4 What Phase 2 may not do
+### 4.6 What Phase 2 may not do
 
 A server constraint that contradicts approved front-end behaviour is a **finding plus a Product
-Owner ruling before landing** — never a silent redesign of the product to suit the server. It
-back-transitions through `L_CONTRACT` (§5.2) and drops the `product` token.
+Owner ruling before landing** — never a silent redesign of the product to suit the server, and
+never a quiet edit of the contract. It back-transitions through `L_CONTRACT` (§5.2), drops the
+`product` token, and the front-end reissues `CTR-<brd-id>-v<n+1>`.
 
 This mirrors the rule already in force for bound-frame deviations
 ([screen-contract §4a](../../Architecture/screen-contract.md)): the authority that governs a
@@ -191,7 +249,8 @@ An AC that passes on mocks and fails integrated is a **blocker**, not a note.
 Checked at **Phase-2 QA exit**:
 
 1. Every AC marked `mocks` in S13 also carries an `integrated` verdict.
-2. Every adapter method in S11.1 has a `provided` API block in its screen's contract.
+2. Every method in the cited `CTR-<brd-id>-v<n>` has a `provided` API block in its screen's
+   contract, and the shipped real adapter implements the contract interface unmodified.
 3. **Zero live mock paths in shipped code** — the mock adapter is deleted or demoted to
    test-only. Supersession deletes (`B7`); a dual path left wired is a mock in production.
 4. The Phase-1 exposure control (§5.5) is removed, and its removal is in the BE PR diff.
@@ -226,13 +285,16 @@ ends in a certificate against its own branch head.
 
 | Module | Change |
 |---|---|
-| `Architecture/workflow-state-machine.md` | §2 catalog gains a Phase column · §3 transition deltas (§3.4) · §4 `C_SERVER_SCOPE`, `C_PARITY` · §5 per-phase ceilings + `L_CONTRACT` · §6 Product Gate |
-| `Architecture/brd-schema.md` | `Phase` property · `Approvals` += `product` · S11.1 subsection · S13 `Verified on` column |
-| `Architecture/screen-contract.md` | API block becomes `demanded` → `provided`; validation check 5 reads both |
-| `Architecture/project-manifest.md` | `phases:` block (`fe_exposure`) |
+| `Architecture/workflow-state-machine.md` | §2 catalog gains a Phase column · §3 transition deltas (§3.4) · §4 `C_SERVER_SCOPE`, `C_PARITY`, `C_ISOLATION` · §5 per-phase ceilings + `L_CONTRACT` · §6 Product Gate |
+| `Architecture/brd-schema.md` | `Phase` property · `Approvals` += `product` · S11 **cites** `CTR-<brd-id>-v<n>` (no new subsection) · S13 `Verified on` column |
+| **`Architecture/shared-contract.md`** *(new)* | the Shared Contract module — location by project shape, file set, `CTR` identity and supersession, ownership and isolation rules (§4) |
+| **`Templates/shared-contract.md`** *(new)* | the artifact's shape: `contract.ts` / `contract.md` / `fixtures/` / `VERSION` |
+| `Architecture/screen-contract.md` | API block becomes `demanded` → `provided`, both naming contract methods; validation check 5 reads both |
+| `Architecture/project-manifest.md` | `phases:` block (`fe_exposure`) · `resources.contracts` slot · contracts path for the single-repo shape |
+| `Workflows/project-onboarding.md` | detect project shape; bind `resources.contracts` when front-end and back-end are separate repos |
 | `Workflows/product-planning.md` | decide and log `C_SERVER_SCOPE` at exit |
-| `Workflows/frontend-planning.md` | plan the adapter interface, the mock adapter and the fixture set; **no server assumptions** |
-| `Workflows/backend-planning.md` | inputs rewritten: read the frozen adapter, the fixtures and S11.1 **first**. An endpoint no adapter method calls is orphan work |
+| `Workflows/frontend-planning.md` | plan the adapter interface, the mock adapter and the fixture set; **no server assumptions**; issue the contract at phase exit |
+| `Workflows/backend-planning.md` | inputs rewritten: read **the contract** first — `contract.ts`, `contract.md`, `fixtures/`. Front-end source is **not** an input. An endpoint no contract method calls is orphan work |
 | `Workflows/implementation.md` | Phase-2 section: adapter swap, real error mapping, mock deletion |
 | `Workflows/qa.md` | the two modes of §5.3 |
 | **`Workflows/product-validation.md`** *(new)* | Phase-1 exit conduct: run the app, walk every S07 flow and every S09 state on real code, assemble the decision package for the Product Gate |
@@ -263,17 +325,25 @@ under v1.10.0. In-flight BRDs are unaffected mid-flight; the split applies to BR
   story. Anyone adding a swap-the-adapter suite later is changing the decision, not filling a gap.
 - **No release of the front-end to users** between phases. `Merged (FE)` is a spec freeze.
 - **No changes to design states 01–12.** The prototype, its rules and the Design Gate stand.
-- **No new BRD sections.** S11.1 is a subsection and S13 gains a column; no `S17+`.
-- **No third phase** for infrastructure or release engineering.
+- **No new BRD sections.** S11 gains a citation and S13 a column; no `S17+`. The contract's content
+  lives in the contract.
+- **No third phase** for infrastructure or release engineering. Integration is a bounded sub-step
+  of Phase 2 (§4.4), not a phase of its own.
+- **The contract is not a code artifact of either side.** Moving it into the front-end tree "because
+  that is where the types are" reverts D6 and re-couples the phases through a working tree.
 
 ## 9. Failure modes this design is built against
 
 | Failure mode | The rule that catches it |
 |---|---|
 | Backend quietly reshapes the product to suit the server | `L_CONTRACT` + `product` token dropped (§4.4) |
-| Contract written from the Phase-1 *plan* rather than the running app | S11.1 is read out of the adapter and the app (§4.1) |
+| Contract written from the Phase-1 *plan* rather than the running app | the contract is read out of the running app and its mock adapter (§4.2) |
 | Mocks ship to production | `C_PARITY` check 3 (§5.4) |
 | A front-end on mocks becomes reachable by users | `phases.fe_exposure`, checked at the FE PR (§5.5) |
 | Phase-1 loop thrash silently consumes Phase-2's budget | per-phase ceilings, reset logged (§5.2) |
 | An AC declared "passing" on the strength of a fixture | S13 `Verified on`, re-verified integrated (§5.3) |
 | Small BRDs pay two-phase ceremony for no reason | `C_SERVER_SCOPE` → `Phase: single` (§3.3) |
+| Back-end learns the contract by reading front-end source | the contract is a third artifact; FE source is not a backend-planning input (§4, §6) |
+| Back-end edits the contract to fit what the server can do | write table + `C_ISOLATION` check 1; changes route through `L_CONTRACT` and reissue (§4.4, §4.6) |
+| A phase branch quietly touches the other side's code | `C_ISOLATION` at Tech Review, off the S10 touched-areas list (§4.4) |
+| Contract edited in place, so what Phase 2 built against is unknowable | superseded never edited; `v<n+1>` names what it supersedes (§4.3) |
