@@ -126,6 +126,40 @@ screen_contract:
   path: screens/                   # registry + per-screen contracts live here
   next_id: 1                       # next SCR number to allocate
 
+security:                          # v1.8 — evidence commands for C_SECURITY (security-certification).
+                                   # A command left empty is a recorded GAP, never a silent pass.
+  scanners:
+    secrets: ""                    # e.g. "gitleaks detect --no-banner --redact"
+    dependencies: ""               # e.g. "npm audit --audit-level=high"
+    sast: ""                       # e.g. "semgrep --config auto --error"
+    licenses: ""
+  fail_on: high                    # severity floor that blocks certification: critical | high | moderate
+  high_risk_scopes:                # a delta touching these forces a FULL re-certification, never delta-only
+    - auth
+    - payment
+    - pii
+    - data-export
+  rotate_on_secret_hit: true       # a secret in a pushed commit is published — deletion is not rotation
+
+design:                            # v1.7 — design sub-machine config (field reference:
+                                   # design-toolkit/toolkit.config.json, vendored)
+  handoff_required: false          # C_HANDOFF_REQUIRED — true runs design state 12
+                                   # (navigation map + Developer Handoff Gate) on the
+                                   # Design Review → Dev Planning edge. Per-BRD override:
+                                   # the BRD's "Handoff Required" property.
+  design_system:
+    name: ""                       # DS name
+    source_id: ""                  # library/repo + version — the id UI planning validates
+                                   # against. A plan built on the wrong DS validates perfectly.
+  viewport: { width: 393, height: 852 }   # prototype review/capture viewport
+  scripts: []                      # writing systems the product renders, e.g.
+                                   # [{ name: Khmer, range: "1780-17FF", fontMatch: Khmer }]
+                                   # — self-audit proves each resolves on the BASE font stack
+  review_port: 8765                # run-local.sh default port
+  navmap_path: design/navmap/      # derived navigation artifacts (state 12)
+  prototype_path: design/prototype/  # per-BRD prototypes
+  loops: { L_CLARIFY: 3, L_RESEARCH: 2, L_UX_EDGE: 2, L_REVISION: 3, L_AUDIT_FIX: 3 }
+
 context_package:                   # v1.3 — generated AI context summaries
   path: context/
   generated: 2026-07-26            # regenerate when older than onboarding.last_validated

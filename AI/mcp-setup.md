@@ -10,7 +10,7 @@
 |-------------|----------|-------------|
 | **Notion MCP** | BRD read/write: `notion-fetch`, `notion-update-page`, `notion-query-data-sources`, `notion-create-pages` — registered databases/pages only, no workspace search ([integration-map](../Architecture/integration-map.md) §2b) | orchestrator + every stage (hard requirement) |
 | **GitHub (`gh` CLI)** | branch/PR/CI/merge: `gh pr create/view/checks/merge` — bound repositories only | git, code-review, release stages |
-| **Figma MCP** | design context, screenshots, design-system reads — bound file keys only | ui-workflow, design-system-workflow — only when `resources.figma.product_design_file` (or the design-system library) is bound in the Project Resource Registry |
+| **Figma MCP** | design context, screenshots, design-system reads, navigation-map writes — bound file keys only | ui-workflow, design-system-workflow, flow-visualization — only when `resources.figma.product_design_file` (or the design-system library) is bound in the Project Resource Registry. Unbound → flow-visualization degrades loudly to the markdown map, never silently skips |
 | **Local shell/files** | build, test, serve prototype | implementation, qa, debug, prototype Run Local |
 
 ## 2. Setup Checks (per machine, once)

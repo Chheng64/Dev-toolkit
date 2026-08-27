@@ -106,7 +106,7 @@ Bidirectional links: BRD `Branch` + `PR` properties point at Git; PR body + comm
 |-------------|------|---------|----------------------|
 | Notion | Notion MCP (`notion-fetch`, `notion-update-page`, `notion-query-data-sources`) | orchestrator, every workflow | registered databases/pages only; no workspace search |
 | GitHub | `gh` CLI | Workflows/git, release, code-review | bound repositories only |
-| Figma | Figma MCP | ui-workflow, design-system-workflow (when Figma bound) | bound file keys only; no team browsing |
+| Figma | Figma MCP | ui-workflow, design-system-workflow, flow-visualization (when Figma bound) | bound file keys only; no team browsing |
 | Local | Bash, file tools | implementation, qa, debug | project repo(s) |
 
 Details in [../AI/mcp-setup.md](../AI/mcp-setup.md).

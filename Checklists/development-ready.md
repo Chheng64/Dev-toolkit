@@ -18,6 +18,7 @@
 ## Plan executability (S11)
 - [ ] Every S08 component: file path + reuse class + props contract (real TS)
 - [ ] Every backend surface: contract per [api-specification](../Templates/api-specification.md) — input/output schemas, error codes → S09 states, auth, idempotency
+- [ ] **S06 threat model complete** for every new/changed surface: asset, attacker/abuse, mitigation, verification method — the basis `C_SECURITY` certifies against before QA
 - [ ] Contracts frozen; frontend plan consumes them by name
 - [ ] Schema/migration changes have rollback paths
 - [ ] Test plan: every AC → layer + named test file (zero unmapped ACs)
