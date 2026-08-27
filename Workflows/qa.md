@@ -12,6 +12,7 @@ Verify the implementation against S03 acceptance criteria and S09 states — adv
 ## Inputs
 
 - Implementation exit claim (S12 current, tests green claim)
+- **`C_SECURITY` passed** — S14 Security Certificate `certified` for the current branch head ([security-certification](security-certification.md)). QA does not open on uncertified code; a certificate naming an older sha is stale and sends the BRD back before QA starts.
 - S03 ACs (verbatim test basis), S09 edge-case matrix, S11 test plan
 - Running app/branch build; prototype (behavior reference)
 
@@ -36,6 +37,7 @@ S13 (edit), S09 (append — newly discovered edge cases), S06 (append), S16 (app
 
 ## Completion Criteria
 
+- [ ] `C_SECURITY` held at entry, and still holds at exit (QA-loop fixes push commits → certificate re-issued against the new head)
 - [ ] Every AC has a row: pass/fail/blocked + evidence pointer — no evidence, no pass
 - [ ] Every S09 state exercised in the running app, result recorded
 - [ ] Test suite + typecheck + lint executed by QA, output referenced

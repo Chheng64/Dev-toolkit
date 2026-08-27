@@ -1,7 +1,7 @@
 # Standard — Security
 
 > **Module:** Standards · Deviations: none for the floor; risk acceptance is a user-signed S06/S16 decision, never a silent skip.
-> **Applies to:** all code; verified at review dimension 4 + [../Checklists/security.md](../Checklists/security.md). Defensive scope only.
+> **Applies to:** all code. Enforced **before QA** by `C_SECURITY` — [security-certification](../Workflows/security-certification.md) issues a [Security Certificate](../Templates/security-certificate.md) against a named commit, validated by [../Checklists/security.md](../Checklists/security.md); re-checked at review dimension 4. Defensive scope only.
 
 ## Rules
 

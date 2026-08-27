@@ -32,7 +32,8 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 3. Data model: schema changes, migration plan, ownership of truth (e.g. auth provider identity ≠ product profile — name the source of truth per entity).
 4. Failure planning is the core deliverable: timeouts, retries, idempotency keys for mutations, webhook delay/out-of-order handling, partial-failure recovery mapped to S09 states.
 5. Authz matrix: who may call what; default deny.
-6. Security pass with Standards/security: input validation boundaries, secrets handling, rate limits on exposed surfaces. High-risk findings → S06 via `Affects:`.
+6. **Threat model into S06** — one row per new/changed surface: surface → asset at risk → plausible attacker/abuse → mitigation → **how it will be verified** (test name, code read, probe). This is what [security-certification](security-certification.md) checks against before QA; a mitigation with no verification method is a wish. High-risk findings → S06 via `Affects:`.
+7. Security pass with Standards/security: input validation boundaries, secrets handling, rate limits on exposed surfaces.
 7. Fill the **API mapping block** of every owned `screens/SCR-<nnn>.md` ([api-mapping template](../Templates/api-mapping.md)) — screens without server needs get explicit `api: none`.
 8. Contracts frozen before implementation — frontend plans against them.
 
@@ -43,6 +44,7 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 - [ ] Data model + migration plan written; source of truth named per entity
 - [ ] Idempotency/retry/webhook behavior specified for every mutation + async integration
 - [ ] Authz matrix present; default deny
+- [ ] S06 threat model covers every new/changed surface, each row naming its mitigation **and its verification method**
 - [ ] Touched-areas list present; conflict check done
 - [ ] S16 stage-exit entry written
 
@@ -59,6 +61,7 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 - Designing endpoints from data shape instead of from flows — produces chatty or orphan APIs.
 - Unbounded queries — no pagination/limits on list surfaces.
 - Deferring authz ("add permissions later") — authz is contract, not polish.
+- A threat row whose mitigation is "validate input" with no schema named and no verification method — unverifiable at certification, so it bounces the branch.
 
 ## Best Practices
 
