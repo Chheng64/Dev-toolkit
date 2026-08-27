@@ -342,10 +342,15 @@ Insert between the Design and Developer Handoff rows:
 | **Product** | leaving Phase 1 (`Phase: FE` → `Merged`) | user | scoped to the running front-end at the FE PR head sha, the frozen prototype version, the issued `CTR-<brd-id>-v<n>`, and the S07/S09 walk evidence |
 ```
 
-- [ ] **Step 8: Run to verify it passes**
+- [ ] **Step 8: Run and confirm the expected residual**
 
 Run: `python3 tools/toolkit-check.py; echo "exit=$?"`
-Expected: PASS, exit=0.
+Expected: exit=1 with **exactly one** violation —
+`A Architecture/workflow-state-machine.md: approval \`product\` not declared in brd-schema Approvals`.
+
+This is correct, not a failure to fix here: this task introduces the `product` token into the
+machine, and Task 3 declares it in the schema. That violation is Task 3's red. **Any other
+violation is yours** — fix it before committing.
 
 - [ ] **Step 9: Commit**
 
@@ -368,7 +373,8 @@ git commit -m "feat: phase dimension, C_SERVER_SCOPE/C_PARITY/C_ISOLATION, L_CON
 
 - [ ] **Step 1: Run the checker to see rule A fail**
 
-Task 2 wrote `approval \`product\`` into the machine. The schema does not declare it yet.
+Task 2 wrote `approval \`product\`` into the machine and left this violation standing deliberately —
+it is this task's red.
 
 Run: `python3 tools/toolkit-check.py; echo "exit=$?"`
 Expected: FAIL, exit=1, `A Architecture/workflow-state-machine.md: approval \`product\` not declared in brd-schema Approvals`.
@@ -1521,6 +1527,9 @@ git commit -m "docs: v2.0.0 — two-phase development, README machine diagram, m
 ```
 
 - [ ] **Step 5: Open the PR**
+
+**STOP — do not run this step as an implementer.** Pushing a branch and opening a PR is an
+outward-facing side effect. The controller asks the human partner first, then runs it:
 
 ```bash
 git push -u origin feat/two-phase-development
