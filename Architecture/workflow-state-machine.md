@@ -54,9 +54,10 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | 11 | `Merged` | git + release | Final approval | Branch merged; S15 release notes; BRD frozen sections | — |
 | 12 | `Released` | release | Merged; deploy done (if applicable) | S15 final; terminal S16 entry | — |
 
-**Phase dimension (v2.0).** States 05–11 carry a `Phase` (`FE` · `BE` · `single`). A BRD with server
-scope runs the segment `Dev Planning → Implementation → QA → Tech Review → PR → Human Review →
-Merged` **twice**: once as `Phase: FE` (the front-end built on mocks, exiting at the Product Gate),
+**Phase dimension (v2.0).** `Phase` (`FE` · `BE` · `single`) is decided at **`Planning` exit** and
+carried into states 05–11. A BRD with server scope runs the segment `Dev Planning → Implementation
+→ QA → Tech Review → PR → Human Review → Merged` **twice**: once as `Phase: FE` (the front-end
+built on mocks, exiting at the Product Gate),
 then once as `Phase: BE` (the back-end built against the Shared Contract, exiting at the Final
 Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. The phase is not a
 `Status` value — no state is added, renamed or removed.
@@ -74,7 +75,6 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | Ready | orchestrator picks BRD (slot free) | Analysis |
 | Analysis | validation pass, no blocking ambiguity | Planning |
 | Analysis | blocking ambiguity, human unavailable | Blocked |
-| Planning | recommendation `proceed` + Direction Gate approved | Design |
 | Planning | recommendation `re-scope` or gate denied | Analysis |
 | Planning | recommendation `stop` + human confirms | Stopped |
 | Planning | Direction approved ∧ `C_SERVER_SCOPE` | Design (`Phase: FE`) |
@@ -96,10 +96,13 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | Implementation | certification exposes authz/contract-level flaw | Dev Planning (S16 `Affects: S10`) |
 | QA | all ACs verified, zero open blockers | Tech Review |
 | QA | blocker bugs | Implementation (loop `L_QA`) |
+| QA (`Phase: BE`) | all ACs verified, zero open blockers ∧ `C_PARITY` pass | Tech Review |
+| QA (`Phase: BE`) | `C_PARITY` fail | Implementation (`Phase: BE`), loop `L_QA` |
 | Tech Review | verdict `approve` | PR |
 | Tech Review | verdict `request-changes` | Implementation (loop `L_REVIEW`) |
+| Tech Review | `C_ISOLATION` fail | Implementation (same phase), offending paths named in S16 |
 | PR | PR open + CI green | Human Review |
-| Human Review (`Phase: FE`) | approval `product` | Merged (Phase-1 head; product freeze recorded) |
+| Human Review (`Phase: FE`) | approval `product` | Merged (`Phase: FE`; product freeze recorded) |
 | Human Review (`Phase: BE` \| `Phase: single`) | approval `final` | Merged |
 | Merged (`Phase: FE`) | product freeze recorded in S08 + S16 | Dev Planning (`Phase: BE`), loop counts reset |
 | any `Phase: BE` state | server constraint contradicts approved front-end behaviour | Dev Planning (`Phase: FE`) via `L_CONTRACT`; `product` token dropped |
