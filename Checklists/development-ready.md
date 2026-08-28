@@ -2,6 +2,11 @@
 
 > **Gate for:** `Dev Planning` → `Implementation` ([frontend-planning](../Workflows/frontend-planning.md) / [backend-planning](../Workflows/backend-planning.md) exit). Implementation entered below this bar burns loop ceilings.
 
+## Phase scope
+- [ ] `Phase` is set (`FE` · `BE` · `single`) and matches the `C_SERVER_SCOPE` decision logged in S16
+- [ ] `Phase: BE` only — the cited `CTR-<brd-id>-v<n>` exists, `VERSION` names the product freeze sha, and the plan answers every line of `contract.md`
+- [ ] `Phase: FE` only — adapter interface, selection point and fixture set are planned; zero server-side decisions in S10/S11
+
 ## Upstream state
 - [ ] `C_CONTRACT` passed: [screen-contract checklist](screen-contract.md) all-green for this BRD's screens (orchestrator ran it at stage entry)
 - [ ] `Approvals` contains `design` (current, not stale)

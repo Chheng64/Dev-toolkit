@@ -34,7 +34,8 @@ S14 (edit), S16 (append). **Specialist roles append only, and only where their o
 5. **Performance dimension:** render waste (unstable refs, missing memo where measured), bundle additions, unbounded queries, N+1, missing pagination.
 6. **Accessibility dimension:** keyboard reachability, focus management, ARIA correctness, contrast tokens, reduced-motion variants present.
 7. **DS conformance:** token references only, no one-off styling, extensions went through design-system workflow.
-8. Classify findings `blocker`/`major`/`minor` + concrete fix direction. Verdict: zero blockers → `approve`; else `request-changes` → Implementation (`L_REVIEW`).
+8. **Phase isolation (`C_ISOLATION`, v2.0)** — check the diff's paths against the S10 touched-areas list: a `Phase: BE` branch must touch no front-end paths beyond the declared selection point (one file per domain) and no contract files; a `Phase: FE` branch must touch no server paths. This is a path check, not a judgment call — report the offending paths and stop.
+9. Classify findings `blocker`/`major`/`minor` + concrete fix direction. Verdict: zero blockers → `approve`; else `request-changes` → Implementation (`L_REVIEW`).
 
 ## Completion Criteria
 
