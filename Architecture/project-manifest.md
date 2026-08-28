@@ -90,6 +90,16 @@ resources:                         # v1.5 — PROJECT RESOURCE REGISTRY (§3) �
     infrastructure_repository: null   # optional
     skipped: [backend_repository, infrastructure_repository]
 
+  contracts:                       # populated ONLY for the split-repo shape (repos.frontend ≠
+                                   # repos.backend) — the Shared Contract repo, required once that
+                                   # shape applies. Not offered at all for the single-repo shape,
+                                   # where phases.contracts_path covers it instead (§3).
+    id: <numeric repo id>          # gh api repos/{owner}/{repo} --jq .id
+    url: <https://github.com/owner/repo>
+    binding: connected             # connected | created
+    bound: 2026-07-26
+    validated: 2026-07-26
+
   documentation:                   # optional slots; each type: notion-page | repo-path | url
     api_documentation:
       type: repo-path
@@ -230,7 +240,7 @@ The **Project Resource Registry** = the `resources:` block **plus** the `communi
 - While the decision is pending, the BRD is `Blocked`, reason `resource: <slot> — <missing|skipped-but-required|unreachable>` — resumable, surfaced at session entry, and the Telegram failure trigger fires ([../AI/orchestrator.md](../AI/orchestrator.md) 0b).
 - This scopes the skip promise precisely: **skipped slots are never re-asked proactively**; only a stage that cannot proceed without the slot may raise one Resource Decision, and a confirmed absence is honored again until the next such stage.
 
-**Absence behavior per optional slot** (what "proceed without it" means — the generalization of the Figma rule):
+**Absence behavior per optional or conditionally-required slot** (what "proceed without it" means — the generalization of the Figma rule):
 
 | Slot | Absent / skipped / confirmed-absent behavior |
 |------|----------------------------------------------|
@@ -258,7 +268,7 @@ The **Project Resource Registry** = the `resources:` block **plus** the `communi
 
 Names get renamed; IDs don't. A binding that breaks on rename is a defect.
 
-**Required vs optional slots:** required — `resources.notion.brd_database` (inherited from the [Toolkit Registry](toolkit-registry.md)), ≥1 `resources.github` repository. Everything else optional, but **every slot is explicitly resolved**: bound or `skipped`, never silently absent, never guessed at runtime. Re-open via "toolkit onboard --update" — or a Resource Decision when a stage concretely requires the slot (above).
+**Required vs optional slots:** required — `resources.notion.brd_database` (inherited from the [Toolkit Registry](toolkit-registry.md)), ≥1 `resources.github` repository, and `resources.contracts` when `repos.frontend` ≠ `repos.backend`. Everything else optional, but **every slot is explicitly resolved**: bound or `skipped`, never silently absent, never guessed at runtime. Re-open via "toolkit onboard --update" — or a Resource Decision when a stage concretely requires the slot (above).
 
 **Registry status:** `resources.status: bound` only when all required slots are `connected`/`created` **and** validated, and every optional slot has an explicit disposition. For the communication section, `enabled: true | false` **is** the disposition — set once at onboarding, never silently absent. `C_MANIFEST` fails otherwise.
 
