@@ -55,7 +55,9 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 
 ## Completion Criteria
 
-- [ ] Every server-touching flow transition has a contracted endpoint/action
+- [ ] For `Phase: single` BRDs, every server-touching flow transition has a contracted
+      endpoint/action; for split BRDs (`Phase: BE`), every `CTR-<brd-id>-v<n>` method has a
+      contracted endpoint/action, error variants included
 - [ ] Error contracts defined; user-facing error language normalized
 - [ ] Data model + migration plan written; source of truth named per entity
 - [ ] Idempotency/retry/webhook behavior specified for every mutation + async integration
@@ -63,7 +65,6 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 - [ ] S06 threat model covers every new/changed surface, each row naming its mitigation **and its verification method**
 - [ ] Touched-areas list present; conflict check done
 - [ ] S16 stage-exit entry written
-- [ ] Every `CTR-<brd-id>-v<n>` method has a contracted endpoint/action, error variants included
 - [ ] Every screen-contract `demanded:` line has a planned `provided:` line
 - [ ] Real response shapes checked against `fixtures/`
 - [ ] Zero edits to the contract artifact from this stage
@@ -78,7 +79,10 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 - Happy-path APIs — no error contract, no idempotency, webhooks assumed instant and ordered.
 - Leaking internals: raw provider errors, stack traces, or internal state names in responses.
 - Conflating identities (auth record exists ≠ product account exists) — name the true source per entity.
-- Designing endpoints from data shape instead of from flows — produces chatty or orphan APIs.
+- Designing endpoints from a bare data shape instead of from flows — produces chatty or orphan
+  APIs. Deriving from the Shared Contract (Responsibility 1) is not this: `contract.ts` is
+  written at Phase-1 exit from a running front-end built to the S07 flows and approved by a
+  human at the Product Gate, so its methods carry the flows' demands with them.
 - Unbounded queries — no pagination/limits on list surfaces.
 - Deferring authz ("add permissions later") — authz is contract, not polish.
 - A threat row whose mitigation is "validate input" with no schema named and no verification method — unverifiable at certification, so it bounces the branch.
@@ -90,7 +94,9 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 
 ## Best Practices
 
-- Write contracts as TypeScript types/zod schemas in the plan — they become the implementation's source files.
+- Write S11's API notes (request/response contracts) as TypeScript types/zod schemas in the plan
+  — not the Shared Contract, which back-end planning never authors — they become the
+  implementation's source files.
 - Every async boundary gets explicit user-visible states (frontend consumes: pending/retrying/failed language from S09).
 - Plan the rollback path for every migration.
 - Prefer one boring pattern (route handlers or server actions) per project — consistency beats per-feature optimization; deviations go to `project-overrides.md`.
