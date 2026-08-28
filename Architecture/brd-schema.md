@@ -23,7 +23,8 @@ One database for all projects. Every page is a Living BRD.
 | `Ready` | Checkbox | — | Human marks BRD eligible for pickup |
 | `Branch` | Text | `feat/<brd-id>-<slug>` | Git link |
 | `PR` | URL | GitHub PR link | Git link |
-| `Approvals` | Multi-select | `direction`, `design`, `final` | Human gates granted |
+| `Approvals` | Multi-select | `direction`, `design`, `product`, `final` | Human gates granted |
+| `Phase` | Select | `FE` · `BE` · `single` | Which pass of the build segment the BRD is in (v2.0). Machine state — set by the orchestrator at `Planning` exit, flipped at `Merged (FE)`. Hand edits only to correct a mis-scoped BRD, logged S16 |
 | `Prototype` | URL | served prototype / Figma ref | Design artifact quick link (optional; added v1.1) |
 | `Loop Count` | Number | int | Revision-loop ceiling tracking |
 | `Blocked Reason` | Text | — | Set when Status = Blocked |
@@ -53,9 +54,9 @@ Sections are H2 headings in the page body, in this order. Each heading carries i
 | S08 | UI Decisions & Prototype | revise | Component inventory, DS mapping, token references, prototype links, Extension Notes |
 | S09 | Edge Cases & Non-Happy Paths | revise | Edge-case matrix: error, empty, loading, interrupted, offline, permission-denied per task |
 | S10 | Technical Plan & Architecture | revise | Approach, architecture notes, data flow, dependencies |
-| S11 | Component Plan & API Notes | revise | Files/components to create or modify; API contracts |
+| S11 | Component Plan & API Notes | revise | Files/components to create or modify. For server-scope BRDs this section **cites** the Shared Contract by id and version (`CTR-<brd-id>-v<n>`) and never reproduces it — see the shared-contract module |
 | S12 | Implementation Notes & Progress | append | Dated progress entries; deviations from plan with reason |
-| S13 | Test Cases, Bugs & Verification | revise | Test cases mapped to ACs; bug list with severity; verification status per AC |
+| S13 | Test Cases, Bugs & Verification | revise | Test cases mapped to ACs; bug list with severity; verification status per AC with **`Verified on: mocks \| integrated`**. An AC passing on mocks and failing integrated is a blocker |
 | S14 | Review Summary & Approval | revise | Review findings, concerns, recommendations, approval status. **Subsections (append-only, each owned by its issuing role):** `design-audit` (design state 08), `security-certificate` (`C_SECURITY`, before QA — [template](../Templates/security-certificate.md)), `handoff-gate` (design state 12, when in scope) |
 | S15 | Release Notes | revise | User-facing change summary; version; date |
 | S16 | Decision Log | append-only | See format below. Never edited or deleted, only appended |
@@ -92,3 +93,5 @@ A page may start with only S01 empty-scaffolded + a one-line problem note. The B
 2. The BRD evolves; it is never replaced, duplicated, or forked into side documents. All feature knowledge lives here (Notion = single source of truth).
 3. Global knowledge (standards, workflows, conventions) never gets copied into a BRD — link to the toolkit module instead.
 4. Section IDs are stable forever. New sections get new IDs (`S17+`); removed sections are deprecated, never reused.
+5. **v2.0 migration.** Every BRD that existed before v2.0.0 is `Phase: single` and behaves exactly
+   as it did under v1.10.0. The split applies to BRDs that pass `Planning` under v2.0.0 or later.
