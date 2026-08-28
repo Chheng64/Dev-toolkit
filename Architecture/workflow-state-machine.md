@@ -94,11 +94,10 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | Implementation | complete claim + S12 current + `C_SECURITY` pass | QA |
 | Implementation | `C_SECURITY` fail (`not-certified`) | Implementation (fix findings; counts against `L_QA`) |
 | Implementation | certification exposes authz/contract-level flaw | Dev Planning (S16 `Affects: S10`) |
-| QA | all ACs verified, zero open blockers | Tech Review |
+| QA | all ACs verified, zero open blockers ∧ `C_PARITY` pass (`Phase: BE` only) | Tech Review |
 | QA | blocker bugs | Implementation (loop `L_QA`) |
-| QA (`Phase: BE`) | all ACs verified, zero open blockers ∧ `C_PARITY` pass | Tech Review |
 | QA (`Phase: BE`) | `C_PARITY` fail | Implementation (`Phase: BE`), loop `L_QA` |
-| Tech Review | verdict `approve` | PR |
+| Tech Review | verdict `approve` ∧ `C_ISOLATION` pass | PR |
 | Tech Review | verdict `request-changes` | Implementation (loop `L_REVIEW`) |
 | Tech Review | `C_ISOLATION` fail | Implementation (same phase), offending paths named in S16 |
 | PR | PR open + CI green | Human Review |
