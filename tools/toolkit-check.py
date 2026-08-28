@@ -11,26 +11,14 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # design-toolkit/ is vendored verbatim and never edited here (VENDORED.md);
 # its vocabulary belongs to the upstream project, not to this toolkit.
-SKIP_DIRS = {".git", "design-toolkit", "node_modules", ".playwright-mcp"}
+SKIP_DIRS = {".git", "design-toolkit", "node_modules", ".playwright-mcp",
+             ".superpowers"}
 MODULE_DIRS = ["Architecture", "AI", "Workflows", "Skills", "Standards",
                "Templates", "Checklists", "Playbooks"]
 # Files that are deliberately not indexed, each with its reason.
 INDEX_EXEMPT = {
     "Documentation/module-index.md": "the index itself",
 }
-# Guard/loop tokens this plan's own working documents (Documentation/plans/
-# 2026-08-27-two-phase-development.md, Documentation/specs/2026-08-27-two-
-# phase-development-design.md) propose but do not yet define -- Task 2
-# defines each one for real, in workflow-state-machine.md. Remove each
-# entry once Task 2 lands. Everything else in those documents still gets
-# checked -- a typo or an invented token there still fails rule G/K.
-TOKEN_EXEMPT = {
-    "C_SERVER_SCOPE": "guard Task 2 adds to workflow-state-machine.md §4",
-    "C_PARITY": "guard Task 2 adds to workflow-state-machine.md §4",
-    "C_ISOLATION": "guard Task 2 adds to workflow-state-machine.md §4",
-    "L_CONTRACT": "loop Task 2 adds to workflow-state-machine.md §5",
-}
-
 violations = []
 
 
@@ -87,7 +75,7 @@ def defined_tokens(path, pattern):
 def rule_tokens(files, kind, used_pattern, defs):
     for path in files:
         for token in set(re.findall(used_pattern, strip_fences(read(path)))):
-            if token in defs or token in TOKEN_EXEMPT:
+            if token in defs:
                 continue
             fail(kind, rel(path), "undefined %s" % token)
 
@@ -129,6 +117,24 @@ def rule_module_index(files):
                 fail("M", path, "not linked from Documentation/module-index.md")
 
 
+PHASE_OK = {"FE", "BE", "single"}
+
+
+def rule_phase_vocabulary(files):
+    for path in files:
+        for value in set(re.findall(r"`Phase: ([A-Za-z-]+)`", read(path))):
+            if value not in PHASE_OK:
+                fail("P", rel(path), "unknown Phase value `%s`" % value)
+    machine = os.path.join(ROOT, "Architecture", "workflow-state-machine.md")
+    if os.path.exists(machine):
+        text = read(machine)
+        for required in ("`C_SERVER_SCOPE`", "`C_PARITY`", "`C_ISOLATION`",
+                         "`L_CONTRACT`", "approval `product`"):
+            if required not in text:
+                fail("P", "Architecture/workflow-state-machine.md",
+                     "two-phase vocabulary missing: %s" % required)
+
+
 def main():
     try:
         files = list(md_files())
@@ -143,6 +149,7 @@ def main():
         rule_tokens(files, "K", r"`(L_[A-Z_]{2,})`", loops)
         rule_approvals(files)
         rule_module_index(files)
+        rule_phase_vocabulary(files)
     except Exception as exc:  # tool error is unevaluable, not passing
         print("toolkit-check: TOOL ERROR: %s" % exc, file=sys.stderr)
         return 2

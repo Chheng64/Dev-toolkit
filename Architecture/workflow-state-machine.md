@@ -54,6 +54,13 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | 11 | `Merged` | git + release | Final approval | Branch merged; S15 release notes; BRD frozen sections | — |
 | 12 | `Released` | release | Merged; deploy done (if applicable) | S15 final; terminal S16 entry | — |
 
+**Phase dimension (v2.0).** States 05–11 carry a `Phase` (`FE` · `BE` · `single`). A BRD with server
+scope runs the segment `Dev Planning → Implementation → QA → Tech Review → PR → Human Review →
+Merged` **twice**: once as `Phase: FE` (the front-end built on mocks, exiting at the Product Gate),
+then once as `Phase: BE` (the back-end built against the Shared Contract, exiting at the Final
+Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. The phase is not a
+`Status` value — no state is added, renamed or removed.
+
 **Conditional sub-state on the `Design Review → Dev Planning` edge.** When `C_HANDOFF_REQUIRED` holds, design state 12 `FLOW_VISUALIZATION` runs between them ([flow-visualization](../Workflows/flow-visualization.md)): the navigation map is derived from the Screen Contract, validated, and put to the **Developer Handoff Gate**. It is not a lifecycle `Status` value — the BRD stays in `Design Review` until the gate resolves, and `Stage Owner` reads `UI Designer (handoff)`. When `C_HANDOFF_REQUIRED` is false (**the default**), the edge is unchanged and the skip is logged in S16.
 
 **Off-path states:** `Blocked` (resumable; `Blocked Reason` set), `Stopped` (deliberate terminal, rationale in S16), `Backlog` (pre-Ready).
@@ -70,6 +77,8 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | Planning | recommendation `proceed` + Direction Gate approved | Design |
 | Planning | recommendation `re-scope` or gate denied | Analysis |
 | Planning | recommendation `stop` + human confirms | Stopped |
+| Planning | Direction approved ∧ `C_SERVER_SCOPE` | Design (`Phase: FE`) |
+| Planning | Direction approved ∧ ¬`C_SERVER_SCOPE` | Design (`Phase: single`) |
 | Design | design machine reaches SELF_AUDIT `pass` | Design Review |
 | Design | design machine HALT | Blocked |
 | Design Review | approval `design` ∧ ¬`C_HANDOFF_REQUIRED` ∧ `C_CONTRACT` pass | Dev Planning |
@@ -90,10 +99,13 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | Tech Review | verdict `approve` | PR |
 | Tech Review | verdict `request-changes` | Implementation (loop `L_REVIEW`) |
 | PR | PR open + CI green | Human Review |
-| Human Review | approval `final` | Merged |
+| Human Review (`Phase: FE`) | approval `product` | Merged (Phase-1 head; product freeze recorded) |
+| Human Review (`Phase: BE` \| `Phase: single`) | approval `final` | Merged |
+| Merged (`Phase: FE`) | product freeze recorded in S08 + S16 | Dev Planning (`Phase: BE`), loop counts reset |
+| any `Phase: BE` state | server constraint contradicts approved front-end behaviour | Dev Planning (`Phase: FE`) via `L_CONTRACT`; `product` token dropped |
 | Human Review | change requests | Implementation (loop `L_HUMAN`) |
 | Human Review | reject | Analysis |
-| Merged | release steps done | Released |
+| Merged (`Phase: BE` \| `Phase: single`) | release steps done | Released |
 | any in-flight | required resource missing / skipped-but-required / unreachable → Resource Decision raised | Blocked (`resource: <slot>`) — cleared by the decision, stage resumes where it stopped |
 | any | unrecoverable error / ceiling breach | Blocked |
 
@@ -112,6 +124,9 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | `C_HANDOFF_REQUIRED` | The design goes to a build audience that was not in the room, so the navigation map is in scope. Source: `project-manifest.yaml` `design.handoff_required` (**default `false`**), overridable per BRD via a `Handoff Required` property. False → design state 12 is skipped, and the skip is logged S16. |
 | `C_NAVMAP_CLEAN` | Navigation derivation ([design-state-machine](design-state-machine.md) §10, `navgraph.mjs`) exits clean at the configured severity, or every remaining finding carries a granted waiver + rider debt item. Checked at the Developer Handoff Gate only. |
 | `C_RESOURCES` | Every registry slot the plan implies is bound and healthy: repos named by S10/S11, design file behind Design blocks, APIs' backing repo, doc targets the plan writes to. Checked at **Dev Planning exit** — moves resource gaps to the cheapest stop point instead of mid-Implementation. Fail → Resource Decision ([project-manifest](project-manifest.md) §3). |
+| `C_SERVER_SCOPE` | Any S07 flow transition touches persistence, authentication, or an external service. Decided at **`Planning` exit**, logged S16 with its evidence. True → `Phase: FE` (two passes); false → `Phase: single` (one pass, pre-v2.0 behaviour). BE-only BRDs are `single` by the same test — there is no UI to validate. |
+| `C_PARITY` | Checked at **Phase-2 QA exit**: (1) every AC marked `mocks` in S13 also carries an `integrated` verdict; (2) every method of the cited `CTR-<brd-id>-v<n>` has a `provided` API block in its screen's contract, and the shipped real adapter implements the contract interface unmodified; (3) zero live mock paths in shipped code — the mock adapter is deleted or demoted to test-only; (4) the Phase-1 exposure control is removed, and its removal is in the BE PR diff. Fail → Implementation (`Phase: BE`). |
+| `C_ISOLATION` | Checked at **each phase's Tech Review**, mechanically, against the S10 touched-areas list: a `Phase: BE` branch touches no front-end paths and no contract files; a `Phase: FE` branch touches no server paths. The single bounded exception is integration's adapter wiring — one file per domain, declared in the Phase-2 S10. Fail → Tech Review stops with the offending paths named. |
 
 A forward transition fires only when its guard conjunction holds; otherwise the stage's failure path runs (retry → escalate → Blocked).
 
@@ -124,8 +139,13 @@ A forward transition fires only when its guard conjunction holds; otherwise the 
 | `L_QA` | QA → Implementation → QA | 3 | Blocked + open-bug summary |
 | `L_REVIEW` | Tech Review → Implementation → Tech Review | 2 | Blocked |
 | `L_HUMAN` | Human Review → Implementation → Human Review | 3 | Blocked + escalation summary |
+| `L_CONTRACT` | Phase `BE` → Dev Planning (`Phase: FE`) → back | 2 | Blocked + escalation summary |
 
 `Loop Count` property stores the dominant active loop count; the orchestrator logs which loop in S16. Ceiling breach never silently continues.
+
+**Ceilings are per phase.** `Loop Count` resets at the phase flip and the reset is logged in S16.
+Phase-1 thrash never consumes Phase-2's revision budget. `L_CONTRACT` is the exception: it counts
+across the flip, because it *is* the flip.
 
 ## 6. Approval Gates
 
@@ -134,6 +154,7 @@ A forward transition fires only when its guard conjunction holds; otherwise the 
 | Clarification | leaving Analysis with blocking ambiguity | user | answers logged S16 |
 | **Direction** | entering Design | user | scoped to S01–S06 content seen |
 | **Design** | entering Dev Planning | user | scoped to prototype + S07–S09 seen |
+| **Product** | leaving Phase 1 (`Phase: FE` → `Merged`) | user | scoped to the running front-end at the FE PR head sha, the frozen prototype version, the issued `CTR-<brd-id>-v<n>`, and the S07/S09 walk evidence |
 | **Developer Handoff** *(conditional)* | leaving Design Review for Dev Planning when `C_HANDOFF_REQUIRED` | user | scoped to registry sha + derivation run + prototype versions named in the gate record |
 | **Final** | merging | user | scoped to PR diff + BRD state seen |
 
