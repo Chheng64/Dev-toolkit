@@ -32,7 +32,10 @@ Pin to latest within each family; exact IDs live here so projects inherit update
 | Design Review: final output (11) | T2 | Freeze, hash and completeness are mechanical against the matrix |
 | Design: flow visualization (12) | T2; **T3** for the first derivation's reconciliation and the state-vocabulary normalization | Derivation is a tool; deciding registry-vs-flows disagreements is not |
 | Security certification (`C_SECURITY`) | **T3** | Adversarial, and a miss ships to production (§6 T4 reserve applies to auth/payment/PII scope) |
-| Dev Planning (FE/BE) | **T3** | Architecture + contracts freeze here; rework cost peaks |
+| Dev Planning (`Phase: FE`) | **T3** | The adapter boundary and the fixture set become the contract; rework cost peaks here |
+| Dev Planning (`Phase: BE`) | **T3** | Contracts freeze against an already-approved product; a missed error variant ships |
+| Product validation (Product Gate) | T2 | Packaging + capture; the judgment is the user's — same shape as design state 09 |
+| Back-end integration (Phase-2 seam) | **T3** | Error mapping and parity against fixtures; a miss reaches production behind an approved front-end |
 | Implementation | T2; T1 for mechanical slices (boilerplate, config, copy, codemods) | Plan quality already bought; assembly is standard work |
 | QA | T2 | Procedural verification + exploratory judgment |
 | Tech Review | **T3** | Seven dimensions + absence-checking = deepest read in the machine |
