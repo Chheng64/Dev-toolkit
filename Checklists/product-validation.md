@@ -1,7 +1,6 @@
 # Checklist — Product Validation (Product Gate)
 
-> Validator for the Phase-1 exit. Workflow: [../Workflows/product-validation.md](../Workflows/product-validation.md).
-> Any unchecked item → the gate is not put.
+> **Gate for:** `Human Review` (`Phase: FE`) → `Merged` — the Phase-1 exit ([product-validation](../Workflows/product-validation.md)). Any unchecked item → the gate is not granted.
 
 ## Preconditions
 - [ ] `Phase: FE`, FE PR open, CI green

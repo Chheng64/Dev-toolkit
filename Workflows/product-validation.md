@@ -24,6 +24,10 @@ question is "is this the product?", answered against the app, not the diff.
   what the human actually saw
 - S08 records the product freeze sha once the FE PR merges
 
+## BRD Sections It May Update
+
+S08 (append — the product freeze sha), S11 (read/cite only — the contract citation), `Approvals` property (writes `product`), S16 (append — the gate record).
+
 ## Responsibilities
 
 1. **Run it, do not screenshot it.** The review is conducted against the running app. A static
@@ -43,7 +47,7 @@ question is "is this the product?", answered against the app, not the diff.
 - [ ] Every S07 flow walked in the running app, recovery routes included
 - [ ] Every S09 state reached, each by a named fixture
 - [ ] Mock-backed limitations stated in the packet at full strength
-- [ ] `CTR-<brd-id>-v<n>` issued and cited in S11 before the gate is put
+- [ ] `CTR-<brd-id>-v<n>` issued and cited in S11 before the gate is granted
 - [ ] Verdict captured; change requests structured and routed; qualifications carry riders
 - [ ] S16 gate record names head sha + prototype version + contract version
 
@@ -60,3 +64,16 @@ question is "is this the product?", answered against the app, not the diff.
 - Letting the contract be written after the gate: the human is approving behaviour the contract
   claims to describe, so it is issued **before** the gate, not after.
 - Recording "approved" for an acceptance that carried qualifications.
+
+## Best Practices
+
+- Walk fixtures, not the abstract flow. A S09 state with no fixture built for it is not reachable,
+  and narrating what it "would" look like is not a walk — route the gap back as build work before
+  the verdict, not as a limitation absorbed into the packet.
+- Issue `CTR-<brd-id>-v<n>` before the gate, not after. The human is approving behaviour the
+  contract claims to describe; an approval scoped to a contract that does not yet exist is scoped
+  to nothing.
+- State mock-backed limitations in the terms they were discovered in, not softened into
+  reassurance — the receiving Phase-2 build pays the real price for anything smoothed over here.
+- Keep the walk re-drivable: name the fixture, the flow, and the head sha in the S16 record, so a
+  later reviewer reaches the same states instead of rediscovering them.
