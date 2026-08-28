@@ -18,16 +18,18 @@ MODULE_DIRS = ["Architecture", "AI", "Workflows", "Skills", "Standards",
 INDEX_EXEMPT = {
     "Documentation/module-index.md": "the index itself",
 }
-# Documentation/plans/ and Documentation/specs/ are this toolkit's own
-# pre-implementation design records (each spec is filed "approved design,
-# not yet implemented"): they legitimately name a guard/loop token before
-# any module defines it -- "New guard `C_X`", "`L_X` (new)", "Produces:
-# guard `C_X`". Rules G/K exist to keep the operative contract (MODULE_DIRS,
-# plus whatever cites it) self-consistent; a proposal document naming the
-# token it proposes is not that failure mode. Rules L (dead links) and M
-# (module index) still scan these directories in full -- only the guard/
-# loop token scan skips them.
-PLANNING_DIRS = ("Documentation/plans/", "Documentation/specs/")
+# Guard/loop tokens this plan's own working documents (Documentation/plans/
+# 2026-08-27-two-phase-development.md, Documentation/specs/2026-08-27-two-
+# phase-development-design.md) propose but do not yet define -- Task 2
+# defines each one for real, in workflow-state-machine.md. Remove each
+# entry once Task 2 lands. Everything else in those documents still gets
+# checked -- a typo or an invented token there still fails rule G/K.
+TOKEN_EXEMPT = {
+    "C_SERVER_SCOPE": "guard Task 2 adds to workflow-state-machine.md §4",
+    "C_PARITY": "guard Task 2 adds to workflow-state-machine.md §4",
+    "C_ISOLATION": "guard Task 2 adds to workflow-state-machine.md §4",
+    "L_CONTRACT": "loop Task 2 adds to workflow-state-machine.md §5",
+}
 
 violations = []
 
@@ -38,12 +40,6 @@ def fail(rule, where, msg):
 
 def rel(path):
     return os.path.relpath(path, ROOT)
-
-
-def is_contract_file(path):
-    """False for this toolkit's own pre-implementation planning/spec docs
-    (PLANNING_DIRS) -- see the comment on PLANNING_DIRS above."""
-    return not rel(path).replace(os.sep, "/").startswith(PLANNING_DIRS)
 
 
 def read(path):
@@ -90,9 +86,10 @@ def defined_tokens(path, pattern):
 
 def rule_tokens(files, kind, used_pattern, defs):
     for path in files:
-        for token in set(re.findall(used_pattern, read(path))):
-            if token not in defs:
-                fail(kind, rel(path), "undefined %s" % token)
+        for token in set(re.findall(used_pattern, strip_fences(read(path)))):
+            if token in defs or token in TOKEN_EXEMPT:
+                continue
+            fail(kind, rel(path), "undefined %s" % token)
 
 
 def rule_approvals(files):
@@ -137,13 +134,13 @@ def main():
         files = list(md_files())
         machine = os.path.join(ROOT, "Architecture", "workflow-state-machine.md")
         design = os.path.join(ROOT, "Architecture", "design-state-machine.md")
-        guards = defined_tokens(machine, r"^\| `(C_[A-Z_]+)`")
+        guards = (defined_tokens(machine, r"^\| `(C_[A-Z_]+)(?:\([^)]*\))?`")
+                  | defined_tokens(design, r"`(C_[A-Z_]+)(?:\([^)]*\))?`"))
         loops = (defined_tokens(machine, r"^\| `(L_[A-Z_]+)`")
                  | defined_tokens(design, r"`(L_[A-Z_]+)`"))
         rule_links(files)
-        contract_files = [p for p in files if is_contract_file(p)]
-        rule_tokens(contract_files, "G", r"`(C_[A-Z_]{2,})`", guards)
-        rule_tokens(contract_files, "K", r"`(L_[A-Z_]{2,})`", loops)
+        rule_tokens(files, "G", r"`(C_[A-Z_]{2,})(?:\([^)]*\))?`", guards)
+        rule_tokens(files, "K", r"`(L_[A-Z_]{2,})`", loops)
         rule_approvals(files)
         rule_module_index(files)
     except Exception as exc:  # tool error is unevaluable, not passing
