@@ -36,6 +36,18 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append — discovered technical constra
 6. List touched areas; orchestrator cross-checks other in-flight BRDs (serialize on overlap).
 6b. Fill the **Frontend mapping block** of every owned `screens/SCR-<nnn>.md` ([frontend-mapping template](../Templates/frontend-mapping.md)) — `C_CONTRACT` already verified design blocks; your blocks complete the contract.
 7. Estimate honestly; plan too big for one implementation pass → split into ordered slices in S10.
+8. **Plan the adapter boundary before the components.** Every server-touching interaction in S07
+   goes through one adapter interface per domain. Name the interface, its methods, and the single
+   **adapter selection point** file — the one place the implementation is chosen. Integration later
+   touches only that file.
+9. **Plan the fixture set, not just the happy path.** Per method: happy, empty, one per error
+   variant, and a slow case. Each error fixture names the S09 state it renders. A state in S09 with
+   no fixture is a state nobody will see before the Product Gate.
+10. **No server assumptions.** `Phase: FE` plans no endpoint, no schema, no auth mechanism. What the
+    server will look like is Phase 2's decision, made against the contract this phase issues.
+11. **Issue the contract at phase exit**, per [shared-contract](../Architecture/shared-contract.md):
+    `contract.ts`, `contract.md`, `fixtures/`, `VERSION` — written from the running app, not from
+    this plan.
 
 ## Completion Criteria
 
@@ -46,6 +58,9 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append — discovered technical constra
 - [ ] Touched-areas list present; conflict check against in-flight BRDs done
 - [ ] Plan traceable: S03 → S07/S08 → S10/S11 (no orphan work, no dropped states)
 - [ ] S16 stage-exit entry written
+- [ ] Adapter interface, method list and selection-point file named per domain
+- [ ] Fixture set planned: happy · empty · one per error variant · slow, each error fixture bound to its S09 state
+- [ ] Zero server-side decisions in S10/S11 (`Phase: FE`)
 
 ## Failure & Loops
 

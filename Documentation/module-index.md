@@ -40,7 +40,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - Language/framework: [typescript](../Standards/typescript.md) · [react](../Standards/react.md) · [nextjs](../Standards/nextjs.md) · [tailwind](../Standards/tailwind.md)
 - Design: [design-system](../Standards/design-system.md) · [accessibility](../Standards/accessibility.md) · [responsive-design](../Standards/responsive-design.md)
 - Structure: [naming-conventions](../Standards/naming-conventions.md) · [folder-structure](../Standards/folder-structure.md) · [component-structure](../Standards/component-structure.md)
-- Server/quality: [api-design](../Standards/api-design.md) · [code-quality](../Standards/code-quality.md) · [performance](../Standards/performance.md) · [security](../Standards/security.md) · [internationalization](../Standards/internationalization.md)
+- Server/quality: [api-design](../Standards/api-design.md) · [code-quality](../Standards/code-quality.md) · [performance](../Standards/performance.md) · [security](../Standards/security.md) · [internationalization](../Standards/internationalization.md) · [service-contracts](../Standards/service-contracts.md)
 - Process: [documentation](../Standards/documentation.md) · [git-strategy](../Standards/git-strategy.md)
 
 ## Templates/ (fill-in structures)
