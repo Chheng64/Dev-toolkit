@@ -17,7 +17,7 @@
 - [ ] Every referenced component is an approved DS component or a justified `new` from S08 — zero unmapped/one-off components
 
 ## API mapping (per owned screen)
-- [ ] API block present: required APIs with request/response models + error states → screen states, **or explicit `api: none`**
+- [ ] Every API dependency is documented: for `Phase: single` BRDs, the API block ↔ S11 contract; for split BRDs, every `demanded:` line names a method of the cited `CTR-<brd-id>-v<n>`, and at Phase-2 QA exit every `demanded:` line has a `provided:` line (`C_PARITY` check 2). Or explicit `api: none`.
 - [ ] Every referenced API exists in S11 ([api-specification](../Templates/api-specification.md) entry)
 
 ## QA mapping (per owned screen)
