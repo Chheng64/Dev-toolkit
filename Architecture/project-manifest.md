@@ -126,6 +126,15 @@ screen_contract:
   path: screens/                   # registry + per-screen contracts live here
   next_id: 1                       # next SCR number to allocate
 
+phases:
+  fe_exposure: flag        # flag | route-hidden | staging-only — how a merged
+                           # front-end on mocks is kept off users. Default: flag.
+                           # If no feature-flag system is declared, the default
+                           # degrades to route-hidden and the degradation is
+                           # logged S16.
+  contracts_path: contracts/   # single-repo shape only; ignored when
+                               # resources.contracts is bound
+
 security:                          # v1.8 — evidence commands for C_SECURITY (security-certification).
                                    # A command left empty is a recorded GAP, never a silent pass.
   scanners:
@@ -230,6 +239,7 @@ The **Project Resource Registry** = the `resources:` block **plus** the `communi
 | `notion.project_page` / `sprint_database` / `decision_log_database` | feature off (S16-in-BRD remains the decision log) |
 | `documentation.*` | doc-sync duties skip that target; technical-writer logs the gap once |
 | `github.backend_repository` / `infrastructure_repository` | **blocks** any stage whose plan requires it (Resource Decision fires at Dev Planning exit — guard `C_RESOURCES`) |
+| `contracts` | **Required when `repos.frontend` ≠ `repos.backend`.** The Shared Contract repo ([shared-contract](shared-contract.md) §2). Not offered for the single-repo shape — `phases.contracts_path` covers it. Missing/unreachable → Resource Decision, `C_RESOURCES` fails at Dev Planning exit |
 | `communication.telegram` | no notifications; terminal gates only |
 
 **Rebind fallout (hard):** any registry mutation on a slot that existing Screen Contract mappings or granted approvals reference → the affected mappings are marked invalid, the owning screens' status regresses (logged), and the stale-approval rule fires on the owning BRDs ([screen-contract](screen-contract.md) §5). Replacing a design file is a design change, never a silent swap.
