@@ -27,7 +27,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 
 ## Workflows/ (stage procedures)
 - [business-analysis](../Workflows/business-analysis.md) · [product-planning](../Workflows/product-planning.md) · [ux-workflow](../Workflows/ux-workflow.md) (states 04–05) · [ui-workflow](../Workflows/ui-workflow.md) (06–08) · [design-review](../Workflows/design-review.md) (09–11) · [flow-visualization](../Workflows/flow-visualization.md) (12, conditional) · [design-system-workflow](../Workflows/design-system-workflow.md)
-- [frontend-planning](../Workflows/frontend-planning.md) · [product-validation](../Workflows/product-validation.md) (Product Gate, Phase-1 exit) · [backend-planning](../Workflows/backend-planning.md) · [implementation](../Workflows/implementation.md)
+- [frontend-planning](../Workflows/frontend-planning.md) · [product-validation](../Workflows/product-validation.md) (Product Gate, Phase-1 exit) · [backend-planning](../Workflows/backend-planning.md) · [implementation](../Workflows/implementation.md) · [backend-integration](../Workflows/backend-integration.md) (Phase-2 seam)
 - [security-certification](../Workflows/security-certification.md) (`C_SECURITY`, before QA) · [qa](../Workflows/qa.md) · [code-review](../Workflows/code-review.md) · [git](../Workflows/git.md) · [release](../Workflows/release.md) · [debug](../Workflows/debug.md)
 - Per-project: [project-onboarding](../Workflows/project-onboarding.md) · [integration-validation](../Workflows/integration-validation.md)
 
@@ -55,6 +55,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - Dimensions: [accessibility](../Checklists/accessibility.md) · [performance](../Checklists/performance.md) · [security](../Checklists/security.md)
 - Guards: [screen-contract](../Checklists/screen-contract.md) (`C_CONTRACT` validator) · [security](../Checklists/security.md) (`C_SECURITY` validator)
 - [product-validation](../Checklists/product-validation.md) — the Product Gate validator
+- [integration-parity](../Checklists/integration-parity.md) — the `C_PARITY` validator
 
 ## Prompts/ (invocation patterns)
 - [planning](../Prompts/planning.md) · [research](../Prompts/research.md) · [architecture](../Prompts/architecture.md) · [design](../Prompts/design.md) · [development](../Prompts/development.md) · [refactoring](../Prompts/refactoring.md) · [testing](../Prompts/testing.md) · [debugging](../Prompts/debugging.md) · [documentation](../Prompts/documentation.md) · [review](../Prompts/review.md) · [prompt-improvement](../Prompts/prompt-improvement.md)
