@@ -13,6 +13,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - [project-manifest](../Architecture/project-manifest.md) — per-project config contract + Project Resource Registry (stable-ID bindings, health, Resource Decision, §3); `C_MANIFEST` gates all BRD work
 - [toolkit-registry](../Architecture/toolkit-registry.md) — user-global config (`~/.toolkit/registry.yaml`): BRD DB identity, projects parent page; inherited by every manifest
 - [screen-contract](../Architecture/screen-contract.md) — SCR registry + 5 mapping blocks; `C_CONTRACT` gates Dev Planning
+- [shared-contract](../Architecture/shared-contract.md) — the phase seam: `CTR-<brd-id>-v<n>`, file set, location by project shape, ownership + `C_ISOLATION`
 - [stack-profiles](../Architecture/stack-profiles.md) — manifest stack → applicable Standards + honest gaps
 - [context-package](../Architecture/context-package.md) — generated `context/` session-bootstrap summaries (derived cache, never edited)
 - [ecosystem-map](../Architecture/ecosystem-map.md) — concept bridge to paul/gsd-core/carl (informational only, no runtime dependency)
@@ -47,6 +48,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - Artifacts: [design-handoff](../Templates/design-handoff.md) · [component-documentation](../Templates/component-documentation.md) · [api-specification](../Templates/api-specification.md) · [security-certificate](../Templates/security-certificate.md) · [pull-request](../Templates/pull-request.md) · [retrospective](../Templates/retrospective.md)
 - Onboarding + contract: [project-configuration](../Templates/project-configuration.md) · [design-mapping](../Templates/design-mapping.md) · [frontend-mapping](../Templates/frontend-mapping.md) · [api-mapping](../Templates/api-mapping.md)
 - Design build: [prototype/](../Templates/prototype/README.md) (the Run Local player — `run-local.sh` · `serve.py` · `play.html`) · [traceability](../Templates/traceability.md)
+- [shared-contract](../Templates/shared-contract.md) — the contract artifact's fill-in shape
 
 ## Checklists/ (gates)
 - Stage exits: [analysis](../Checklists/analysis.md) · [ux-review](../Checklists/ux-review.md) · [ui-review](../Checklists/ui-review.md) · [design-qa](../Checklists/design-qa.md) · [flow-visualization](../Checklists/flow-visualization.md) · [development-ready](../Checklists/development-ready.md) · [qa-testing](../Checklists/qa-testing.md) · [code-review](../Checklists/code-review.md) · [release](../Checklists/release.md)

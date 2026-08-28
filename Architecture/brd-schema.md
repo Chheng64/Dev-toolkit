@@ -54,7 +54,7 @@ Sections are H2 headings in the page body, in this order. Each heading carries i
 | S08 | UI Decisions & Prototype | revise | Component inventory, DS mapping, token references, prototype links, Extension Notes |
 | S09 | Edge Cases & Non-Happy Paths | revise | Edge-case matrix: error, empty, loading, interrupted, offline, permission-denied per task |
 | S10 | Technical Plan & Architecture | revise | Approach, architecture notes, data flow, dependencies |
-| S11 | Component Plan & API Notes | revise | Files/components to create or modify. For server-scope BRDs this section **cites** the Shared Contract by id and version (`CTR-<brd-id>-v<n>`) and never reproduces it — see the shared-contract module |
+| S11 | Component Plan & API Notes | revise | Files/components to create or modify. For server-scope BRDs this section **cites** the Shared Contract by id and version (`CTR-<brd-id>-v<n>`) and never reproduces it — see the [shared-contract](shared-contract.md) module |
 | S12 | Implementation Notes & Progress | append | Dated progress entries; deviations from plan with reason |
 | S13 | Test Cases, Bugs & Verification | revise | Test cases mapped to ACs; bug list with severity; verification status per AC with **`Verified on: mocks \| integrated`**. An AC passing on mocks and failing integrated is a blocker |
 | S14 | Review Summary & Approval | revise | Review findings, concerns, recommendations, approval status. **Subsections (append-only, each owned by its issuing role):** `design-audit` (design state 08), `security-certificate` (`C_SECURITY`, before QA — [template](../Templates/security-certificate.md)), `handoff-gate` (design state 12, when in scope) |
