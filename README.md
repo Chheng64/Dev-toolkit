@@ -25,11 +25,13 @@ A reusable AI product-development operating system for solo builders working wit
 └───────┬───────────────────────┬───────────────────────┬─────────────────────┘
         │ reads config          │ reads/writes state    │ loads process
 ┌───────▼────────────┐  ┌───────▼────────────┐  ┌───────▼─────────────────────┐
-│ PROJECT MANIFEST   │  │ LIVING BRD         │  │ Workflows/  (18 modules)    │
+│ PROJECT MANIFEST   │  │ LIVING BRD         │  │ Workflows/  (20 modules)    │
 │ + RESOURCE REGISTRY│  │ Notion, per feature│  │ Skills/     (16 roles)      │
 │ project repo       │  │ properties = state │  │ Standards/  Templates/      │
 │ SCREEN CONTRACT    │  │ S01–S16 = content  │  │ Checklists/ Prompts/        │
 │ project repo       │  │                    │  │ Playbooks/                  │
+│ SHARED CONTRACT    │  │                    │  │                             │
+│ project repo       │  │                    │  │                             │
 └────────────────────┘  └─────────▲──────────┘  └─────────────────────────────┘
                                   │ MCP (registry-scoped)
                      External services: Notion (MCP) · GitHub (gh) ·
@@ -279,11 +281,11 @@ Dependencies point **down toward `Architecture/`** — it depends on nothing; `P
 |-----|---------|-----------|-----------|--------------|
 | [Architecture/](Architecture/) | Contracts: BRD schema (S01–S16), permission matrix, state machines, manifest + Resource Registry, toolkit registry, screen contract, shared contract, stack profiles, versioning | nothing (foundation) | contract changes — semver-gated | always (via orchestrator) |
 | [AI/](AI/) | Runtime: orchestrator, entry contract, BRD update protocol, model routing, MCP setup | Architecture | runtime behavior changes | every session entry |
-| [Workflows/](Workflows/) | 15 stage procedures (analysis → release, debug, onboarding) | Architecture | a stage's procedure improves | per stage |
+| [Workflows/](Workflows/) | 20 stage procedures (analysis → release, debug, onboarding, product-validation, backend-integration) | Architecture | a stage's procedure improves | per stage |
 | [Skills/](Skills/) | 16 roles with decision boundaries | Architecture | a role's judgment improves | per stage |
-| [Standards/](Standards/) | 17 tech standards (TS, React, Next.js, Tailwind v4, a11y, security, …) | Architecture | a quality bar changes | as referenced by stage |
-| [Templates/](Templates/) | 15 artifact formats (requirements, PR, bug report, mappings, …) | Architecture | an artifact format changes | when producing that artifact |
-| [Checklists/](Checklists/) | 12 machine-checkable gates | Architecture | an exit criterion changes | at stage exit |
+| [Standards/](Standards/) | 18 tech standards (TS, React, Next.js, Tailwind v4, a11y, security, service-contracts, …) | Architecture | a quality bar changes | as referenced by stage |
+| [Templates/](Templates/) | 18 artifact formats (requirements, PR, bug report, mappings, shared-contract, …) | Architecture | an artifact format changes | when producing that artifact |
+| [Checklists/](Checklists/) | 15 machine-checkable gates | Architecture | an exit criterion changes | at stage exit |
 | [Prompts/](Prompts/) | 11 invocation patterns | Architecture | an invocation improves | when you invoke one |
 | [Playbooks/](Playbooks/) | full-feature · parallel-brds · hotfix · design-only | everything (composition layer) | a composed flow changes | when a playbook is invoked |
 | [extensions/](extensions/telegram/README.md) | Opt-in adapters (Telegram v2) | orchestrator contract only | adding/changing an adapter | only if enabled in manifest |

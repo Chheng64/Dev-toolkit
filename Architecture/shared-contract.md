@@ -59,8 +59,7 @@ the two-phase split exists to remove.
 | Role | Reads | Writes |
 |---|---|---|
 | Front-end, Phase 1 | S03/S06/S07/S09, screen contracts, its own tree | its own tree; **issues** the contract at phase exit |
-| Back-end, Phase 2 | the contract, S03/S06/S07/S09, screen-contract `demanded` blocks | its own tree; the `provided` blocks |
-| Back-end, Phase 2 | — | **never** the contract, **never** front-end behaviour |
+| Back-end, Phase 2 | the contract, S03/S06/S07/S09, screen-contract `demanded` blocks | its own tree; the `provided` blocks — **never** the contract, **never** front-end behaviour |
 
 `C_ISOLATION` enforces this mechanically off the S10 touched-areas list. Integration's adapter
 wiring is the one bounded exception: one file per domain, the selection point named in

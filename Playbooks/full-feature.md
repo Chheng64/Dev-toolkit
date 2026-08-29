@@ -20,6 +20,7 @@
 | 9 | `PR` `FE` | [git](../Workflows/git.md) — PR from [template](../Templates/pull-request.md); exposure control in place | CI ✅ |
 | 10 | `Human Review` `FE` | [product-validation](../Workflows/product-validation.md) — issue `CTR-<brd-id>-v<n>` (`issued_against` the PR head sha); walk the running app | **Product Gate** |
 | 11 | `Merged` `FE` | merge; record the product freeze sha (`VERSION.product_freeze` + S16); **flip to `Phase: BE`**, reset loop counts | phase flip logged S16 |
+| — | — **Phase 1 → Phase 2 seam** — | the Shared Contract (`CTR-<brd-id>-v<n>`) is the only channel; back-end planning reads it, S03/S06/S07/S09 and screen-contract `demanded:` blocks — never front-end source (`C_ISOLATION`) | — |
 | 12 | `Dev Planning` `BE` | [backend-planning](../Workflows/backend-planning.md) — derive from the contract; front-end source is not an input | [development-ready](../Checklists/development-ready.md) |
 | 13 | `Implementation` `BE` | [implementation](../Workflows/implementation.md) → [backend-integration](../Workflows/backend-integration.md) + certification | `C_SECURITY` |
 | 14 | `QA` `BE` | [qa](../Workflows/qa.md) integrated mode; re-verify every `mocks` row | [integration-parity](../Checklists/integration-parity.md) → `C_PARITY` |

@@ -69,9 +69,10 @@ S11 (read/cite only — the contract citation), `Approvals` property (writes `pr
 - Walk fixtures, not the abstract flow. A S09 state with no fixture built for it is not reachable,
   and narrating what it "would" look like is not a walk — route the gap back as build work before
   the verdict, not as a limitation absorbed into the packet.
-- Issue `CTR-<brd-id>-v<n>` before the gate, not after. The human is approving behaviour the
-  contract claims to describe; an approval scoped to a contract that does not yet exist is scoped
-  to nothing.
+- `VERSION.issued_against` names the FE PR **head** sha — never a merge sha, which does not exist
+  until after the gate this stage runs, and which a squash or rebase makes a genuinely different
+  sha from the head anyway. `VERSION.product_freeze` is the orchestrator's write, later, at
+  `Merged (FE)`; this stage never fills it and never waits for it.
 - State mock-backed limitations in the terms they were discovered in, not softened into
   reassurance — the receiving Phase-2 build pays the real price for anything smoothed over here.
 - Keep the walk re-drivable: name the fixture, the flow, and the head sha in the S16 record, so a

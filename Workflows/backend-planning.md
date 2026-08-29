@@ -42,17 +42,17 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 5. Authz matrix: who may call what; default deny.
 6. **Threat model into S06** — one row per new/changed surface: surface → asset at risk → plausible attacker/abuse → mitigation → **how it will be verified** (test name, code read, probe). This is what [security-certification](security-certification.md) checks against before QA; a mitigation with no verification method is a wish. High-risk findings → S06 via `Affects:`.
 7. Security pass with Standards/security: input validation boundaries, secrets handling, rate limits on exposed surfaces.
-7. Fill the **`provided:`** half of the API mapping block of every owned `screens/SCR-<nnn>.md` ([api-mapping template](../Templates/api-mapping.md)) for split BRDs — the `demanded:` half is Phase-1's ([frontend-planning](frontend-planning.md), at Phase-1 exit). For `Phase: single` BRDs (no split, pre-v2.0 shape) fill the whole block here. Screens without server needs get explicit `api: none`.
-8. Contracts frozen before implementation — `Phase: single`: frontend plans against them. Split BRDs: the Shared Contract was already frozen at Phase-1 exit and frontend planning already ran against it, before this stage started.
-9. **Answer every line of `contract.md`.** A method whose error variants are unimplemented has not
+8. Fill the **`provided:`** half of the API mapping block of every owned `screens/SCR-<nnn>.md` ([api-mapping template](../Templates/api-mapping.md)) for split BRDs — the `demanded:` half is Phase-1's ([frontend-planning](frontend-planning.md), at Phase-1 exit). For `Phase: single` BRDs (no split, pre-v2.0 shape) fill the whole block here. Screens without server needs get explicit `api: none`.
+9. Contracts frozen before implementation — `Phase: single`: frontend plans against them. Split BRDs: the Shared Contract was already frozen at Phase-1 exit and frontend planning already ran against it, before this stage started.
+10. **Answer every line of `contract.md`.** A method whose error variants are unimplemented has not
    been planned — it has been half-planned, and QA will find the half at integration.
-10. **Plan the fixture-comparison method.** Name, per contracted method, how Phase-2 Implementation
+11. **Plan the fixture-comparison method.** Name, per contracted method, how Phase-2 Implementation
     will compare its real response to `fixtures/` (which tool/test, at which boundary) — the
     fixtures are the recorded shape the front-end was approved against, and a mismatch is a
     contract conflict, not a detail. **The comparison itself runs at Implementation exit**
     ([backend-integration](backend-integration.md) Responsibility 3), where a real server exists;
     there is no server to check yet at Dev Planning.
-11. **Never edit the contract.** A server constraint that contradicts approved behaviour is a
+12. **Never edit the contract.** A server constraint that contradicts approved behaviour is a
     finding plus a Product Owner ruling, routed through `L_CONTRACT`; the front-end reissues
     `v<n+1>`. Editing the artifact in place destroys the record of what Phase 2 was built against.
 
