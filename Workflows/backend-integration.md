@@ -41,8 +41,9 @@ edits to another role's content, and never the contract artifact.
    `L_CONTRACT`, never reshape the front-end to absorb it.
 4. **Remove the exposure control** (`phases.fe_exposure`) in this PR. Its removal is what makes the
    feature reachable, and `C_PARITY` checks the removal is in the diff.
-5. **Demote then delete the mock.** Test-only first so Phase-2 QA can still run the fixture cases,
-   deleted before `C_PARITY`. A dual path behind an environment variable is a mock in production.
+5. **Demote then delete the mock.** Test-only first so Phase-2 QA can still run the fixture cases —
+   `C_PARITY` check 3 accepts either end state, deleted or demoted to test-only. A dual path
+   behind an environment variable is a mock in production.
 6. **Log every deviation** in S12 with reason, as any implementation stage does.
 
 ## Completion Criteria
