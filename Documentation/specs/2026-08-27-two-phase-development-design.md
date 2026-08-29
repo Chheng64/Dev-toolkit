@@ -78,17 +78,31 @@ Ready → Analysis → Planning →[Direction]→ Design → Design Review →[D
 
 ### 3.3 New guard `C_SERVER_SCOPE`
 
-Decided at **`Planning` exit**, logged in S16 with its evidence:
+**Two-step** (amended by the whole-branch review, v2.0.0 — the original single-step form decided
+this from S07 at `Planning` exit, but S07 is a `Design` output and does not exist until `Design`
+runs; see CHANGELOG `[2.0.0]` Fixed).
+
+**Provisional**, at **`Planning` exit**, from what exists there — S02 business goal/scope, S03
+acceptance criteria, S06 risks — logged in S16 with its evidence:
+
+> Does anything imply persistence, authentication, or an external service?
+
+**Confirmed**, at **`Design Review` exit**, against the actual S07 flow transitions once they
+exist:
 
 > Does any S07 flow transition touch persistence, authentication, or an external service?
+
+A flip from the provisional value is logged in S16 naming the flow transition that caused it, and
+`Phase` is re-tagged before `Dev Planning`.
 
 - **True** → `Phase: FE`, split run.
 - **False** → `Phase: single`, one pass.
 - BE-only BRDs (jobs, migrations, no UI) are `single` by the same test — no UI to validate, so the
   contract comes from S03/S11 as today.
 
-Deciding it at `Planning` rather than at `Dev Planning` means the split is known before design
-starts, so the design stage knows whether it is feeding a two-pass build.
+Deciding it provisionally at `Planning` rather than at `Dev Planning` means the split is known
+before design starts, so the design stage knows whether it is feeding a two-pass build; confirming
+it again at `Design Review` exit is what makes the decision correct once S07 exists.
 
 ### 3.4 Transition deltas
 
@@ -96,8 +110,9 @@ Additions and changes to [workflow-state-machine §3](../../Architecture/workflo
 
 | From | Trigger | To |
 |---|---|---|
-| Planning | Direction approved ∧ `C_SERVER_SCOPE` | Design (`Phase: FE`) |
-| Planning | Direction approved ∧ ¬`C_SERVER_SCOPE` | Design (`Phase: single`) |
+| Planning | Direction approved ∧ `C_SERVER_SCOPE` (provisional) | Design (`Phase: FE`, provisional) |
+| Planning | Direction approved ∧ ¬`C_SERVER_SCOPE` (provisional) | Design (`Phase: single`, provisional) |
+| Design Review | `C_SERVER_SCOPE` confirmed against S07 (`Phase` re-tagged if it flips, logged S16) | Dev Planning |
 | Human Review (`FE`) | approval `product` | Merged (FE) |
 | **Merged (`FE`)** | **product freeze recorded** | **Dev Planning (`Phase: BE`)** |
 | Merged (`BE` \| `single`) | release steps done | Released |

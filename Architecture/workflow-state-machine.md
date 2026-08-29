@@ -77,13 +77,13 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | Analysis | blocking ambiguity, human unavailable | Blocked |
 | Planning | recommendation `re-scope` or gate denied | Analysis |
 | Planning | recommendation `stop` + human confirms | Stopped |
-| Planning | Direction approved ∧ `C_SERVER_SCOPE` | Design (`Phase: FE`) |
-| Planning | Direction approved ∧ ¬`C_SERVER_SCOPE` | Design (`Phase: single`) |
+| Planning | Direction approved ∧ `C_SERVER_SCOPE` (provisional) | Design (`Phase: FE`, provisional) |
+| Planning | Direction approved ∧ ¬`C_SERVER_SCOPE` (provisional) | Design (`Phase: single`, provisional) |
 | Design | design machine reaches SELF_AUDIT `pass` | Design Review |
 | Design | design machine HALT | Blocked |
-| Design Review | approval `design` ∧ ¬`C_HANDOFF_REQUIRED` ∧ `C_CONTRACT` pass | Dev Planning |
+| Design Review | approval `design` ∧ ¬`C_HANDOFF_REQUIRED` ∧ `C_CONTRACT` pass ∧ `C_SERVER_SCOPE` confirmed against S07 (`Phase` re-tagged if it flips, logged S16) | Dev Planning |
 | Design Review | approval `design` ∧ `C_HANDOFF_REQUIRED` | Design Review (design state 12 `FLOW_VISUALIZATION` runs) |
-| Design Review (state 12) | Developer Handoff Gate granted ∧ `C_NAVMAP_CLEAN` ∧ `C_CONTRACT` pass | Dev Planning |
+| Design Review (state 12) | Developer Handoff Gate granted ∧ `C_NAVMAP_CLEAN` ∧ `C_CONTRACT` pass ∧ `C_SERVER_SCOPE` confirmed against S07 (`Phase` re-tagged if it flips, logged S16) | Dev Planning |
 | Design Review (state 12) | unratified registry route / registry ↔ prototype conflict | Design (design machine states 05 / 10) |
 | Design Review | approval `design` ∧ `C_CONTRACT` fail | owning stage per validator report (Design / Dev Planning owners), S16 logged |
 | Design Review | change requests | Design (design machine REVISION routing) |
@@ -126,7 +126,7 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | `C_HANDOFF_REQUIRED` | The design goes to a build audience that was not in the room, so the navigation map is in scope. Source: `project-manifest.yaml` `design.handoff_required` (**default `false`**), overridable per BRD via a `Handoff Required` property. False → design state 12 is skipped, and the skip is logged S16. |
 | `C_NAVMAP_CLEAN` | Navigation derivation ([design-state-machine](design-state-machine.md) §10, `navgraph.mjs`) exits clean at the configured severity, or every remaining finding carries a granted waiver + rider debt item. Checked at the Developer Handoff Gate only. |
 | `C_RESOURCES` | Every registry slot the plan implies is bound and healthy: repos named by S10/S11, design file behind Design blocks, APIs' backing repo, doc targets the plan writes to. Checked at **Dev Planning exit** — moves resource gaps to the cheapest stop point instead of mid-Implementation. Fail → Resource Decision ([project-manifest](project-manifest.md) §3). |
-| `C_SERVER_SCOPE` | Any S07 flow transition touches persistence, authentication, or an external service. Decided at **`Planning` exit**, logged S16 with its evidence. True → `Phase: FE` (two passes); false → `Phase: single` (one pass, pre-v2.0 behaviour). BE-only BRDs are `single` by the same test — there is no UI to validate. |
+| `C_SERVER_SCOPE` | Two-step. **Provisional**, decided at **`Planning` exit** from S02 business goal/scope, S03 acceptance criteria, and S06 risks (S07 does not exist yet — it is a `Design` output, §2 row 03): does anything imply persistence, authentication, or an external service? Logged S16 with its evidence; sets the provisional `Phase`. **Confirmed**, at **`Design Review` exit**, against the actual S07 flow transitions once they exist: does any S07 flow transition touch persistence, authentication, or an external service? A flip from the provisional value is logged S16 naming the flow transition that caused it, and `Phase` is re-tagged before `Dev Planning`. True → `Phase: FE` (two passes); false → `Phase: single` (one pass, pre-v2.0 behaviour). BE-only BRDs are `single` by the same test — there is no UI to validate. |
 | `C_PARITY` | Checked at **Phase-2 QA exit**: (1) every AC marked `mocks` in S13 also carries an `integrated` verdict; (2) every method of the cited `CTR-<brd-id>-v<n>` has a `provided` API block in its screen's contract, and the shipped real adapter implements the contract interface unmodified; (3) zero live mock paths in shipped code — the mock adapter is deleted or demoted to test-only; (4) the Phase-1 exposure control is removed, and its removal is in the BE PR diff. Fail → Implementation (`Phase: BE`). |
 | `C_ISOLATION` | Checked at **each phase's Tech Review**, mechanically, against the S10 touched-areas list: a `Phase: BE` branch touches no front-end paths and no contract files; a `Phase: FE` branch touches no server paths. The single bounded exception is integration's adapter wiring — one file per domain, declared in the Phase-2 S10. Fail → Tech Review stops with the offending paths named. |
 

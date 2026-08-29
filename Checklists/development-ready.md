@@ -3,8 +3,8 @@
 > **Gate for:** `Dev Planning` → `Implementation` ([frontend-planning](../Workflows/frontend-planning.md) / [backend-planning](../Workflows/backend-planning.md) exit). Implementation entered below this bar burns loop ceilings.
 
 ## Phase scope
-- [ ] `Phase` is set (`FE` · `BE` · `single`) and matches the `C_SERVER_SCOPE` decision logged in S16
-- [ ] `Phase: BE` only — the cited `CTR-<brd-id>-v<n>` exists, `VERSION` names the product freeze sha, and the plan answers every line of `contract.md`
+- [ ] `Phase` is set (`FE` · `BE` · `single`) and matches the **confirmed** `C_SERVER_SCOPE` decision logged in S16 (the `Design Review`-exit confirmation against S07, not merely the `Planning`-exit provisional value)
+- [ ] `Phase: BE` only — the cited `CTR-<brd-id>-v<n>` exists, `VERSION` names both `issued_against` and `product_freeze`, and the plan answers every line of `contract.md`
 - [ ] `Phase: FE` only — adapter interface, selection point and fixture set are planned; zero server-side decisions in S10/S11
 
 ## Upstream state
@@ -29,6 +29,6 @@
 - [ ] Test plan: every AC → layer + named test file (zero unmapped ACs)
 
 ## Ground truth
-- [ ] Branch `feat/<brd-id>-<slug>` created from fresh main; `Branch` property set
+- [ ] Branch created from fresh main; `Branch` property set — `feat/<brd-id>-<slug>` (`Phase: single`); `Phase: FE` → `feat/<brd-id>-<slug>-fe`; `Phase: BE` → `feat/<brd-id>-<slug>-be`, cut from main **after** the FE merge (main now carries the FE code the contract was issued against)
 - [ ] Env/deps available (new dependency decisions recorded per [code-quality](../Standards/code-quality.md) rule 13)
 - [ ] S16 stage-exit entry written

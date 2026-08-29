@@ -18,8 +18,11 @@
 1. **Pickup** — select next BRD from `Ready` (priority order) when a slot is free (<3 in-flight) and `C_MANIFEST` holds for its project.
 2. **Stage routing** — map `Status` → workflow module → skill → model tier per [model-routing.md](model-routing.md); load only what the stage needs; log the model in the Stage-Enter S16 entry.
 2b. **Phase handling (v2.0)** — the phase decision, the Phase-1→Phase-2 flip, and the Product Gate ([../Architecture/workflow-state-machine.md](../Architecture/workflow-state-machine.md) §3 transitions, §4 guards, §6 gates; gate conduct: [../Workflows/product-validation.md](../Workflows/product-validation.md)):
-   1. At `Planning` exit, decide `C_SERVER_SCOPE`, set `Phase`, and log the decision with its
-      evidence in S16. Never infer the phase later from the diff.
+   1. At `Planning` exit, decide `C_SERVER_SCOPE` **provisionally** from S02/S03/S06 (S07 does not
+      exist yet), set `Phase`, and log the decision with its evidence in S16. At `Design Review`
+      exit, **confirm** `C_SERVER_SCOPE` against the actual S07 flow transitions; a flip from the
+      provisional value is logged S16 with the flow transition that caused it, and `Phase` is
+      re-tagged before `Dev Planning`. Never infer the phase later from the diff.
    2. At `Merged` with `Phase: FE`: record the product freeze sha in S08, flip `Phase` to `BE`,
       **reset `Loop Count`** and log the reset, then re-enter `Dev Planning`. Do not pass to
       `Released` — release is a Phase-2 event.
