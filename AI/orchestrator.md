@@ -17,7 +17,7 @@
 0b. **Resource boundary** (v1.5 — [Project Boundary Rule](../Architecture/integration-map.md) §2b). All external access resolves through the Project Resource Registry by **stable identifier**. Never workspace-search Notion, browse Figma, or list repositories; never guess a resource. A stage requiring a slot that is missing, skipped, or `health: unreachable` → raise a **Resource Decision** ([project-manifest §3](../Architecture/project-manifest.md)): *connect existing / create new / confirm absence*. While it is pending, set `Status: Blocked`, `Blocked Reason: resource: <slot> — <reason>` — this makes the stop resumable at session entry (§2) and fires the Telegram failure trigger (responsibility 9). Log the decision S16; clear `Blocked` on resolution.
 1. **Pickup** — select next BRD from `Ready` (priority order) when a slot is free (<3 in-flight) and `C_MANIFEST` holds for its project.
 2. **Stage routing** — map `Status` → workflow module → skill → model tier per [model-routing.md](model-routing.md); load only what the stage needs; log the model in the Stage-Enter S16 entry.
-2b. **Phase handling (v2.0).**
+2b. **Phase handling (v2.0)** — the phase decision, the Phase-1→Phase-2 flip, and the Product Gate ([../Architecture/workflow-state-machine.md](../Architecture/workflow-state-machine.md) §3 transitions, §4 guards, §6 gates; gate conduct: [../Workflows/product-validation.md](../Workflows/product-validation.md)):
    1. At `Planning` exit, decide `C_SERVER_SCOPE`, set `Phase`, and log the decision with its
       evidence in S16. Never infer the phase later from the diff.
    2. At `Merged` with `Phase: FE`: record the product freeze sha in S08, flip `Phase` to `BE`,
@@ -82,8 +82,8 @@ GATE    if stage exits through a human gate: present decision package
 When a human gate is pending, present exactly:
 
 1. **BRD** — ID, name, link.
-2. **Gate** — which (Direction / Design / **Developer Handoff** / Final) and what approval unlocks.
-3. **Review target** — Direction: S01–S06 summary. Design: running prototype URL (Run Local, port 8765 default) + the **deep-link hook table** + S07–S09. Developer Handoff: the **derivation report** (`navmap-report.md`) — never the picture — plus registry sha, derivation run and prototype versions. Final: PR link + diff summary + S13/S14 verdicts.
+2. **Gate** — which (Direction / Design / **Product** / **Developer Handoff** / Final) and what approval unlocks.
+3. **Review target** — Direction: S01–S06 summary. Design: running prototype URL (Run Local, port 8765 default) + the **deep-link hook table** + S07–S09. Product: the running front-end (local URL, at the FE PR head sha) + the S07/S09 walk evidence + the issued `CTR-<brd-id>-v<n>` + the frozen prototype version + the mock-backed limitations statement — conduct: [../Workflows/product-validation.md](../Workflows/product-validation.md). Developer Handoff: the **derivation report** (`navmap-report.md`) — never the picture — plus registry sha, derivation run and prototype versions. Final: PR link + diff summary + S13/S14 verdicts.
 4. **Known limitations** — from audits, transparently, at full strength. Every waiver names its rider debt item, grantor and closing condition; an acceptance with qualifications is recorded with its qualifications.
 5. **Ask** — `approve` / `request-changes` (structured, each with target) / `reject` / `stop`.
 
