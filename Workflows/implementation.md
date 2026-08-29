@@ -40,6 +40,17 @@ S10 (edit — plan corrections, logged), S11 (edit — same), S12 (edit/append),
 10. New reusable pattern emerges → note in S16; candidate for toolkit/DS, don't inline-fork it.
 11. **Exit through certification** ([security-certification](security-certification.md)): the stage is not complete at "tests green" — it is complete when S14 carries a `certified` certificate naming the current branch head.
 
+## Phase scope (v2.0)
+
+| `Phase` | Builds | Exits through |
+|---|---|---|
+| `FE` | components, state, the mock adapter and its fixture set; every S09 state reachable | certification → Tech Review → the **Product Gate** |
+| `BE` | endpoints, data model, authz, integrations; then [backend-integration](backend-integration.md) | certification → Tech Review → `C_PARITY` at QA exit → the **Final Gate** |
+| `single` | both, as before v2.0 | unchanged |
+
+A `Phase: FE` branch writes no server code and a `Phase: BE` branch writes no front-end behaviour —
+`C_ISOLATION` fails the branch that does, at Tech Review, naming the paths.
+
 ## Completion Criteria
 
 - [ ] Every S11 planned component/endpoint implemented or its deviation logged

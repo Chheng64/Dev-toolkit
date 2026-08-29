@@ -11,28 +11,32 @@ Own the Git ↔ BRD bridge: branch lifecycle, commit hygiene, PR assembly, CI st
 
 ## Inputs
 
-- Branch ops: BRD entering Implementation (branch needed) — BRD-ID + slug
+- Branch ops: BRD entering Implementation (branch needed) — BRD-ID + slug + `Phase`
 - PR stage: Tech Review `approve` in S14; branch pushed; S13/S14 summaries
-- Merge: `Approvals` contains `final` (Human Review passed)
+- Merge: `Approvals` contains `product` (`Phase: FE`) **or** `final` (`Phase: BE` | `Phase: single`)
 
 ## Outputs
 
-- Branch `feat/<brd-id-lower>-<slug>` from current main; BRD `Branch` property set
-- PR from template (Phase 4; until then: title `[BRD-ID] name`, body = BRD link + S13/S14 summary + test evidence + known limitations); BRD `PR` property set
-- Merge per project strategy (default squash); branch deleted; S16 records
+- Branch, from current main: `feat/<brd-id>-<slug>` for `Phase: single`; `feat/<brd-id>-<slug>-fe` /
+  `feat/<brd-id>-<slug>-be` for split BRDs (v2.0) — BRD `Branch` property set to the current
+  phase's name
+- PR from template (Phase 4; until then: title `[BRD-ID] name`, body = BRD link + S13/S14 summary + test evidence + known limitations); BRD `PR` property set to the current phase's PR (and `FE PR` / `BE PR` populated for split BRDs, [brd-schema §1](../Architecture/brd-schema.md))
+- Merge per project strategy (default squash); branch deleted **once its phase is fully done with it**, never before — see Responsibility 5; S16 records
 - Commit convention enforced: `<type>(<BRD-ID>): <subject>`
 
 ## BRD Sections It May Update
 
-S15 (edit), S16 (append), `Branch`/`PR` properties.
+S15 (edit), S16 (append), `Branch`/`PR`/`FE PR`/`BE PR` properties.
 
 ## Responsibilities
 
-1. **Branch creation** (Implementation entry): from up-to-date main, exactly one branch per BRD. Long-lived branch → rebase on main at stage boundaries, never mid-QA (invalidates verification).
+1. **Branch creation** (Implementation entry): from up-to-date main, exactly one branch **per phase** — `Phase: single` cuts `feat/<brd-id>-<slug>` once; a split BRD cuts `feat/<brd-id>-<slug>-fe` for Phase 1, then cuts `feat/<brd-id>-<slug>-be` **fresh from main** (containing the FE merge) for Phase 2, after the flip. Long-lived branch → rebase on main at stage boundaries, never mid-QA (invalidates verification).
 2. **Commit hygiene:** convention format, atomic commits; interactive-rebase cleanup before PR if history is noisy (never after review starts).
 3. **PR assembly:** title/body contracts; first line links the BRD; includes: what/why summary (from S01/S03), test evidence (S13), review verdict (S14), known limitations, screenshots for UI. CI must be green before Human Review is raised.
 4. **CI failure:** route to Implementation with the failing check named — PR stage doesn't fix code.
-5. **Merge** (post-Final Gate): verify approval current (stale-approval rule — new commits since approval revoke it), squash-merge with convention subject, delete branch, confirm main green after merge.
+5. **Merge:**
+   - `Phase: FE` (post-**Product** Gate, approval `product`): verify approval current (stale-approval rule), squash-merge with convention subject, confirm main green. **Delete the FE branch only after the phase flip records the product freeze sha** (S16) — never in the same step as the merge.
+   - `Phase: BE` | `Phase: single` (post-**Final** Gate, approval `final`): verify approval current, squash-merge with convention subject, delete branch, confirm main green after merge.
 6. Cross-BRD conflict at merge time → rebase + re-run QA-relevant checks; conflicts touching another in-flight BRD's declared areas → surface to user before resolving.
 
 ## Completion Criteria (PR stage)
@@ -52,7 +56,7 @@ S15 (edit), S16 (append), `Branch`/`PR` properties.
 ## Common Mistakes
 
 - Branch from stale main — guaranteed conflict tax at merge.
-- Mixed-BRD commits on one branch — breaks 1 BRD = 1 branch = 1 PR, unrevertable.
+- Mixed-BRD commits on one branch — breaks 1 BRD = 1 branch = 1 PR **per phase**, unrevertable.
 - History rewrite after review started — invalidates what the reviewer saw.
 - Merging on stale approval ("only tiny commits since") — the rule exists because "tiny" is where regressions hide.
 - PR body that's just a link — the PR is the human gate's decision package; make it decidable in one read.

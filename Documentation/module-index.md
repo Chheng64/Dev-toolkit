@@ -13,6 +13,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - [project-manifest](../Architecture/project-manifest.md) — per-project config contract + Project Resource Registry (stable-ID bindings, health, Resource Decision, §3); `C_MANIFEST` gates all BRD work
 - [toolkit-registry](../Architecture/toolkit-registry.md) — user-global config (`~/.toolkit/registry.yaml`): BRD DB identity, projects parent page; inherited by every manifest
 - [screen-contract](../Architecture/screen-contract.md) — SCR registry + 5 mapping blocks; `C_CONTRACT` gates Dev Planning
+- [shared-contract](../Architecture/shared-contract.md) — the phase seam: `CTR-<brd-id>-v<n>`, file set, location by project shape, ownership + `C_ISOLATION`
 - [stack-profiles](../Architecture/stack-profiles.md) — manifest stack → applicable Standards + honest gaps
 - [context-package](../Architecture/context-package.md) — generated `context/` session-bootstrap summaries (derived cache, never edited)
 - [ecosystem-map](../Architecture/ecosystem-map.md) — concept bridge to paul/gsd-core/carl (informational only, no runtime dependency)
@@ -26,7 +27,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 
 ## Workflows/ (stage procedures)
 - [business-analysis](../Workflows/business-analysis.md) · [product-planning](../Workflows/product-planning.md) · [ux-workflow](../Workflows/ux-workflow.md) (states 04–05) · [ui-workflow](../Workflows/ui-workflow.md) (06–08) · [design-review](../Workflows/design-review.md) (09–11) · [flow-visualization](../Workflows/flow-visualization.md) (12, conditional) · [design-system-workflow](../Workflows/design-system-workflow.md)
-- [frontend-planning](../Workflows/frontend-planning.md) · [backend-planning](../Workflows/backend-planning.md) · [implementation](../Workflows/implementation.md)
+- [frontend-planning](../Workflows/frontend-planning.md) · [product-validation](../Workflows/product-validation.md) (Product Gate, Phase-1 exit) · [backend-planning](../Workflows/backend-planning.md) · [implementation](../Workflows/implementation.md) · [backend-integration](../Workflows/backend-integration.md) (Phase-2 seam)
 - [security-certification](../Workflows/security-certification.md) (`C_SECURITY`, before QA) · [qa](../Workflows/qa.md) · [code-review](../Workflows/code-review.md) · [git](../Workflows/git.md) · [release](../Workflows/release.md) · [debug](../Workflows/debug.md)
 - Per-project: [project-onboarding](../Workflows/project-onboarding.md) · [integration-validation](../Workflows/integration-validation.md)
 
@@ -39,7 +40,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - Language/framework: [typescript](../Standards/typescript.md) · [react](../Standards/react.md) · [nextjs](../Standards/nextjs.md) · [tailwind](../Standards/tailwind.md)
 - Design: [design-system](../Standards/design-system.md) · [accessibility](../Standards/accessibility.md) · [responsive-design](../Standards/responsive-design.md)
 - Structure: [naming-conventions](../Standards/naming-conventions.md) · [folder-structure](../Standards/folder-structure.md) · [component-structure](../Standards/component-structure.md)
-- Server/quality: [api-design](../Standards/api-design.md) · [code-quality](../Standards/code-quality.md) · [performance](../Standards/performance.md) · [security](../Standards/security.md) · [internationalization](../Standards/internationalization.md)
+- Server/quality: [api-design](../Standards/api-design.md) · [code-quality](../Standards/code-quality.md) · [performance](../Standards/performance.md) · [security](../Standards/security.md) · [internationalization](../Standards/internationalization.md) · [service-contracts](../Standards/service-contracts.md)
 - Process: [documentation](../Standards/documentation.md) · [git-strategy](../Standards/git-strategy.md)
 
 ## Templates/ (fill-in structures)
@@ -47,11 +48,14 @@ Every module, one line. Load only what the task needs — this index is the map,
 - Artifacts: [design-handoff](../Templates/design-handoff.md) · [component-documentation](../Templates/component-documentation.md) · [api-specification](../Templates/api-specification.md) · [security-certificate](../Templates/security-certificate.md) · [pull-request](../Templates/pull-request.md) · [retrospective](../Templates/retrospective.md)
 - Onboarding + contract: [project-configuration](../Templates/project-configuration.md) · [design-mapping](../Templates/design-mapping.md) · [frontend-mapping](../Templates/frontend-mapping.md) · [api-mapping](../Templates/api-mapping.md)
 - Design build: [prototype/](../Templates/prototype/README.md) (the Run Local player — `run-local.sh` · `serve.py` · `play.html`) · [traceability](../Templates/traceability.md)
+- [shared-contract](../Templates/shared-contract.md) — the contract artifact's fill-in shape
 
 ## Checklists/ (gates)
 - Stage exits: [analysis](../Checklists/analysis.md) · [ux-review](../Checklists/ux-review.md) · [ui-review](../Checklists/ui-review.md) · [design-qa](../Checklists/design-qa.md) · [flow-visualization](../Checklists/flow-visualization.md) · [development-ready](../Checklists/development-ready.md) · [qa-testing](../Checklists/qa-testing.md) · [code-review](../Checklists/code-review.md) · [release](../Checklists/release.md)
 - Dimensions: [accessibility](../Checklists/accessibility.md) · [performance](../Checklists/performance.md) · [security](../Checklists/security.md)
 - Guards: [screen-contract](../Checklists/screen-contract.md) (`C_CONTRACT` validator) · [security](../Checklists/security.md) (`C_SECURITY` validator)
+- [product-validation](../Checklists/product-validation.md) — the Product Gate validator
+- [integration-parity](../Checklists/integration-parity.md) — the `C_PARITY` validator
 
 ## Prompts/ (invocation patterns)
 - [planning](../Prompts/planning.md) · [research](../Prompts/research.md) · [architecture](../Prompts/architecture.md) · [design](../Prompts/design.md) · [development](../Prompts/development.md) · [refactoring](../Prompts/refactoring.md) · [testing](../Prompts/testing.md) · [debugging](../Prompts/debugging.md) · [documentation](../Prompts/documentation.md) · [review](../Prompts/review.md) · [prompt-improvement](../Prompts/prompt-improvement.md)

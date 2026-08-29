@@ -23,6 +23,7 @@ Decide whether requirements + evidence justify spending design and build effort 
 - S03 updated — prioritized requirement set (value/effort/risk per requirement); deferred items marked `deferred (see S16)`, never deleted
 - S06 updated — risks scored; every high-risk item has mitigation or explicit accept-risk note
 - S16 — direction recommendation ∈ {`proceed`, `re-scope`, `stop`} with rationale; gate outcome record
+- `Phase` set provisionally (`C_SERVER_SCOPE`, provisional — [workflow-state-machine §4](../Architecture/workflow-state-machine.md)), logged S16 with its evidence. Re-confirmed at `Design Review` exit against S07; not final here.
 
 ## BRD Sections It May Update
 
@@ -39,6 +40,7 @@ S02 (edit), S01/S03/S04/S05/S06 (append), S16 (append). Product Manager row in t
    - `stop` — feature isn't worth building; say why plainly
 5. **Record the decision and its triggers** — what evidence would reverse it.
 6. Raise the **Direction Gate** (orchestrator §4 format): S01–S06 summary + recommendation + cut-line. Capture outcome in S16 + `Approvals: direction`.
+7. **Decide `C_SERVER_SCOPE` provisionally** (v2.0), from what exists at this exit — S02 business goal/scope, S03 acceptance criteria, S06 risks (S07 does not exist yet): does anything imply persistence, authentication, or an external service? Set `Phase` (`FE` or `single`) and log the decision with its evidence in S16. This is provisional — `Design Review` exit confirms it against the actual S07 flow transitions and re-tags `Phase` if it flips.
 
 Present at the gate: the recommendation and its rationale, the priority bands, the high-risk items with their mitigation-or-acceptance, and the cut list. **Unresolved contradictions are presented as unresolved** — a gate answered on a tidied-up picture is not an approval of the real direction.
 
@@ -106,6 +108,7 @@ Exit: rules pass **and** the Direction Gate is resolved.
 - [ ] Every high-risk item mitigated or explicitly accepted
 - [ ] Recommendation written with rationale in S16
 - [ ] Direction Gate resolved: `Approvals` contains `direction` (proceed) OR routed to Analysis (re-scope/deny) OR `Stopped` (stop confirmed)
+- [ ] `C_SERVER_SCOPE` decided provisionally, `Phase` set, evidence logged in S16
 - [ ] S16 stage-exit entry written
 
 ## Failure & Loops

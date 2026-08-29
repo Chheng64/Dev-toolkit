@@ -2,7 +2,7 @@
 
 A reusable AI product-development operating system for solo builders working with Claude, Notion, and Git. It turns feature development into a deterministic 13-stage state machine with living documents, hard quality gates, and full resumability — any session can die at any moment and the next one picks up exactly where it left off.
 
-**Version: v1.10.0** · consumed by projects as a version-pinned git submodule · improve a rule once here, every project inherits it at its next pin bump.
+**Version: v2.0.0** · consumed by projects as a version-pinned git submodule · improve a rule once here, every project inherits it at its next pin bump.
 
 ---
 
@@ -10,8 +10,9 @@ A reusable AI product-development operating system for solo builders working wit
 
 ```
                         ┌─────────────────────────────┐
-                        │ YOU  (3 gates + 1 optional) │
-                        │  direction · design · final │
+                        │  YOU (4 gates + 1 optional) │
+                        │     direction · design ·    │
+                        │       product · final       │
                         │    [· developer handoff]    │
                         └──────▲───────────────▲───────┘
                        terminal│               │Telegram plugin
@@ -24,11 +25,13 @@ A reusable AI product-development operating system for solo builders working wit
 └───────┬───────────────────────┬───────────────────────┬─────────────────────┘
         │ reads config          │ reads/writes state    │ loads process
 ┌───────▼────────────┐  ┌───────▼────────────┐  ┌───────▼─────────────────────┐
-│ PROJECT MANIFEST   │  │ LIVING BRD         │  │ Workflows/  (18 modules)    │
+│ PROJECT MANIFEST   │  │ LIVING BRD         │  │ Workflows/  (20 modules)    │
 │ + RESOURCE REGISTRY│  │ Notion, per feature│  │ Skills/     (16 roles)      │
 │ project repo       │  │ properties = state │  │ Standards/  Templates/      │
 │ SCREEN CONTRACT    │  │ S01–S16 = content  │  │ Checklists/ Prompts/        │
 │ project repo       │  │                    │  │ Playbooks/                  │
+│ SHARED CONTRACT    │  │                    │  │                             │
+│ project repo       │  │                    │  │                             │
 └────────────────────┘  └─────────▲──────────┘  └─────────────────────────────┘
                                   │ MCP (registry-scoped)
                      External services: Notion (MCP) · GitHub (gh) ·
@@ -37,13 +40,13 @@ A reusable AI product-development operating system for solo builders working wit
                        whole workspace (Project Boundary Rule)
 ```
 
-The orchestrator is the only component that advances state. Everything it needs to resume lives in the three sources of truth — never in the session. External access is scoped to the Project Resource Registry — the toolkit never searches your workspace once a project is onboarded. Full wiring: [Architecture/integration-map.md](Architecture/integration-map.md).
+The orchestrator is the only component that advances state. Everything it needs to resume lives in the four sources of truth — never in the session. External access is scoped to the Project Resource Registry — the toolkit never searches your workspace once a project is onboarded. Full wiring: [Architecture/integration-map.md](Architecture/integration-map.md).
 
 ## Design Philosophy
 
-- **Single source of truth** — every fact has exactly one home (manifest, BRD, or Screen Contract). Workflows consume, never re-ask, never duplicate.
+- **Single source of truth** — every fact has exactly one home (manifest, BRD, Screen Contract, or Shared Contract). Workflows consume, never re-ask, never duplicate.
 - **Explicit resource ownership** — every project **binds** its external resources (Notion DBs, Figma files, repos, docs, chats) at onboarding, by stable identifier. The registry is a hard boundary: the toolkit touches only what's bound, and asks connect-or-create when something's missing — it never searches your workspace, never guesses. ([Architecture/project-manifest.md](Architecture/project-manifest.md) §3)
-- **AI executes, human directs** — Claude runs all 13 stages; you decide at three gates, plus a fourth (**Developer Handoff**) only if you switch it on. See [Decision Boundaries](#decision-boundaries).
+- **AI executes, human directs** — Claude runs all 13 stages; you decide at four gates (Direction, Design, Product, Final), plus the optional **Developer Handoff** only if you switch it on. See [Decision Boundaries](#decision-boundaries).
 - **Stage-based development** — features move through a gated state machine with checklisted exits, not freeform prompting.
 - **Resume from state, not session** — machine position is reconstructed from Notion properties + the S16 Decision Log. Kill any session, nothing is lost.
 - **Modular & versioned** — single-responsibility modules, semver-tagged, consumed as a pinned submodule. Projects upgrade deliberately.
@@ -53,26 +56,35 @@ The orchestrator is the only component that advances state. Everything it needs 
 
 ## How It Works — Three Ideas
 
-**1. Three sources of truth, nothing duplicated.**
+**1. Four sources of truth, nothing duplicated.**
 
 | Artifact | Truth for | Lives in |
 |----------|-----------|----------|
 | `project-manifest.yaml` | project configuration + **Resource Registry** (every bound external resource, by stable ID) | project repo |
 | **Living BRD** (one Notion page per feature) | requirements, decisions, progress, history | Notion database |
 | **Screen Contract** (`screens/`) | design → development traceability per screen | project repo |
+| **Shared Contract** (`contracts/<brd-id>/`, `CTR-<brd-id>-v<n>`) | the FE↔BE API contract for a split BRD — types, per-method behaviour, fixtures — issued once at the phase flip | project repo (or the bound `resources.contracts` slot, split-repo shape) |
 
-Workflows consume these; they never re-ask what an artifact already answers. Feature knowledge evolves in the BRD mid-work — findings land the moment they're discovered, never in side documents.
+Workflows consume these; they never re-ask what an artifact already answers. Feature knowledge evolves in the BRD mid-work — findings land the moment they're discovered, never in side documents. A split BRD's Phase-2 Dev Planning reads the Shared Contract, not the front-end source — the contract is the only thing that crosses the phase seam.
 
 **2. A gated state machine runs every feature.**
 
 ```
-Ready → Analysis → Planning → Design → Design Review → Dev Planning →
-Implementation →🔒→ QA → Tech Review → PR → Human Review → Merged → Released
-        🚦 Direction Gate   🚦 Design Gate                     🚦 Final Gate
-                                          🔒 Security Certificate (machine gate)
+Ready → Analysis → Planning → Design → Design Review →
+  ┌ Phase FE ─────────────────────────────────────────────────┐
+  │ Dev Planning → Implementation →🔒→ QA → Tech Review → PR → │
+  │ Human Review 🚦 Product Gate → Merged (product freeze)     │
+  └──────────────────────┬─────────────────────────────────────┘
+              Shared Contract CTR-<brd-id>-v<n>
+  ┌ Phase BE ────────────▼─────────────────────────────────────┐
+  │ Dev Planning → Implementation →🔒→ QA → Tech Review → PR → │
+  │ Human Review 🚦 Final Gate → Merged → Released             │
+  └────────────────────────────────────────────────────────────┘
+        🚦 Direction Gate   🚦 Design Gate
+        🔒 Security Certificate (machine gate, per phase)
 ```
 
-Claude runs every stage; **you only act at the three gates** (approve scope → review the running prototype → approve the PR) — plus the optional **Developer Handoff Gate** on the navigation map, off by default (`design.handoff_required`). Everything else — research with citations, edge-case enumeration, prototype, code, **a security certificate issued against a named commit before QA opens**, evidence-based QA, 7-dimension review — executes and logs itself to the BRD. Loops are bounded (no infinite revision), approvals go stale if content changes after them, and nothing ships with unmet acceptance criteria.
+Claude runs every stage; **you only act at the four gates** (approve scope → review the running prototype → approve the product → approve the PR) — plus the optional **Developer Handoff Gate** on the navigation map, off by default (`design.handoff_required`). Everything else — research with citations, edge-case enumeration, prototype, code, **a security certificate issued against a named commit before QA opens**, evidence-based QA, 7-dimension review — executes and logs itself to the BRD. Loops are bounded (no infinite revision), approvals go stale if content changes after them, and nothing ships with unmet acceptance criteria. A BRD with no server scope (`Phase: single`) runs this once, straight through to the Final Gate — no split, no Product Gate, no contract; that is every pre-v2.0 BRD and the default for a BE-only or client-only feature.
 
 **3. State lives in Notion, never in the session.** Every transition writes the BRD's Decision Log (S16) and its status properties. Kill any session; the next one reconstructs everything from Notion alone.
 
@@ -111,8 +123,9 @@ Layer 2 · PROJECT CONFIGURATION  project-manifest.yaml (config + Resource
          Registry), project-overrides.md — tells the engine what this project
          is and which external resources it OWNS; validated before any work
                                     ↓
-Layer 3 · DEVELOPMENT SYSTEM     Living BRD, Screen Contract, Workflows,
-         Skills, Standards — what each stage does and to what quality bar
+Layer 3 · DEVELOPMENT SYSTEM     Living BRD, Screen Contract, Shared Contract,
+         Workflows, Skills, Standards — what each stage does and to what
+         quality bar
                                     ↓
 Layer 4 · COMMUNICATION          extensions/ — Telegram v2 (Slack/Discord
          possible later); adapters that relay gates, never advance state
@@ -161,8 +174,8 @@ npx create-next-app@latest <project> --typescript --tailwind --eslint --app --sr
 cd <project>
 
 git submodule add https://github.com/Chheng64/Dev-toolkit.git toolkit
-cd toolkit && git fetch --tags && git checkout v1.10.0 && cd ..
-git add -A && git commit -m "chore: pin toolkit v1.10.0"
+cd toolkit && git fetch --tags && git checkout v2.0.0 && cd ..
+git add -A && git commit -m "chore: pin toolkit v2.0.0"
 ```
 
 ### Step 2 — Onboard (mandatory; nothing runs without it)
@@ -204,7 +217,7 @@ Up to **3 BRDs run in parallel** (one branch + one PR each); the orchestrator se
 
 ## Execution Lifecycle
 
-End-to-end, from nothing to shipped — the three 🚦 marks are the only places you act:
+End-to-end, from nothing to shipped — the four 🚦 marks are the only places you act (five with Developer Handoff enabled):
 
 ```
 Register → Onboard → Create BRD (Ready)
@@ -214,14 +227,20 @@ Analysis ──🚦 Direction Gate (approve scope)
 Planning → Design → Design Review ──🚦 Design Gate (review running prototype)
                                   └─🚦 Developer Handoff Gate (navigation map — only if enabled)
    ↓
-Dev Planning → Implementation ──🔒 Security Certificate (C_SECURITY, no human token)
+Dev Planning `FE` → Implementation `FE` ──🔒 Security Certificate (per phase, no human token)
    ↓
-QA → Tech Review → PR
+QA `FE` → Tech Review `FE` → PR `FE` → Human Review ──🚦 Product Gate (approve the running product)
    ↓
-Human Review ──🚦 Final Gate (approve PR)
+Merged `FE` (product freeze) ── Shared Contract CTR-<brd-id>-v<n> ──▶ Dev Planning `BE`
+   ↓
+Implementation `BE` ──🔒 Security Certificate (per phase)
+   ↓
+QA `BE` → Tech Review `BE` → PR `BE` → Human Review ──🚦 Final Gate (approve PR)
    ↓
 Merged → Released
 ```
+
+`Phase: single` BRDs — every pre-v2.0 BRD, plus any new one whose flows never touch persistence, auth, or an external service, plus any BE-only BRD (no UI to validate) — skip the split: one pass from Dev Planning straight through, `Human Review` is the Final Gate directly, and there is no FE/BE split labelling, no Product Gate, and no contract.
 
 Approvals are scoped to what you saw — if gated content changes afterward, the approval is revoked and the gate re-raises.
 
@@ -247,6 +266,7 @@ Approvals are scoped to what you saw — if gated content changes afterward, the
 | Business direction & scope (Direction Gate) | Analysis, research with citations |
 | Design approval (Design Gate) | Planning, UX, prototype, self-audit against the render, implementation |
 | Navigation-map sign-off (Developer Handoff Gate — only when `design.handoff_required`) | Deriving the map from the Screen Contract, validating it, reporting findings |
+| Product approval — is this the running product? (Product Gate — split BRDs, `Phase: FE → Merged`) | Building on mocks, walking every S07 flow and S09 state on real code, issuing the Shared Contract |
 | Merge approval (Final Gate) | QA with evidence, 7-dimension review, documentation |
 
 If a decision isn't at a gate, it's Claude's — bounded by the permission matrix and logged in S16. ([Architecture/permission-matrix.md](Architecture/permission-matrix.md))
@@ -259,13 +279,13 @@ Dependencies point **down toward `Architecture/`** — it depends on nothing; `P
 
 | Dir | Purpose | Depends on | Edit when | Claude loads |
 |-----|---------|-----------|-----------|--------------|
-| [Architecture/](Architecture/) | Contracts: BRD schema (S01–S16), permission matrix, state machines, manifest + Resource Registry, toolkit registry, screen contract, stack profiles, versioning | nothing (foundation) | contract changes — semver-gated | always (via orchestrator) |
+| [Architecture/](Architecture/) | Contracts: BRD schema (S01–S16), permission matrix, state machines, manifest + Resource Registry, toolkit registry, screen contract, shared contract, stack profiles, versioning | nothing (foundation) | contract changes — semver-gated | always (via orchestrator) |
 | [AI/](AI/) | Runtime: orchestrator, entry contract, BRD update protocol, model routing, MCP setup | Architecture | runtime behavior changes | every session entry |
-| [Workflows/](Workflows/) | 15 stage procedures (analysis → release, debug, onboarding) | Architecture | a stage's procedure improves | per stage |
+| [Workflows/](Workflows/) | 20 stage procedures (analysis → release, debug, onboarding, product-validation, backend-integration) | Architecture | a stage's procedure improves | per stage |
 | [Skills/](Skills/) | 16 roles with decision boundaries | Architecture | a role's judgment improves | per stage |
-| [Standards/](Standards/) | 17 tech standards (TS, React, Next.js, Tailwind v4, a11y, security, …) | Architecture | a quality bar changes | as referenced by stage |
-| [Templates/](Templates/) | 15 artifact formats (requirements, PR, bug report, mappings, …) | Architecture | an artifact format changes | when producing that artifact |
-| [Checklists/](Checklists/) | 12 machine-checkable gates | Architecture | an exit criterion changes | at stage exit |
+| [Standards/](Standards/) | 18 tech standards (TS, React, Next.js, Tailwind v4, a11y, security, service-contracts, …) | Architecture | a quality bar changes | as referenced by stage |
+| [Templates/](Templates/) | 18 artifact formats (requirements, PR, bug report, mappings, shared-contract, …) | Architecture | an artifact format changes | when producing that artifact |
+| [Checklists/](Checklists/) | 15 machine-checkable gates | Architecture | an exit criterion changes | at stage exit |
 | [Prompts/](Prompts/) | 11 invocation patterns | Architecture | an invocation improves | when you invoke one |
 | [Playbooks/](Playbooks/) | full-feature · parallel-brds · hotfix · design-only | everything (composition layer) | a composed flow changes | when a playbook is invoked |
 | [extensions/](extensions/telegram/README.md) | Opt-in adapters (Telegram v2) | orchestrator contract only | adding/changing an adapter | only if enabled in manifest |

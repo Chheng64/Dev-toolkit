@@ -36,9 +36,14 @@ S14 (edit), S16 (append). **Specialist roles append only, and only where their o
 7. **DS conformance:** token references only, no one-off styling, extensions went through design-system workflow.
 8. Classify findings `blocker`/`major`/`minor` + concrete fix direction. Verdict: zero blockers → `approve`; else `request-changes` → Implementation (`L_REVIEW`).
 
+Mechanical check, run alongside the seven dimensions but not one of them — a path check, not a judgment call:
+
+- **Phase isolation (`C_ISOLATION`, v2.0):** check the diff's paths against the S10 touched-areas list: a `Phase: BE` branch must touch no front-end paths beyond the declared selection point (one file per domain) and no contract files; a `Phase: FE` branch must touch no server paths. Report the offending paths and stop.
+
 ## Completion Criteria
 
 - [ ] All seven dimensions reviewed — none skipped, each with explicit result (clean or findings)
+- [ ] `C_ISOLATION` checked for phase-split branches (`Phase: FE` / `Phase: BE`); offending paths reported if found
 - [ ] Security certificate present, `certified`, current against the final head; gaps and waivers read and accepted or challenged
 - [ ] Every finding: location, severity, why it matters, fix direction
 - [ ] Plan-conformance check done; unlogged deviations flagged

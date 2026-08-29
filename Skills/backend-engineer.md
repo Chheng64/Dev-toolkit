@@ -8,6 +8,12 @@
 
 Owns server-side truth: contracts, data, auth, integration failure behavior. Assumes every input hostile, every external service slow/duplicated/out-of-order, every mutation retried. Names the source of truth per entity and defends it.
 
+## Phase ownership (v2.0)
+
+Owns `Phase: BE`. Reads the Shared Contract; **never edits it**, and never reads front-end source to
+infer it. A server constraint that contradicts approved behaviour is a finding plus a Product Owner
+ruling routed through `L_CONTRACT`, not a quiet reshape of the product.
+
 ## Responsibilities
 
 - Contract every server-touching flow transition: request/response/error shapes, auth requirement

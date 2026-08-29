@@ -4,6 +4,53 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [2.0.0] — 2026-08-27
+
+**Development splits into two gated phases.** The front-end is built on mocks and approved by a
+human as the product; the back-end then derives its contract from that approved behaviour instead of
+from documents. The two phases communicate only through a third artifact.
+
+### Added
+- `Architecture/shared-contract.md` + `Templates/shared-contract.md` — `CTR-<brd-id>-v<n>`:
+  `contract.ts`, `contract.md`, `fixtures/`, `VERSION`. Superseded, never edited.
+- `Workflows/product-validation.md` + `Checklists/product-validation.md` — the **Product Gate**.
+- `Workflows/backend-integration.md` + `Checklists/integration-parity.md` — the Phase-2 seam and
+  `C_PARITY`.
+- `Standards/service-contracts.md` — adapter boundary, fixture discipline, exposure control.
+- `tools/toolkit-check.py` — consistency checker: links, guard/loop vocabulary, approval tokens,
+  module-index coverage, phase vocabulary. Exit 2 = unevaluable, never passing.
+- Guards `C_SERVER_SCOPE`, `C_PARITY`, `C_ISOLATION`; loop `L_CONTRACT` (ceiling 2); BRD property
+  `Phase`; approval token `product`; manifest `phases:` block and the `contracts` registry slot.
+
+### Changed
+- Loop ceilings are per phase and reset at the flip.
+- S11 **cites** the contract instead of holding it; S13 gains `Verified on: mocks | integrated`.
+- Screen-contract API block becomes `demanded` → `provided`.
+- Backend planning's inputs are the contract; front-end source is explicitly not an input.
+
+### Fixed — whole-branch review (spec amendments)
+- `C_SERVER_SCOPE` was specified as a single decision at `Planning` exit sourced from S07 — but S07
+  is a `Design` output and does not exist at `Planning` exit. Amended to a two-step guard:
+  **provisional** at `Planning` exit (from S02/S03/S06), **confirmed** at `Design Review` exit
+  against the actual S07 flow transitions, with a logged flip and `Phase` re-tag before
+  `Dev Planning` (spec §3.3, `Architecture/workflow-state-machine.md` §3/§4,
+  `AI/orchestrator.md` responsibility 2b, `Checklists/development-ready.md`).
+- The migration invariant (`brd-schema.md` §migration) stated two clauses that both matched a
+  pre-cutover BRD not yet past `Planning`, with opposite results. Reduced to one clause: only a BRD
+  already past `Planning` at cutover is `Phase: single`; anything at or before `Planning` is
+  evaluated by `C_SERVER_SCOPE` like any other BRD (mirrored below).
+
+### Migration
+Two Notion edits, once per workspace: add the `Phase` select (`FE`, `BE`, `single`) and add
+`product` to the `Approvals` multi-select. **Every BRD already past `Planning` at cutover becomes
+`Phase: single`** and behaves exactly as it did under v1.10.0; a BRD at or before `Planning` is
+evaluated by `C_SERVER_SCOPE` like any other BRD under v2.0.0.
+
+### Notes
+- No `Status` value is added, renamed or removed; the 13 stages stand. The major bump is for the
+  manual Notion migration and the changed meaning of `Merged` for split BRDs.
+- Design sub-machine states 01–12 are untouched.
+
 ## [1.10.0] — 2026-08-25
 
 **Gap sweep against the vendored source.** A double-check of the vendored toolkit's process docs against what the toolkit actually carries found ten missing pieces. All ten are now in.

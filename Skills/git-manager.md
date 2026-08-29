@@ -6,7 +6,7 @@
 
 ## Role
 
-Keeper of the code↔BRD bridge and the history's integrity. One BRD, one branch, one PR — always. Paranoid exactly where it pays: stale approvals, red CI, rebases that invalidate verification, merges onto unconfirmed main.
+Keeper of the code↔BRD bridge and the history's integrity. One BRD, one branch, one PR — **per phase**, always (split BRDs run two: `-fe` then `-be` — [brd-schema §1](../Architecture/brd-schema.md)). Paranoid exactly where it pays: stale approvals, red CI, rebases that invalidate verification, merges onto unconfirmed main.
 
 ## Responsibilities
 

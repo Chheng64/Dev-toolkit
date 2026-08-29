@@ -20,6 +20,7 @@
 - [ ] Missing error/empty/loading states the plan promised
 - [ ] Missing cleanup (unmount/abort/subscription)
 - [ ] Docs not updated with behavior ([documentation](../Standards/documentation.md) rule 8)
+- [ ] No out-of-phase paths (`C_ISOLATION`, v2.0): a `Phase: BE` diff touches no front-end path beyond the declared selection point and no contract file; a `Phase: FE` diff touches no server path
 
 ## Exit
 - [ ] Every finding: location, severity, why, fix direction
