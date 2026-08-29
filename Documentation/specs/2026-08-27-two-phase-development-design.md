@@ -68,6 +68,13 @@ Ready → Analysis → Planning →[Direction]→ Design → Design Review →[D
 
 `Phase: single` runs the segment once, ending at the Final Gate — the v1.10.0 path exactly.
 
+**D5 (locked decision, §2): two branches, two PRs.** The branch name carries the phase — split
+BRDs run `feat/<brd-id>-<slug>-fe` then, cut fresh from main after the FE merge,
+`feat/<brd-id>-<slug>-be`; `Phase: single` keeps the unsuffixed `feat/<brd-id>-<slug>`. The FE
+branch is merged at the Product Gate and deleted only after the phase flip records the product
+freeze sha; see [Workflows/git.md](../../Workflows/git.md) and
+[Architecture/brd-schema.md](../../Architecture/brd-schema.md) §1 (`Branch`/`PR`/`FE PR`/`BE PR`).
+
 ### 3.2 New BRD property
 
 | Property | Type | Values | Set by |
@@ -301,7 +308,7 @@ ends in a certificate against its own branch head.
 | Module | Change |
 |---|---|
 | `Architecture/workflow-state-machine.md` | §2 catalog gains a Phase column · §3 transition deltas (§3.4) · §4 `C_SERVER_SCOPE`, `C_PARITY`, `C_ISOLATION` · §5 per-phase ceilings + `L_CONTRACT` · §6 Product Gate |
-| `Architecture/brd-schema.md` | `Phase` property · `Approvals` += `product` · S11 **cites** `CTR-<brd-id>-v<n>` (no new subsection) · S13 `Verified on` column |
+| `Architecture/brd-schema.md` | `Phase` property · `Approvals` += `product` · S11 **cites** `CTR-<brd-id>-v<n>` (no new subsection) · S13 `Verified on` column · `Branch`/`PR` gain phase-keyed forms; `FE PR`/`BE PR` added for split BRDs so the Product Gate's approval scope survives the Phase-2 PR overwriting `PR` |
 | **`Architecture/shared-contract.md`** *(new)* | the Shared Contract module — location by project shape, file set, `CTR` identity and supersession, ownership and isolation rules (§4) |
 | **`Templates/shared-contract.md`** *(new)* | the artifact's shape: `contract.ts` / `contract.md` / `fixtures/` / `VERSION` |
 | `Architecture/screen-contract.md` | API block becomes `demanded` → `provided`, both naming contract methods; validation check 5 reads both |
@@ -323,6 +330,8 @@ ends in a certificate against its own branch head.
 | `Playbooks/design-only.md`, `hotfix.md` | declare `Phase: single` |
 | `AI/orchestrator.md` | phase-aware resume, phase flip, gate presentation |
 | `AI/model-routing.md` | tiers for the two new workflows |
+| `Workflows/git.md` | branch convention gains a phase suffix (`-fe`/`-be`) for split BRDs; merge input becomes `product` (`Phase: FE`) or `final` (`Phase: BE` \| `single`); FE branch deletion deferred to the phase flip; BE branch cut from main after the flip |
+| `Standards/git-strategy.md`, `Skills/git-manager.md`, `AI/CLAUDE-global.md` | the "one BRD = one branch = one PR" invariant qualified **per phase** |
 | `README.md`, `Documentation/module-index.md`, `Documentation/CHANGELOG.md` | machine diagram, index rows, release notes |
 
 ## 7. Version and migration

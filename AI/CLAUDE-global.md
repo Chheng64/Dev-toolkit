@@ -50,7 +50,7 @@ Every BRD write follows [brd-update-protocol.md](brd-update-protocol.md) under [
 - Human gates block. Present the decision package (orchestrator §4) and stop.
 
 ### 5. Git Discipline
-Naming contracts (branch/commit/PR ↔ BRD): [../Architecture/integration-map.md](../Architecture/integration-map.md) §3. One BRD = one branch = one PR. Commit style per Standards/git-strategy (until built: Conventional Commits + `(<BRD-ID>)` scope).
+Naming contracts (branch/commit/PR ↔ BRD): [../Architecture/integration-map.md](../Architecture/integration-map.md) §3. One BRD = one branch = one PR **per phase** (split BRDs run two: `-fe` then `-be`). Commit style per Standards/git-strategy (until built: Conventional Commits + `(<BRD-ID>)` scope).
 
 ### 6. Precedence
 1. Explicit user instruction (log overrides in S16 when they bend the process)

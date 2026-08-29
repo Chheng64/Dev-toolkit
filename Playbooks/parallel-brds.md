@@ -5,7 +5,7 @@
 ## Invariants
 
 1. **Cap 3** in-flight (Status ∈ Analysis…Human Review). Slot frees at `Merged`. `C_SLOT_FREE` blocks pickup — no exceptions "just to start".
-2. One BRD = one branch = one PR — never a shared branch, never mixed commits.
+2. One BRD = one branch = one PR **per phase** — never a shared branch, never mixed commits (split BRDs run two: `-fe` then `-be`).
 3. One session works one BRD's stage at a time; switch only at stage boundaries (Notion state makes switching free).
 4. Machine state lives in Notion only — no cross-BRD memory carried in-session.
 

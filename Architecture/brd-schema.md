@@ -21,14 +21,20 @@ One database for all projects. Every page is a Living BRD.
 | `Stage Owner` | Select | role name (from Skills/) | Which role is currently acting |
 | `Priority` | Select | `P0`–`P3` | Pick order for parallel slots |
 | `Ready` | Checkbox | — | Human marks BRD eligible for pickup |
-| `Branch` | Text | `feat/<brd-id>-<slug>` | Git link |
-| `PR` | URL | GitHub PR link | Git link |
+| `Branch` | Text | `feat/<brd-id>-<slug>` (`Phase: single`); `feat/<brd-id>-<slug>-fe` / `feat/<brd-id>-<slug>-be` (split BRDs, v2.0) | Git link — names the **current phase's** branch |
+| `PR` | URL | GitHub PR link | Git link — holds the **current phase's** PR |
+| `FE PR` | URL | GitHub PR link | Split BRDs only (v2.0) — the Phase-1 PR, preserved after `Merged (FE)` overwrites `PR` with the Phase-2 link, so the Product Gate's approval scope (`workflow-state-machine.md` §6) stays evaluable against the PR it was granted on |
+| `BE PR` | URL | GitHub PR link | Split BRDs only (v2.0) — the Phase-2 PR |
 | `Approvals` | Multi-select | `direction`, `design`, `product`, `final` | Human gates granted |
 | `Phase` | Select | `FE` · `BE` · `single` | Which pass of the build segment the BRD is in (v2.0). Machine state — set by the orchestrator at `Planning` exit, flipped at `Merged (FE)`. Hand edits only to correct a mis-scoped BRD, logged S16 |
 | `Prototype` | URL | served prototype / Figma ref | Design artifact quick link (optional; added v1.1) |
 | `Loop Count` | Number | int | Revision-loop ceiling tracking |
 | `Blocked Reason` | Text | — | Set when Status = Blocked |
 | `Toolkit Version` | Text | semver | Toolkit version the BRD ran under |
+
+**v2.0 migration note:** `FE PR` / `BE PR` are new properties for split BRDs only. Existing
+(pre-v2.0, `Phase: single`) BRDs keep using the single `Branch`/`PR` fields exactly as before —
+`FE PR`/`BE PR` stay empty for them.
 
 ### Status Values (state machine states)
 

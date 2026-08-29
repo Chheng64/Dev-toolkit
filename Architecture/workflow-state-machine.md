@@ -167,7 +167,9 @@ across the flip, because it *is* the flip.
 ## 7. Parallelism
 
 Up to **3 BRDs in-flight** (`C_SLOT_FREE`). Rules:
-- One BRD = one branch = one PR. No shared branches.
+- One BRD = one branch = one PR **per phase** (`feat/<brd-id>-<slug>` for `Phase: single`;
+  `feat/<brd-id>-<slug>-fe` / `-be` for split BRDs — [brd-schema §1](brd-schema.md)). No shared
+  branches.
 - Human gates queue; the orchestrator presents pending gates batched, oldest first.
 - Same-file conflicts across in-flight BRDs → flag at Dev Planning (S10 must list touched areas); prefer serializing conflicting BRDs.
 
