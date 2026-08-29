@@ -24,8 +24,12 @@
       provisional value is logged S16 with the flow transition that caused it, and `Phase` is
       re-tagged before `Dev Planning`. Never infer the phase later from the diff.
    2. At `Merged` with `Phase: FE`: record the product freeze sha in S16 (never S08 — no role has
-      write rights there for this; permission-matrix unchanged), flip `Phase` to `BE`,
-      **reset `Loop Count`** and log the reset, then re-enter `Dev Planning`. Do not pass to
+      write rights there for this; permission-matrix unchanged) **and** write it to
+      `VERSION.product_freeze` in the contract artifact ([shared-contract](../Architecture/shared-contract.md),
+      [Templates/shared-contract.md](../Templates/shared-contract.md)) — S16 stays the canonical
+      machine-state record; the `VERSION` write is what `Checklists/development-ready.md`'s
+      Phase-BE entry reads, and it requires both `VERSION` fields present. Then flip `Phase` to
+      `BE`, **reset `Loop Count`** and log the reset, then re-enter `Dev Planning`. Do not pass to
       `Released` — release is a Phase-2 event.
    3. Present the Product Gate as a *product* decision package (running app, flows walked, states
       walked, limitations at full strength), not a diff summary.
