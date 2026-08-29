@@ -9,6 +9,7 @@
 ## Verification (S13)
 - [ ] Every AC copied verbatim into a S13 row (no paraphrase drift)
 - [ ] Every AC row: `pass`/`fail`/`blocked` + evidence pointer (test name / command output / screenshot)
+- [ ] Every S13 AC row carries `Verified on: mocks | integrated` matching the BRD's `Phase` (`Phase: FE` → `mocks`; `Phase: BE` → `integrated`; `Phase: single` → `integrated`) — never omitted, `C_PARITY` check 1 reads this column
 - [ ] Untestable-as-written ACs → `blocked` + S16 `Affects: S03` (never reinterpreted)
 - [ ] Suite + typecheck + lint re-run by QA, output referenced (implementer claim not trusted)
 

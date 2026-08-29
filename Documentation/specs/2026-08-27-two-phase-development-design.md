@@ -319,6 +319,7 @@ ends in a certificate against its own branch head.
 | `Workflows/backend-planning.md` | inputs rewritten: read **the contract** first — `contract.ts`, `contract.md`, `fixtures/`. Front-end source is **not** an input. An endpoint no contract method calls is orphan work |
 | `Workflows/implementation.md` | Phase-2 section: adapter swap, real error mapping, mock deletion |
 | `Workflows/qa.md` | the two modes of §5.3 |
+| `Checklists/qa-testing.md` | every S13 AC row carries `Verified on: mocks \| integrated` matching `Phase` — the mechanism `C_PARITY` check 1 reads; without it the check passes vacuously on a BRD that marks nothing `mocks` |
 | **`Workflows/product-validation.md`** *(new)* | Phase-1 exit conduct: run the app, walk every S07 flow and every S09 state on real code, assemble the decision package for the Product Gate |
 | **`Workflows/backend-integration.md`** *(new)* | the seam work as its own module — named to avoid collision with the existing `integration-validation.md`, which is about onboarding integrations |
 | `Checklists/development-ready.md` | phase-scoped exit criteria |
