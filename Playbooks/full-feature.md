@@ -39,7 +39,11 @@
 - Loop ceilings are per phase and reset at the flip (logged S16). `L_CONTRACT` ≤2 is the exception —
   it counts across the flip, because it is the flip.
 - A server constraint contradicting approved front-end behaviour → `L_CONTRACT`: `product` token
-  dropped, back to `Dev Planning` (`Phase: FE`), contract reissued as `v<n+1>`.
+  dropped, back to `Dev Planning` (`Phase: FE`), contract reissued as `v<n+1>`. **The return path
+  is a full second Phase-1 segment**: steps 5–10 re-run and `product` is re-earned at a **second
+  Product Gate**; that Human Review is again `Merged (FE)`, which flips `Phase` back to `BE` and
+  resets `Loop Count` a second time — so each `L_CONTRACT` round trip hands Phase 2 fresh
+  `L_QA`/`L_REVIEW`/`L_HUMAN` budgets, bounded only by `L_CONTRACT`'s own ceiling of 2.
 
 ## Session pattern (solo reality)
 

@@ -141,13 +141,20 @@ A forward transition fires only when its guard conjunction holds; otherwise the 
 | `L_QA` | QA → Implementation → QA | 3 | Blocked + open-bug summary |
 | `L_REVIEW` | Tech Review → Implementation → Tech Review | 2 | Blocked |
 | `L_HUMAN` | Human Review → Implementation → Human Review | 3 | Blocked + escalation summary |
-| `L_CONTRACT` | Phase `BE` → Dev Planning (`Phase: FE`) → back | 2 | Blocked + escalation summary |
+| `L_CONTRACT` | Phase `BE` → Dev Planning (`Phase: FE`) → Implementation → QA → Tech Review → PR → Human Review (**second Product Gate** — `product` re-earned) → Merged (FE) → back to Dev Planning (`Phase: BE`) | 2 | Blocked + escalation summary |
 
 `Loop Count` property stores the dominant active loop count; the orchestrator logs which loop in S16. Ceiling breach never silently continues.
 
 **Ceilings are per phase.** `Loop Count` resets at the phase flip and the reset is logged in S16.
 Phase-1 thrash never consumes Phase-2's revision budget. `L_CONTRACT` is the exception: it counts
-across the flip, because it *is* the flip.
+across the flip, because it *is* the flip. **The return path is a full second Phase-1 segment, not
+a shortcut**: the `product` token was dropped when `L_CONTRACT` fired, so it can only be restored
+by re-running Dev Planning → Implementation → QA → Tech Review → PR → Human Review and clearing a
+**second Product Gate**. That second Human Review is itself `Merged (FE)`, which flips `Phase`
+back to `BE` and **resets `Loop Count` again** (the standard per-phase reset, §5 above) — so each
+`L_CONTRACT` round trip hands Phase 2 a fresh `L_QA`/`L_REVIEW`/`L_HUMAN` budget. This is bounded
+only by `L_CONTRACT`'s own ceiling of 2: at most two round trips, however many times the
+per-phase loops reset in between.
 
 ## 6. Approval Gates
 
