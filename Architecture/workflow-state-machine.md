@@ -36,7 +36,7 @@ MANIFEST_V1 ──(Manifest Gate detects old version)──→ MIGRATION ──�
 
 ## 2. State Catalog
 
-Each state maps to one Workflow module (Phase 1 build). Format per state: primary workflow, entry requires, exit produces, gate.
+Each state maps to one Workflow module (toolkit build phase 1). Format per state: primary workflow, entry requires, exit produces, gate.
 
 | # | State (`Status` value) | Workflow module | Entry requires | Exit produces (BRD sections) | Gate |
 |---|------------------------|-----------------|----------------|------------------------------|------|
@@ -50,7 +50,7 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | 07 | `QA` | qa | Implementation complete claim | S13: every AC verified `pass`/`fail`; bugs filed with severity | — |
 | 08 | `Tech Review` | code-review | S13 zero open blockers | S14 review summary; concerns; verdict | — |
 | 09 | `PR` | git | Tech review verdict `approve` | PR opened from template; BRD `PR` property set | — |
-| 10 | `Human Review` | — (human, orchestrator-managed) | PR open, CI green | Approval `final`, or change requests in S16 | **Final Gate** (human) |
+| 10 | `Human Review` | — (human, orchestrator-managed) | PR open, CI green | Approval `final` (`product` for `Phase: FE`), or change requests in S16 | **Final Gate** (human) — **Product Gate** for `Phase: FE` (v2.0, §6) |
 | 11 | `Merged` | git + release | Final approval | Branch merged; S15 release notes; BRD frozen sections | — |
 | 12 | `Released` | release | Merged; deploy done (if applicable) | S15 final; terminal S16 entry | — |
 

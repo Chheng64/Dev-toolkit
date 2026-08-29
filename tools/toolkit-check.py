@@ -15,6 +15,14 @@ SKIP_DIRS = {".git", "design-toolkit", "node_modules", ".playwright-mcp",
              ".superpowers"}
 MODULE_DIRS = ["Architecture", "AI", "Workflows", "Skills", "Standards",
                "Templates", "Checklists", "Playbooks"]
+# Prompts/ is deliberately omitted here (unlike INDEX_EXEMPT, this list has no
+# per-file reason column, so the reason lives in this comment instead): every
+# other directory's module-index.md section links one bullet per file, so
+# rule M's per-file substring check is meaningful; the Prompts/ section links
+# all 11 files on one line as a single cohesive group (thin invocation
+# wrappers over a stage's workflow+skill+checklist, not standalone contract
+# modules), so checking them file-by-file here would not catch anything the
+# collective link doesn't already cover.
 # Files that are deliberately not indexed, each with its reason.
 INDEX_EXEMPT = {
     "Documentation/module-index.md": "the index itself",
@@ -140,6 +148,11 @@ def main():
         files = list(md_files())
         machine = os.path.join(ROOT, "Architecture", "workflow-state-machine.md")
         design = os.path.join(ROOT, "Architecture", "design-state-machine.md")
+        # design-state-machine.md states its own guards/loops in prose, not table
+        # rows, so both sets also harvest by-use there (any backtick-quoted
+        # C_.../L_... token counts as "defined"). Loops needed this relaxation
+        # first (rule K); guards (rule G) inherited the same by-use harvesting
+        # for design-state-machine.md so the two rules stay consistent.
         guards = (defined_tokens(machine, r"^\| `(C_[A-Z_]+)(?:\([^)]*\))?`")
                   | defined_tokens(design, r"`(C_[A-Z_]+)(?:\([^)]*\))?`"))
         loops = (defined_tokens(machine, r"^\| `(L_[A-Z_]+)`")
