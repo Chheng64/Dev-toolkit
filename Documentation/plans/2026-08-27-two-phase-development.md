@@ -10,6 +10,28 @@
 
 **Spec:** [../specs/2026-08-27-two-phase-development-design.md](../specs/2026-08-27-two-phase-development-design.md) @ `719a9e5`
 
+> **Post-implementation corrections (whole-branch review, v2.0.0):** every task below is executed
+> and this plan is a historical record — its embedded code blocks are the instructions as given,
+> not re-edited after the fact. Several of those instructions carried defects only a whole-branch
+> view could catch; they were fixed in the actual files, not here. Read the live files and
+> [CHANGELOG.md](../CHANGELOG.md) `[2.0.0]` Fixed section as authoritative over any conflicting
+> text below. Notably:
+> - **Task 2** (`workflow-state-machine.md` §3/§4): the `C_SERVER_SCOPE` guard and transition rows
+>   shown below decide the guard from S07 at `Planning` exit — S07 does not exist until `Design`
+>   produces it. The guard is now a two-step provisional/confirmed decision.
+> - **D5** ("two branches, two PRs", spec §2): no task in this plan implements it. The git layer
+>   below (`git.md`, `brd-schema.md` `Branch`/`PR`, and four "one branch = one PR" restatements)
+>   stands as originally written and is now wrong; the live files carry phase-suffixed branches
+>   (`-fe`/`-be`) and phase-keyed `Branch`/`PR`/`FE PR`/`BE PR` properties instead.
+> - **Contract issuance timing**: Task references below that show `CTR-<brd-id>-v<n>` issued at
+>   `Merged (FE)` (after the Product Gate) are superseded — it is issued at Phase-1 exit, before
+>   the gate. `VERSION`'s single "product freeze sha" field is now two fields:
+>   `issued_against` (written at issue) and `product_freeze` (appended at `Merged (FE)`).
+> - **Product freeze sha location**: task text below that writes it to S08 is superseded — no role
+>   has write rights there for it (permission-matrix.md); it is S16.
+> - `Workflows/product-planning.md` (Task 3, or wherever it was scoped) never received the
+>   `C_SERVER_SCOPE`-at-exit duty the spec assigned it — a plan gap, not a task-execution miss.
+
 ## Global Constraints
 
 Copied verbatim from the spec. Every task's requirements implicitly include these.
