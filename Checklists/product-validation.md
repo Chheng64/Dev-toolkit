@@ -6,7 +6,7 @@
 - [ ] `Phase: FE`, FE PR open, CI green
 - [ ] `C_SECURITY`: certificate `certified` against the FE PR head
 - [ ] `C_ISOLATION`: the FE branch touches no server paths
-- [ ] `CTR-<brd-id>-v<n>` issued; S11 cites it; `VERSION` names the head sha
+- [ ] `CTR-<brd-id>-v<n>` issued; S11 cites it; `VERSION` names `issued_against` (the FE PR head sha) — `product_freeze` does not exist yet at this gate
 
 ## The walk
 - [ ] Every S07 flow walked in the running app

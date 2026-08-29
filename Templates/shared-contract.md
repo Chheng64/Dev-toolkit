@@ -8,7 +8,8 @@
 
 ```
 CTR-<brd-id>-v<n>
-product_freeze: <sha of the FE merge commit>
+issued_against: <sha of the FE PR head, written at issue — Phase-1 exit>
+product_freeze: <sha of the FE merge commit, appended by the orchestrator at Merged (FE)> | pending
 issued: <YYYY-MM-DD>
 supersedes: CTR-<brd-id>-v<n-1> | none
 supersedes_reason: <what changed and why> | n/a

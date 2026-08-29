@@ -37,7 +37,7 @@ binding and `C_RESOURCES` treats it as one.
 | `contract.ts` | the interface and entity types both adapters implement | FE, at Phase-1 exit |
 | `contract.md` | per method: inputs, outputs, every error variant, ordering and idempotency assumptions, latency tolerance, which S09 state each error renders, and the **adapter selection point** integration is allowed to touch | FE, at Phase-1 exit |
 | `fixtures/` | the recorded example set — happy, empty, error, slow | FE, at Phase-1 exit |
-| `VERSION` | `CTR-<brd-id>-v<n>` and the product freeze sha it was issued against | FE, at Phase-1 exit |
+| `VERSION` | `CTR-<brd-id>-v<n>`; `issued_against` (the FE PR head sha, written at issue) and `product_freeze` (the FE merge sha, appended by the orchestrator at `Merged (FE)`) | FE, at Phase-1 exit (`issued_against`); orchestrator, at `Merged (FE)` (`product_freeze`) |
 
 Written from what the front-end **actually does** — read out of the running app and its mock
 adapter, never out of the Phase-1 plan. A contract written from the plan reintroduces the guessing
@@ -45,7 +45,10 @@ the two-phase split exists to remove.
 
 ## 4. Identity, versioning, freeze
 
-- Identity `CTR-<brd-id>-v<n>`, issued at Phase-1 exit, frozen by the FE merge sha it names.
+- Identity `CTR-<brd-id>-v<n>`, issued at Phase-1 exit against the FE PR head sha
+  (`VERSION.issued_against`). The FE merge sha (`VERSION.product_freeze`) is appended after the
+  Product Gate, when `Merged (FE)` produces it — the two shas differ whenever the merge squashes or
+  rebases.
 - **Superseded, never edited.** A change issues `v<n+1>` naming what it supersedes and why. An edit
   in place destroys the record of what Phase 2 was built against.
 - BRD S11 **cites** id + version. The Screen Contract API block carries `demanded` → `provided`,

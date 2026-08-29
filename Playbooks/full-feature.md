@@ -18,8 +18,8 @@
 | 7 | `QA` `FE` | [qa](../Workflows/qa.md) mock-backed mode; S13 `Verified on: mocks` | [qa-testing](../Checklists/qa-testing.md) |
 | 8 | `Tech Review` `FE` | [code-review](../Workflows/code-review.md) | [code-review](../Checklists/code-review.md) → `C_ISOLATION` |
 | 9 | `PR` `FE` | [git](../Workflows/git.md) — PR from [template](../Templates/pull-request.md); exposure control in place | CI ✅ |
-| 10 | `Human Review` `FE` | [product-validation](../Workflows/product-validation.md) — walk the running app | **Product Gate** |
-| 11 | `Merged` `FE` | merge; record the product freeze sha; issue `CTR-<brd-id>-v<n>`; **flip to `Phase: BE`**, reset loop counts | phase flip logged S16 |
+| 10 | `Human Review` `FE` | [product-validation](../Workflows/product-validation.md) — issue `CTR-<brd-id>-v<n>` (`issued_against` the PR head sha); walk the running app | **Product Gate** |
+| 11 | `Merged` `FE` | merge; record the product freeze sha (`VERSION.product_freeze` + S16); **flip to `Phase: BE`**, reset loop counts | phase flip logged S16 |
 | 12 | `Dev Planning` `BE` | [backend-planning](../Workflows/backend-planning.md) — derive from the contract; front-end source is not an input | [development-ready](../Checklists/development-ready.md) |
 | 13 | `Implementation` `BE` | [implementation](../Workflows/implementation.md) → [backend-integration](../Workflows/backend-integration.md) + certification | `C_SECURITY` |
 | 14 | `QA` `BE` | [qa](../Workflows/qa.md) integrated mode; re-verify every `mocks` row | [integration-parity](../Checklists/integration-parity.md) → `C_PARITY` |
