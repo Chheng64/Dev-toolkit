@@ -42,7 +42,7 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 5. Authz matrix: who may call what; default deny.
 6. **Threat model into S06** — one row per new/changed surface: surface → asset at risk → plausible attacker/abuse → mitigation → **how it will be verified** (test name, code read, probe). This is what [security-certification](security-certification.md) checks against before QA; a mitigation with no verification method is a wish. High-risk findings → S06 via `Affects:`.
 7. Security pass with Standards/security: input validation boundaries, secrets handling, rate limits on exposed surfaces.
-7. Fill the **API mapping block** of every owned `screens/SCR-<nnn>.md` ([api-mapping template](../Templates/api-mapping.md)) — screens without server needs get explicit `api: none`.
+7. Fill the **`provided:`** half of the API mapping block of every owned `screens/SCR-<nnn>.md` ([api-mapping template](../Templates/api-mapping.md)) for split BRDs — the `demanded:` half is Phase-1's ([frontend-planning](frontend-planning.md), at Phase-1 exit). For `Phase: single` BRDs (no split, pre-v2.0 shape) fill the whole block here. Screens without server needs get explicit `api: none`.
 8. Contracts frozen before implementation — frontend plans against them.
 9. **Answer every line of `contract.md`.** A method whose error variants are unimplemented has not
    been planned — it has been half-planned, and QA will find the half at integration.
