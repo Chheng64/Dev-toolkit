@@ -7,14 +7,14 @@
 
 ## Purpose
 
-Turn requirements + flows into an executable server-side plan: API contracts, data model, auth, integrations, failure behavior. Frontend planning consumes its contracts; implementation assembles them.
+Turn requirements + flows into an executable server-side plan: API contracts, data model, auth, integrations, failure behavior. `Phase: single` (pre-v2.0 direction): frontend planning consumes its contracts. Split BRDs: it is the reverse — this stage derives from the Shared Contract, already frozen at Phase-1 exit (Responsibility 1); front-end planning ran before this stage and never reads this stage's output. Implementation assembles either.
 
 ## Inputs
 
 - **The Shared Contract** — `contract.ts`, `contract.md`, `fixtures/`, `VERSION`
   ([shared-contract](../Architecture/shared-contract.md)). For a split BRD this is the primary
   input, and **front-end source is not an input at all**
-- `Approvals` contains `product`; the product freeze sha in S08
+- `Approvals` contains `design` (`Phase: single`) or `product` (`Phase: BE` — the phase flip); the product freeze sha in S16
 - S03 ACs, S07 flows, S09 edge cases, screen-contract `demanded:` blocks
 - Existing backend architecture (project repo), external service docs
 - Open S16 `Affects:` entries targeting S10/S11
@@ -22,7 +22,7 @@ Turn requirements + flows into an executable server-side plan: API contracts, da
 ## Outputs
 
 - S10 Technical Plan (backend subsection) — architecture, data model changes, authz model, integration points, failure/retry/idempotency strategy, touched-areas list
-- S11 API Notes — per endpoint/action: route, method, request/response contract, error contract, auth requirement; consumed by frontend planning
+- S11 API Notes — per endpoint/action: route, method, request/response contract, error contract, auth requirement; consumed by frontend planning (`Phase: single`) — for split BRDs frontend planning already ran against the Shared Contract, so S11 here materializes `contract.md`'s answers instead
 - S16 — decisions with alternatives; discovered constraints via `Affects:`
 
 ## BRD Sections It May Update
@@ -43,12 +43,15 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 6. **Threat model into S06** — one row per new/changed surface: surface → asset at risk → plausible attacker/abuse → mitigation → **how it will be verified** (test name, code read, probe). This is what [security-certification](security-certification.md) checks against before QA; a mitigation with no verification method is a wish. High-risk findings → S06 via `Affects:`.
 7. Security pass with Standards/security: input validation boundaries, secrets handling, rate limits on exposed surfaces.
 7. Fill the **`provided:`** half of the API mapping block of every owned `screens/SCR-<nnn>.md` ([api-mapping template](../Templates/api-mapping.md)) for split BRDs — the `demanded:` half is Phase-1's ([frontend-planning](frontend-planning.md), at Phase-1 exit). For `Phase: single` BRDs (no split, pre-v2.0 shape) fill the whole block here. Screens without server needs get explicit `api: none`.
-8. Contracts frozen before implementation — frontend plans against them.
+8. Contracts frozen before implementation — `Phase: single`: frontend plans against them. Split BRDs: the Shared Contract was already frozen at Phase-1 exit and frontend planning already ran against it, before this stage started.
 9. **Answer every line of `contract.md`.** A method whose error variants are unimplemented has not
    been planned — it has been half-planned, and QA will find the half at integration.
-10. **Check the real responses against `fixtures/`.** The fixtures are the recorded shape the
-    front-end was approved against; a response that does not match one of them is a contract
-    conflict, not a detail.
+10. **Plan the fixture-comparison method.** Name, per contracted method, how Phase-2 Implementation
+    will compare its real response to `fixtures/` (which tool/test, at which boundary) — the
+    fixtures are the recorded shape the front-end was approved against, and a mismatch is a
+    contract conflict, not a detail. **The comparison itself runs at Implementation exit**
+    ([backend-integration](backend-integration.md) Responsibility 3), where a real server exists;
+    there is no server to check yet at Dev Planning.
 11. **Never edit the contract.** A server constraint that contradicts approved behaviour is a
     finding plus a Product Owner ruling, routed through `L_CONTRACT`; the front-end reissues
     `v<n+1>`. Editing the artifact in place destroys the record of what Phase 2 was built against.
@@ -66,7 +69,7 @@ S10 (edit), S11 (edit), S12 (edit), S04 (append), S05 (append), S16 (append).
 - [ ] Touched-areas list present; conflict check done
 - [ ] S16 stage-exit entry written
 - [ ] Every screen-contract `demanded:` line has a planned `provided:` line
-- [ ] Real response shapes checked against `fixtures/`
+- [ ] Fixture-comparison method named for every contracted method (execution happens at [backend-integration](backend-integration.md))
 - [ ] Zero edits to the contract artifact from this stage
 
 ## Failure & Loops
