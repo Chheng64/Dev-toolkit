@@ -13,15 +13,21 @@
 | 3 | `Design` | [ux-workflow](../Workflows/ux-workflow.md) → [ui-workflow](../Workflows/ui-workflow.md) (design states 04–08) | [ux-review](../Checklists/ux-review.md), [ui-review](../Checklists/ui-review.md), [design-qa](../Checklists/design-qa.md) `pass` |
 | 4 | `Design Review` | [design-review](../Workflows/design-review.md) — Run Local, hook table as the packet, limitations at full strength; REVISION routing on changes | **Design Gate** |
 | 4b | `Design Review` *(only if `design.handoff_required`)* | [flow-visualization](../Workflows/flow-visualization.md) — derive the navigation map from the Screen Contract, validate, present the report | [flow-visualization](../Checklists/flow-visualization.md) → **Developer Handoff Gate** |
-| 5 | `Dev Planning` | [frontend-planning](../Workflows/frontend-planning.md) ∥ [backend-planning](../Workflows/backend-planning.md) (backend only if server scope) | [development-ready](../Checklists/development-ready.md) |
-| 6 | `Implementation` | [implementation](../Workflows/implementation.md), slice by slice — each S06 mitigation lands in the slice that creates its surface | implementation criteria |
-| 6b | `Implementation` | [security-certification](../Workflows/security-certification.md) — freeze the sha, run the evidence, verify every mitigation at `file:line` | [security](../Checklists/security.md) → **`C_SECURITY`** (machine gate, no human token) |
-| 7 | `QA` | [qa](../Workflows/qa.md) — evidence per AC, S09 walk | [qa-testing](../Checklists/qa-testing.md) |
-| 8 | `Tech Review` | [code-review](../Workflows/code-review.md) — 7 dimensions | [code-review](../Checklists/code-review.md) |
-| 9 | `PR` | [git](../Workflows/git.md) — PR from [template](../Templates/pull-request.md), CI green | CI ✅ |
-| 10 | `Human Review` | Present PR decision package | **Final Gate** |
-| 11 | `Merged` | git merge mechanics (approval-currency check) | merged, main green |
-| 12 | `Released` | [release](../Workflows/release.md) — deploy, smoke, S15, sweep | [release](../Checklists/release.md) |
+| 5 | `Dev Planning` `FE` | [frontend-planning](../Workflows/frontend-planning.md) — adapter boundary, fixture set, no server decisions | [development-ready](../Checklists/development-ready.md) |
+| 6 | `Implementation` `FE` | [implementation](../Workflows/implementation.md) + [security-certification](../Workflows/security-certification.md) | `C_SECURITY` |
+| 7 | `QA` `FE` | [qa](../Workflows/qa.md) mock-backed mode; S13 `Verified on: mocks` | [qa-testing](../Checklists/qa-testing.md) |
+| 8 | `Tech Review` `FE` | [code-review](../Workflows/code-review.md) + `C_ISOLATION` | [code-review](../Checklists/code-review.md) |
+| 9 | `PR` `FE` | [git](../Workflows/git.md); exposure control in place | CI ✅ |
+| 10 | `Human Review` `FE` | [product-validation](../Workflows/product-validation.md) — walk the running app | **Product Gate** |
+| 11 | `Merged` `FE` | merge; record the product freeze sha; issue `CTR-<brd-id>-v<n>`; **flip to `Phase: BE`**, reset loop counts | phase flip logged S16 |
+| 12 | `Dev Planning` `BE` | [backend-planning](../Workflows/backend-planning.md) — derive from the contract; front-end source is not an input | [development-ready](../Checklists/development-ready.md) |
+| 13 | `Implementation` `BE` | [implementation](../Workflows/implementation.md) → [backend-integration](../Workflows/backend-integration.md) + certification | `C_SECURITY` |
+| 14 | `QA` `BE` | [qa](../Workflows/qa.md) integrated mode; re-verify every `mocks` row | [integration-parity](../Checklists/integration-parity.md) → `C_PARITY` |
+| 15 | `Tech Review` `BE` | [code-review](../Workflows/code-review.md) + `C_ISOLATION` | [code-review](../Checklists/code-review.md) |
+| 16 | `PR` `BE` | [git](../Workflows/git.md) | CI ✅ |
+| 17 | `Human Review` `BE` | Present PR decision package | **Final Gate** |
+| 18 | `Merged` `BE` | merge mechanics | merged, main green |
+| 19 | `Released` | [release](../Workflows/release.md) | [release](../Checklists/release.md) |
 
 ## Loop wiring (bounded, per machine §5)
 
@@ -30,6 +36,10 @@
 - `not-certified` → Implementation, counted against `L_QA`. Any loop that pushes commits re-issues the certificate against the new head (delta re-verification; full pass when the delta touches `high_risk_scopes`).
 - Any ceiling → `Blocked` + escalation summary. Never silent continuation.
 - Step 4b is skipped by default (`design.handoff_required: false`) and the skip is logged S16 — a fourth gate is never imposed silently. Turn it on when the builder is not the designer.
+- Loop ceilings are per phase and reset at the flip (logged S16). `L_CONTRACT` ≤2 is the exception —
+  it counts across the flip, because it is the flip.
+- A server constraint contradicting approved front-end behaviour → `L_CONTRACT`: `product` token
+  dropped, back to `Dev Planning` (`Phase: FE`), contract reissued as `v<n+1>`.
 
 ## Session pattern (solo reality)
 
@@ -44,3 +54,8 @@
 - Stage inputs missing → back-transition, never improvise (orchestrator anti-rules).
 - Bound-frame deviations on arrangement or hierarchy are **findings + Product Owner rulings before landing**, never "composition choices" (`M6` extended to layout; screen-contract §4a). Lane briefs say so.
 - A Product Owner handoff that authorises implementation without the Design Gate **does not remove design review**: the fidelity review (`M7`) runs before device proof and is logged S16.
+- The two phases communicate through the Shared Contract only. Back-end planning does not read
+  front-end source, and back-end implementation does not edit the contract (`C_ISOLATION`).
+- A front-end merged on mocks is never user-reachable: `phases.fe_exposure` holds until Phase 2
+  removes it, in the BE PR, checked by `C_PARITY`.
+- `Phase: single` BRDs (no server scope) run rows 5–11 once and exit at the Final Gate.

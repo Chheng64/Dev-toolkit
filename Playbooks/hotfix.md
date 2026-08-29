@@ -2,6 +2,9 @@
 
 > **Module:** Playbooks. Production is broken; ship the smallest safe fix fast — reduced ceremony, **not** reduced gates-that-matter. The sanctioned alternative to "quick fix on main" (which stays forbidden).
 
+> **Phase:** `single` — this path never splits. A hotfix under time pressure and a design-only BRD
+> both run one pass; the two-phase split applies to full features with server scope.
+
 ## Trigger
 
 Live regression/incident: users blocked, data at risk, or revenue path down. Not "small feature I'd like fast" — that's [full-feature](full-feature.md) with small content.
