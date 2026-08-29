@@ -13,9 +13,11 @@
 > **Post-implementation corrections (whole-branch review, v2.0.0):** every task below is executed
 > and this plan is a historical record — its embedded code blocks are the instructions as given,
 > not re-edited after the fact. Several of those instructions carried defects only a whole-branch
-> view could catch; they were fixed in the actual files, not here. Read the live files and
-> [CHANGELOG.md](../CHANGELOG.md) `[2.0.0]` Fixed section as authoritative over any conflicting
-> text below. Notably:
+> view could catch; they were fixed in the actual files, not here. **The live files are
+> authoritative over any conflicting text below** — this plan is not kept in sync with them, and
+> the CHANGELOG's `[2.0.0]` Fixed section names only two of these corrections (the two the review
+> explicitly called spec amendments), so treat it as a partial pointer, not a complete list. Known
+> corrections, notably:
 > - **Task 2** (`workflow-state-machine.md` §3/§4): the `C_SERVER_SCOPE` guard and transition rows
 >   shown below decide the guard from S07 at `Planning` exit — S07 does not exist until `Design`
 >   produces it. The guard is now a two-step provisional/confirmed decision.
@@ -28,7 +30,12 @@
 >   the gate. `VERSION`'s single "product freeze sha" field is now two fields:
 >   `issued_against` (written at issue) and `product_freeze` (appended at `Merged (FE)`).
 > - **Product freeze sha location**: task text below that writes it to S08 is superseded — no role
->   has write rights there for it (permission-matrix.md); it is S16.
+>   has write rights there for it (permission-matrix.md); it is S16 (and, for the contract
+>   artifact's own copy, `VERSION.product_freeze` — both written by the orchestrator at the same
+>   `Merged (FE)` step).
+> - **Mock-deletion timing** (`backend-integration.md` Responsibility 5): task text below that says
+>   the mock is "deleted before `C_PARITY`" is superseded — the guard accepts deleted **or**
+>   demoted to test-only; the live file no longer asserts the stricter, contradicted timing.
 > - `Workflows/product-planning.md` (Task 3, or wherever it was scoped) never received the
 >   `C_SERVER_SCOPE`-at-exit duty the spec assigned it — a plan gap, not a task-execution miss.
 
