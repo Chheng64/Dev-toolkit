@@ -128,6 +128,69 @@ def rule_module_index(files):
 PHASE_OK = {"FE", "BE", "single"}
 
 
+TRANSITION_TABLE = re.compile(r"^## 3\. Transition Table\n(.*?)^## 4\.", re.M | re.S)
+
+# Guards exempt from rule H's §3-transition-citation check, each with a written reason
+# (whole-branch review, v2.0.0 — this exemption list is what "drive it to zero
+# violations honestly" produced: these six are structural/pre-pipeline guards, not
+# stage-forward-transition conditions, so they are never going to appear as a literal
+# token in a §3 row — spelling them out there would be noise, not a real gap).
+GUARD_TRANSITION_EXEMPT = {
+    "C_APPROVED": "generic mechanism behind every `approval <token>` row; the token "
+                  "is what §3 cites, not the parametrized guard name",
+    "C_LOOP_OK": "generic mechanism behind every `(loop L_...)` row; the loop name is "
+                 "what §3 cites, not the parametrized guard name",
+    "C_MANIFEST": "checked at session entry, per project (§1b pre-pipeline) — structurally "
+                  "outside the 13-stage §3 table, which starts at `Ready`",
+    "C_SECTIONS": "generic input-verification check at every stage's entry (orchestrator "
+                  "responsibility 3); not a specific stage's forward-transition condition",
+    "C_VALID": "the implicit default gate behind nearly every forward transition "
+               "('plan validated', etc.) — spelling it out on every row would be pure "
+               "noise, not a citation",
+}
+
+# Guards exempt from rule H's Checklists/-naming check, each with a written reason.
+GUARD_CHECKLIST_EXEMPT = dict(GUARD_TRANSITION_EXEMPT, **{
+    "C_SLOT_FREE": "gates BRD *pickup*, before Analysis even starts — not a stage-exit "
+                   "gate, so no Checklists/ file owns it (Playbooks/parallel-brds.md and "
+                   "AI/orchestrator.md do)",
+})
+
+
+def rule_guard_coverage(files):
+    """New rule (whole-branch review, v2.0.0): every guard defined in
+    workflow-state-machine.md §4 must be (a) cited by at least one §3 transition
+    row and (b) named by at least one file under Checklists/. This would have
+    caught C_SERVER_SCOPE having neither — it was decided at a stage exit with
+    no transition row spelling it out and no checklist line checking it."""
+    machine = os.path.join(ROOT, "Architecture", "workflow-state-machine.md")
+    if not os.path.exists(machine):
+        return
+    text = read(machine)
+    guard_defs = defined_tokens(machine, r"^\| `(C_[A-Z_]+)(?:\([^)]*\))?`")
+
+    section_match = TRANSITION_TABLE.search(text)
+    section3 = section_match.group(1) if section_match else ""
+    cited_in_transitions = set(re.findall(r"`(C_[A-Z_]+)(?:\([^)]*\))?`", section3))
+
+    checklist_text = []
+    for path in files:
+        if rel(path).startswith("Checklists" + os.sep):
+            checklist_text.append(strip_fences(read(path)))
+    named_in_checklists = set(re.findall(r"`(C_[A-Z_]+)(?:\([^)]*\))?`",
+                                          "\n".join(checklist_text)))
+
+    for guard in sorted(guard_defs):
+        if guard not in cited_in_transitions and guard not in GUARD_TRANSITION_EXEMPT:
+            fail("H", "Architecture/workflow-state-machine.md",
+                 "guard `%s` defined in §4 but not cited by any §3 transition row"
+                 % guard)
+        if guard not in named_in_checklists and guard not in GUARD_CHECKLIST_EXEMPT:
+            fail("H", "Architecture/workflow-state-machine.md",
+                 "guard `%s` defined in §4 but not named by any file under Checklists/"
+                 % guard)
+
+
 def rule_phase_vocabulary(files):
     for path in files:
         for value in set(re.findall(r"`Phase: ([A-Za-z-]+)`", read(path))):
@@ -162,6 +225,7 @@ def main():
         rule_tokens(files, "K", r"`(L_[A-Z_]{2,})`", loops)
         rule_approvals(files)
         rule_module_index(files)
+        rule_guard_coverage(files)
         rule_phase_vocabulary(files)
     except Exception as exc:  # tool error is unevaluable, not passing
         print("toolkit-check: TOOL ERROR: %s" % exc, file=sys.stderr)

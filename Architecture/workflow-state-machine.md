@@ -72,7 +72,7 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 
 | From | Trigger | To |
 |------|---------|-----|
-| Ready | orchestrator picks BRD (slot free) | Analysis |
+| Ready | orchestrator picks BRD ∧ `C_SLOT_FREE` | Analysis |
 | Analysis | validation pass, no blocking ambiguity | Planning |
 | Analysis | blocking ambiguity, human unavailable | Blocked |
 | Planning | recommendation `re-scope` or gate denied | Analysis |

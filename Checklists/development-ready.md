@@ -29,6 +29,7 @@
 - [ ] Test plan: every AC → layer + named test file (zero unmapped ACs)
 
 ## Ground truth
+- [ ] `C_RESOURCES` holds: every registry slot the plan implies (repos named by S10/S11, design file, APIs' backing repo, doc targets) is bound and healthy — fail routes to Resource Decision
 - [ ] Branch created from fresh main; `Branch` property set — `feat/<brd-id>-<slug>` (`Phase: single`); `Phase: FE` → `feat/<brd-id>-<slug>-fe`; `Phase: BE` → `feat/<brd-id>-<slug>-be`, cut from main **after** the FE merge (main now carries the FE code the contract was issued against)
 - [ ] Env/deps available (new dependency decisions recorded per [code-quality](../Standards/code-quality.md) rule 13)
 - [ ] S16 stage-exit entry written

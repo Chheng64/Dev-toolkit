@@ -46,7 +46,7 @@
 
 ## Gate record
 - [ ] Report presented at the gate (not the picture)
-- [ ] Findings clean at the configured severity, **or** every remaining finding carries a granted waiver with a rider debt item, a grantor and a closing condition
+- [ ] `C_NAVMAP_CLEAN` holds: findings clean at the configured severity, **or** every remaining finding carries a granted waiver with a rider debt item, a grantor and a closing condition
 - [ ] Gate record names registry sha, derivation run, prototype versions — in `reads_versions`, not only in prose
 - [ ] `figma: n/a (no binding)` stated explicitly when the design file is unbound (loud degradation, never silent skip)
 - [ ] S07 navigation subsection + S14 gate record + S16 entry written
