@@ -340,9 +340,12 @@ ends in a certificate against its own branch head.
 **v2.0.0.** Projects must make two Notion edits: add the `Phase` select (`FE`, `BE`, `single`) and
 add `product` to the `Approvals` multi-select.
 
-Migration is one rule: **every existing BRD becomes `Phase: single`** and behaves exactly as it did
-under v1.10.0. In-flight BRDs are unaffected mid-flight; the split applies to BRDs that pass
-`Planning` under v2.0.0.
+Migration is one rule, stated once (amended by the whole-branch review — the original phrasing
+stated it as two clauses that both matched a pre-cutover BRD not yet past `Planning`, with
+opposite results; see CHANGELOG `[2.0.0]` Fixed): **a BRD already past `Planning` at cutover
+becomes `Phase: single`** and behaves exactly as it did under v1.10.0. A BRD still at or before
+`Planning` at cutover is evaluated by `C_SERVER_SCOPE` like any other BRD under v2.0.0 — it is not
+grandfathered just because it existed before v2.0.0.
 
 ## 8. Non-goals
 

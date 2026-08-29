@@ -99,5 +99,7 @@ A page may start with only S01 empty-scaffolded + a one-line problem note. The B
 2. The BRD evolves; it is never replaced, duplicated, or forked into side documents. All feature knowledge lives here (Notion = single source of truth).
 3. Global knowledge (standards, workflows, conventions) never gets copied into a BRD — link to the toolkit module instead.
 4. Section IDs are stable forever. New sections get new IDs (`S17+`); removed sections are deprecated, never reused.
-5. **v2.0 migration.** Every BRD that existed before v2.0.0 is `Phase: single` and behaves exactly
-   as it did under v1.10.0. The split applies to BRDs that pass `Planning` under v2.0.0 or later.
+5. **v2.0 migration.** One clause, not two: a BRD **already past `Planning`** at cutover is
+   `Phase: single` and behaves exactly as it did under v1.10.0. A BRD still **at or before**
+   `Planning` at cutover is evaluated by `C_SERVER_SCOPE` like any other BRD — it is not
+   grandfathered just because it existed before v2.0.0.
