@@ -22,11 +22,10 @@ question is "is this the product?", answered against the app, not the diff.
 - Approval `product` in `Approvals`, or structured change requests in S16
 - S16 gate record naming: the head sha reviewed, the prototype version, the contract version, and
   what the human actually saw
-- S08 records the product freeze sha once the FE PR merges
 
 ## BRD Sections It May Update
 
-S08 (append — the product freeze sha), S11 (read/cite only — the contract citation), `Approvals` property (writes `product`), S16 (append — the gate record).
+S11 (read/cite only — the contract citation), `Approvals` property (writes `product`), S16 (append — the gate record). The product freeze sha is recorded in **S16** by the orchestrator, at `Merged (FE)`, after this stage's gate — not by this workflow, and not in S08 (permission-matrix gives no role write rights there for this).
 
 ## Responsibilities
 

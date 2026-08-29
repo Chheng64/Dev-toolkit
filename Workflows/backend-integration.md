@@ -16,7 +16,7 @@ the product still behaves the way it was approved.
 - The real adapter implementing `contract.ts` unmodified
 - `contract.md` — in particular the **adapter selection point** and the error-variant table
 - `fixtures/` — the recorded shapes the approved product was reviewed against
-- The product freeze sha in S08; S13 rows marked `Verified on: mocks`
+- The product freeze sha in S16; S13 rows marked `Verified on: mocks`
 
 ## Outputs
 

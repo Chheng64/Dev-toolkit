@@ -23,7 +23,8 @@
       exit, **confirm** `C_SERVER_SCOPE` against the actual S07 flow transitions; a flip from the
       provisional value is logged S16 with the flow transition that caused it, and `Phase` is
       re-tagged before `Dev Planning`. Never infer the phase later from the diff.
-   2. At `Merged` with `Phase: FE`: record the product freeze sha in S08, flip `Phase` to `BE`,
+   2. At `Merged` with `Phase: FE`: record the product freeze sha in S16 (never S08 — no role has
+      write rights there for this; permission-matrix unchanged), flip `Phase` to `BE`,
       **reset `Loop Count`** and log the reset, then re-enter `Dev Planning`. Do not pass to
       `Released` — release is a Phase-2 event.
    3. Present the Product Gate as a *product* decision package (running app, flows walked, states

@@ -4,7 +4,7 @@
 
 ## Phase scope
 - [ ] `Phase` is set (`FE` · `BE` · `single`) and matches the **confirmed** `C_SERVER_SCOPE` decision logged in S16 (the `Design Review`-exit confirmation against S07, not merely the `Planning`-exit provisional value)
-- [ ] `Phase: BE` only — the cited `CTR-<brd-id>-v<n>` exists, `VERSION` names both `issued_against` and `product_freeze`, and the plan answers every line of `contract.md`
+- [ ] `Phase: BE` only — the cited `CTR-<brd-id>-v<n>` exists, `VERSION` names both `issued_against` and `product_freeze`, the product freeze sha is recorded in **S16** (never S08 — no role has write rights there for this), and the plan answers every line of `contract.md`
 - [ ] `Phase: FE` only — adapter interface, selection point and fixture set are planned; zero server-side decisions in S10/S11
 
 ## Upstream state

@@ -103,7 +103,7 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | PR | PR open + CI green | Human Review |
 | Human Review (`Phase: FE`) | approval `product` | Merged (`Phase: FE`; product freeze recorded) |
 | Human Review (`Phase: BE` \| `Phase: single`) | approval `final` | Merged |
-| Merged (`Phase: FE`) | product freeze recorded in S08 + S16 | Dev Planning (`Phase: BE`), loop counts reset |
+| Merged (`Phase: FE`) | product freeze recorded in S16 | Dev Planning (`Phase: BE`), loop counts reset |
 | any `Phase: BE` state | server constraint contradicts approved front-end behaviour | Dev Planning (`Phase: FE`) via `L_CONTRACT`; `product` token dropped |
 | Human Review | change requests | Implementation (loop `L_HUMAN`) |
 | Human Review | reject | Analysis |
