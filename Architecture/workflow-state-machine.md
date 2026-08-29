@@ -118,7 +118,7 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | `C_VALID(stage)` | Exit checklist of the stage's workflow passes (Checklists/ module). |
 | `C_APPROVED(gate)` | Notion `Approvals` contains the gate token, granted against current content (see §6). |
 | `C_LOOP_OK(loop)` | `Loop Count` < ceiling for that loop. |
-| `C_SLOT_FREE` | In-flight BRDs (Status between Analysis and Human Review) < 3. |
+| `C_SLOT_FREE` | In-flight BRDs (Status between Analysis and Human Review, **or `Merged` with `Phase: FE`** — it re-enters `Dev Planning` immediately, so it is still occupying a slot) < 3. |
 | `C_SECTIONS(ids)` | Required BRD sections exist and are non-empty. |
 | `C_MANIFEST` | Toolkit Registry present ([toolkit-registry](toolkit-registry.md)); `project-manifest.yaml` exists, `manifest_version` current (older → Manifest Gate runs Migration first, automatically), schema-valid, `onboarding.status: complete`, `resources.status: bound` with required bindings validated and `health: ok` ([project-manifest](project-manifest.md) §3), required integrations `validated`, `last_validated` ≤ 30 days (else re-validate first). Checked at **session entry for any project work — pickup and resume alike**. |
 | `C_CONTRACT` | Screen-contract validation passes for the BRD's owned screens ([../Checklists/screen-contract.md](../Checklists/screen-contract.md) — all six checks). Checked at Dev Planning entry. Fail → stop + missing-mappings report + route to owning stage. |
