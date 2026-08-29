@@ -38,11 +38,11 @@ A reusable AI product-development operating system for solo builders working wit
                        whole workspace (Project Boundary Rule)
 ```
 
-The orchestrator is the only component that advances state. Everything it needs to resume lives in the three sources of truth — never in the session. External access is scoped to the Project Resource Registry — the toolkit never searches your workspace once a project is onboarded. Full wiring: [Architecture/integration-map.md](Architecture/integration-map.md).
+The orchestrator is the only component that advances state. Everything it needs to resume lives in the four sources of truth — never in the session. External access is scoped to the Project Resource Registry — the toolkit never searches your workspace once a project is onboarded. Full wiring: [Architecture/integration-map.md](Architecture/integration-map.md).
 
 ## Design Philosophy
 
-- **Single source of truth** — every fact has exactly one home (manifest, BRD, or Screen Contract). Workflows consume, never re-ask, never duplicate.
+- **Single source of truth** — every fact has exactly one home (manifest, BRD, Screen Contract, or Shared Contract). Workflows consume, never re-ask, never duplicate.
 - **Explicit resource ownership** — every project **binds** its external resources (Notion DBs, Figma files, repos, docs, chats) at onboarding, by stable identifier. The registry is a hard boundary: the toolkit touches only what's bound, and asks connect-or-create when something's missing — it never searches your workspace, never guesses. ([Architecture/project-manifest.md](Architecture/project-manifest.md) §3)
 - **AI executes, human directs** — Claude runs all 13 stages; you decide at four gates (Direction, Design, Product, Final), plus the optional **Developer Handoff** only if you switch it on. See [Decision Boundaries](#decision-boundaries).
 - **Stage-based development** — features move through a gated state machine with checklisted exits, not freeform prompting.
@@ -54,15 +54,16 @@ The orchestrator is the only component that advances state. Everything it needs 
 
 ## How It Works — Three Ideas
 
-**1. Three sources of truth, nothing duplicated.**
+**1. Four sources of truth, nothing duplicated.**
 
 | Artifact | Truth for | Lives in |
 |----------|-----------|----------|
 | `project-manifest.yaml` | project configuration + **Resource Registry** (every bound external resource, by stable ID) | project repo |
 | **Living BRD** (one Notion page per feature) | requirements, decisions, progress, history | Notion database |
 | **Screen Contract** (`screens/`) | design → development traceability per screen | project repo |
+| **Shared Contract** (`contracts/<brd-id>/`, `CTR-<brd-id>-v<n>`) | the FE↔BE API contract for a split BRD — types, per-method behaviour, fixtures — issued once at the phase flip | project repo (or the bound `resources.contracts` slot, split-repo shape) |
 
-Workflows consume these; they never re-ask what an artifact already answers. Feature knowledge evolves in the BRD mid-work — findings land the moment they're discovered, never in side documents.
+Workflows consume these; they never re-ask what an artifact already answers. Feature knowledge evolves in the BRD mid-work — findings land the moment they're discovered, never in side documents. A split BRD's Phase-2 Dev Planning reads the Shared Contract, not the front-end source — the contract is the only thing that crosses the phase seam.
 
 **2. A gated state machine runs every feature.**
 
@@ -237,7 +238,7 @@ QA `BE` → Tech Review `BE` → PR `BE` → Human Review ──🚦 Final Gate 
 Merged → Released
 ```
 
-`Phase: single` BRDs — every pre-v2.0 BRD, plus any new one whose flows never touch persistence, auth, or an external service, plus any BE-only BRD (no UI to validate) — skip the split: one pass from Dev Planning straight through, `Human Review` is the Final Gate directly, and there is no Product Gate, no phase tag, and no contract.
+`Phase: single` BRDs — every pre-v2.0 BRD, plus any new one whose flows never touch persistence, auth, or an external service, plus any BE-only BRD (no UI to validate) — skip the split: one pass from Dev Planning straight through, `Human Review` is the Final Gate directly, and there is no FE/BE split labelling, no Product Gate, and no contract.
 
 Approvals are scoped to what you saw — if gated content changes afterward, the approval is revoked and the gate re-raises.
 
