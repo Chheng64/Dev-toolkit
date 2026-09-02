@@ -120,5 +120,95 @@ class RowTest(unittest.TestCase):
         self.assertEqual(code, 2)
 
 
+class ValidationTest(RowTest):
+    def screens_dir(self, mapping):
+        """mapping: {'SCR-014': ['src/profile.ts']} -> path to a screens/ dir."""
+        root = tempfile.mkdtemp(prefix="delivery-log-screens-")
+        self.repos.append(root)
+        rows = ["# Screen Registry", "", "| Screen ID | Screen Name |",
+                "|---|---|"]
+        for screen in sorted(mapping):
+            rows.append("| %s | Screen %s |" % (screen, screen))
+            with open(os.path.join(root, "%s.md" % screen), "w") as handle:
+                handle.write("## Frontend\n\n")
+                for path in mapping[screen]:
+                    handle.write("- page component: `%s`\n" % path)
+        with open(os.path.join(root, "registry.md"), "w") as handle:
+            handle.write("\n".join(rows) + "\n")
+        return root
+
+    def test_missing_scope_trailer_exits_1_and_names_the_sha(self):
+        repo = self.repo([("feat(BRD-RP-042): untrailered\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH])
+        self.assertEqual(code, 1)
+        self.assertIn("no Scope: trailer", err)
+
+    def test_requirement_not_in_s03_exits_1(self):
+        repo = self.repo([("feat(BRD-RP-042): stray\n\nScope: R9\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--requirements", "R1,R2,R3"])
+        self.assertEqual(code, 1)
+        self.assertIn("R9", err)
+
+    def test_screen_not_in_registry_exits_1(self):
+        screens = self.screens_dir({"SCR-014": ["src/profile.ts"]})
+        repo = self.repo([("feat(BRD-RP-042): stray screen\n\n"
+                           "Scope: R1\nScreen: SCR-999\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 1)
+        self.assertIn("SCR-999", err)
+
+    def test_touching_a_bound_path_without_naming_its_screen_exits_1(self):
+        screens = self.screens_dir({"SCR-014": ["src/profile.ts"]})
+        repo = self.repo([("feat(BRD-RP-042): silent screen edit\n\nScope: R1\n",
+                           ["src/profile.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 1)
+        self.assertIn("SCR-014", err)
+        self.assertIn("src/profile.ts", err)
+
+    def test_naming_the_bound_screen_passes(self):
+        screens = self.screens_dir({"SCR-014": ["src/profile.ts"]})
+        repo = self.repo([("feat(BRD-RP-042): declared screen edit\n\n"
+                           "Scope: R1\nScreen: SCR-014\n", ["src/profile.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 0, err)
+        self.assertIn("Screens: SCR-014", out)
+
+    def test_unindexed_path_produces_no_finding(self):
+        screens = self.screens_dir({"SCR-014": ["src/profile.ts"]})
+        repo = self.repo([("feat(BRD-RP-042): unrelated file\n\nScope: R1\n",
+                           ["src/unrelated.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 0, err)
+
+    def test_covered_sha_prints_a_backfill_row(self):
+        repo = self.repo([("feat(BRD-RP-042): pre-v2.1 history\n", ["src/a.ts"])])
+        sha = subprocess.check_output(["git", "-C", repo, "rev-parse", "HEAD"],
+                                      universal_newlines=True).strip()
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--covered", sha[:7]])
+        self.assertEqual(code, 0, err)
+        self.assertIn("Backfill:", out)
+        self.assertIn("State: pushed", out)
+
+    def test_malformed_scope_token_exits_1(self):
+        repo = self.repo([("feat(BRD-RP-042): bad token\n\nScope: requirement-3\n",
+                           ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH])
+        self.assertEqual(code, 1)
+        self.assertIn("requirement-3", err)
+
+    def test_unreadable_screens_dir_is_unevaluable(self):
+        repo = self.repo([("feat(BRD-RP-042): fine\n\nScope: R1\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--screens", os.path.join(repo, "no-such-dir")])
+        self.assertEqual(code, 2)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

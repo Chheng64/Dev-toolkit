@@ -5,9 +5,9 @@ Reads `git log <base>..<branch>`, parses the `Scope:` / `Screen:` commit
 trailers, and prints rows in the format of Architecture/brd-schema.md §3b for
 pasting into a Living BRD's S17 via the Notion MCP.
 
-Exit codes: 0 = every sha bound; 1 = unbound shas or unresolvable tokens;
-2 = unevaluable (not a git repo, no origin remote, bad arguments). Exit 2 is
-never a pass.
+Exit codes: 0 = every sha bound; 1 = unbound shas or unresolvable tokens
+(named on stderr); 2 = unevaluable (not a git repo, no origin remote,
+missing/unreadable screens registry, bad arguments). Exit 2 is never a pass.
 """
 
 import argparse
@@ -24,6 +24,9 @@ SLUG_SSH = re.compile(r"^(?:ssh://)?git@[^:/]+[:/](?P<slug>[^/]+/[^/]+?)(?:\.git
 CONVENTIONAL_PREFIX = re.compile(r"^\w+(?:\([^)]*\))?:\s*")
 PHASES = ("FE", "BE", "single")
 STATES = ("pushed", "pr-open", "merged", "released")
+SCOPE_TOKEN = re.compile(r"^(?:R\d+|SCR-\d{3}|chore)$")
+SCR_TOKEN = re.compile(r"SCR-\d{3}")
+PATHISH = re.compile(r"`([A-Za-z0-9_./@-]+/[A-Za-z0-9_.@-]+\.[A-Za-z0-9]{1,5})`")
 
 
 class Unevaluable(Exception):
@@ -80,6 +83,68 @@ def remote_slug(repo):
     raise Unevaluable("unrecognized origin URL %r — expected a GitHub http(s) or ssh remote" % url)
 
 
+def registry_ids(screens_dir):
+    """SCR-IDs declared in screens/registry.md. Empty set = no registry bound."""
+    if not screens_dir:
+        return set()
+    path = os.path.join(screens_dir, "registry.md")
+    if not os.path.isfile(path):
+        raise Unevaluable("no registry.md in %s — cannot resolve SCR-IDs" % screens_dir)
+    with open(path) as handle:
+        return set(SCR_TOKEN.findall(handle.read()))
+
+
+def screen_index(screens_dir):
+    """Repo-relative path -> SCR-ID, harvested from screens/SCR-<nnn>.md.
+
+    Only backticked path tokens are indexed, so a file no contract file names
+    is not indexed: the check yields no false positives and may yield false
+    negatives. Screen bindings belonging in the contract is the pre-existing
+    rule (Architecture/screen-contract.md §3), not a demand made here.
+    """
+    index = {}
+    if not screens_dir:
+        return index
+    if not os.path.isdir(screens_dir):
+        raise Unevaluable("screens directory not found: %s" % screens_dir)
+    for name in sorted(os.listdir(screens_dir)):
+        match = re.match(r"^(SCR-\d{3})\.md$", name)
+        if not match:
+            continue
+        with open(os.path.join(screens_dir, name)) as handle:
+            for path in PATHISH.findall(handle.read()):
+                index.setdefault(path, match.group(1))
+    return index
+
+
+def validate(commit, requirements, registry, index, covered):
+    """Problems with one commit's bindings. Empty list = bound."""
+    short = commit["sha"][:7]
+    if short in covered or commit["sha"] in covered:
+        return []
+    problems = []
+    if not commit["scopes"]:
+        problems.append("%s (%s): no Scope: trailer" % (short, commit["subject"]))
+    for token in commit["scopes"]:
+        if not SCOPE_TOKEN.match(token):
+            problems.append("%s: malformed scope token %r "
+                            "(expected R<n>, SCR-<nnn> or chore)" % (short, token))
+        elif token.startswith("R") and requirements and token not in requirements:
+            problems.append("%s: scope %s is not a requirement in S03" % (short, token))
+        elif token.startswith("SCR-") and registry and token not in registry:
+            problems.append("%s: scope %s is not in the screens registry" % (short, token))
+    for screen in commit["screens"]:
+        if registry and screen not in registry:
+            problems.append("%s: screen %s is not in the screens registry" % (short, screen))
+    named = set(commit["screens"]) | set(commit["scopes"])
+    for path in commit["files"]:
+        bound = index.get(path)
+        if bound and bound not in named:
+            problems.append("%s: touches %s (bound to %s) without naming it"
+                            % (short, path, bound))
+    return problems
+
+
 def commit_url(slug, sha):
     return "https://github.com/%s/commit/%s" % (slug, sha)
 
@@ -103,6 +168,14 @@ def build_parser():
     parser.add_argument("--base", default="main", help="base branch (default: main)")
     parser.add_argument("--phase", default="single", choices=PHASES)
     parser.add_argument("--state", default="pushed", choices=STATES)
+    parser.add_argument("--requirements", default="",
+                        help="comma-separated R<n> IDs from the BRD's S03; "
+                             "empty disables requirement resolution")
+    parser.add_argument("--screens", default="",
+                        help="path to the project's screens/ directory")
+    parser.add_argument("--covered", default="",
+                        help="comma-separated shas already carried by S17 "
+                             "backfill rows")
     return parser
 
 
@@ -112,12 +185,29 @@ def main(argv=None):
     try:
         slug = remote_slug(args.repo)
         commits = read_commits(args.repo, args.base, args.branch)
+        registry = registry_ids(args.screens)
+        index = screen_index(args.screens)
     except Unevaluable as problem:
         sys.stderr.write("unevaluable: %s\n" % problem)
         return 2
+
+    requirements = set(item.strip() for item in args.requirements.split(",") if item.strip())
+    covered = set(item.strip() for item in args.covered.split(",") if item.strip())
+
+    problems = []
     for commit in commits:
-        sys.stdout.write(commit_row(commit, slug, args.phase, args.state) + "\n")
-    return 0
+        found = validate(commit, requirements, registry, index, covered)
+        problems.extend(found)
+        if found:
+            continue
+        row = commit_row(commit, slug, args.phase, args.state)
+        if commit["sha"][:7] in covered or commit["sha"] in covered:
+            row += "\n  Backfill: <reason — fill in>"
+        sys.stdout.write(row + "\n")
+
+    for problem in problems:
+        sys.stderr.write("unbound: %s\n" % problem)
+    return 1 if problems else 0
 
 
 if __name__ == "__main__":
