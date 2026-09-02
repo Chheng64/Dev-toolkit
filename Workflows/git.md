@@ -21,14 +21,14 @@ Own the Git ↔ BRD bridge: branch lifecycle, commit hygiene, PR assembly, CI st
   `feat/<brd-id>-<slug>-be` for split BRDs (v2.0) — BRD `Branch` property set to the current
   phase's name
 - BRD `Compare` property, set at branch creation from `tools/delivery-log.py --compare-only` — the PO's live diff of the current phase, available before the first commit exists
-- S17 rollup rows at `PR`, `Merged` and `Released`, plus `Merge SHA` at merge and `Release Tag` at release
+- S17 rollup rows at `PR` and `Merged`, plus `Merge SHA` at merge
 - PR from template (Phase 4; until then: title `[BRD-ID] name`, body = BRD link + S13/S14 summary + test evidence + known limitations); BRD `PR` property set to the current phase's PR (and `FE PR` / `BE PR` populated for split BRDs, [brd-schema §1](../Architecture/brd-schema.md))
 - Merge per project strategy (default squash); branch deleted **once its phase is fully done with it**, never before — see Responsibility 5; S16 records
 - Commit convention enforced: `<type>(<BRD-ID>): <subject>`
 
 ## BRD Sections It May Update
 
-S15 (edit), S16 (append), S17 (append), `Branch`/`PR`/`FE PR`/`BE PR`/`Compare`/`Merge SHA`/`Release Tag` properties.
+S15 (edit), S16 (append), S17 (append), `Branch`/`PR`/`FE PR`/`BE PR`/`Compare`/`Merge SHA` properties.
 
 ## Responsibilities
 
