@@ -2,7 +2,7 @@
 
 A reusable AI product-development operating system for solo builders working with Claude, Notion, and Git. It turns feature development into a deterministic 13-stage state machine with living documents, hard quality gates, and full resumability — any session can die at any moment and the next one picks up exactly where it left off.
 
-**Version: v2.0.0** · consumed by projects as a version-pinned git submodule · improve a rule once here, every project inherits it at its next pin bump.
+**Version: v2.1.0** · consumed by projects as a version-pinned git submodule · improve a rule once here, every project inherits it at its next pin bump.
 
 ---
 
@@ -174,8 +174,8 @@ npx create-next-app@latest <project> --typescript --tailwind --eslint --app --sr
 cd <project>
 
 git submodule add https://github.com/Chheng64/Dev-toolkit.git toolkit
-cd toolkit && git fetch --tags && git checkout v2.0.0 && cd ..
-git add -A && git commit -m "chore: pin toolkit v2.0.0"
+cd toolkit && git fetch --tags && git checkout v2.1.0 && cd ..
+git add -A && git commit -m "chore: pin toolkit v2.1.0"
 ```
 
 ### Step 2 — Onboard (mandatory; nothing runs without it)
@@ -254,6 +254,7 @@ Approvals are scoped to what you saw — if gated content changes afterward, the
 - Silent deviation from plan is forbidden — deviate and log, or route back.
 - Reviews cover 7 dimensions (correctness, standards, security, performance, accessibility, DS conformance, plan conformance) on every diff.
 - Screens carry stable **SCR-IDs** from onboarding through QA (`C_CONTRACT` blocks implementation on incomplete mappings).
+- **Every commit is attributable to a requirement or a screen**: `Scope:` / `Screen:` trailers land in the BRD's Delivery Log (S17) at every push, and `C_DELIVERY` blocks the stage exit while any sha on the branch is unbound — backfill row or trailer, never a history rewrite. The Product Owner reads it as a Notion view: what changed (`Compare`, `PR`), what completed (`Merge SHA`, `Release Tag`). ([Checklists/delivery-log.md](Checklists/delivery-log.md))
 - External access stays inside the **Project Resource Registry** — a missing resource stops the stage with a connect-or-create ask; workspace searching and guessing are defects.
 - Approvals are scoped to what you saw — content changes revoke them automatically.
 - **Security is a precondition, not a late review dimension**: `C_SECURITY` blocks QA until S14 carries a `certified` Security Certificate naming the current branch head — evidence with exit codes, every S06 threat mitigation verified at `file:line`, waivers carrying riders. New commits stale it; it re-verifies the delta. ([Workflows/security-certification.md](Workflows/security-certification.md))
@@ -285,7 +286,7 @@ Dependencies point **down toward `Architecture/`** — it depends on nothing; `P
 | [Skills/](Skills/) | 16 roles with decision boundaries | Architecture | a role's judgment improves | per stage |
 | [Standards/](Standards/) | 18 tech standards (TS, React, Next.js, Tailwind v4, a11y, security, service-contracts, …) | Architecture | a quality bar changes | as referenced by stage |
 | [Templates/](Templates/) | 18 artifact formats (requirements, PR, bug report, mappings, shared-contract, …) | Architecture | an artifact format changes | when producing that artifact |
-| [Checklists/](Checklists/) | 15 machine-checkable gates | Architecture | an exit criterion changes | at stage exit |
+| [Checklists/](Checklists/) | 16 machine-checkable gates | Architecture | an exit criterion changes | at stage exit |
 | [Prompts/](Prompts/) | 11 invocation patterns | Architecture | an invocation improves | when you invoke one |
 | [Playbooks/](Playbooks/) | full-feature · parallel-brds · hotfix · design-only | everything (composition layer) | a composed flow changes | when a playbook is invoked |
 | [extensions/](extensions/telegram/README.md) | Opt-in adapters (Telegram v2) | orchestrator contract only | adding/changing an adapter | only if enabled in manifest |

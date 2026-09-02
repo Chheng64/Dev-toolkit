@@ -4,6 +4,39 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-09-02
+
+**The Product Owner can see what shipped, per feature, per requirement, per screen.** Git links
+reached Notion only at lifecycle state 09 and only at PR granularity; the whole of Implementation
+was invisible and the commit-to-requirement mapping was never recorded at all.
+
+### Added
+- BRD section `S17 · Delivery Log` (append-only) + properties `Compare`, `Merge SHA`, `Release Tag`
+  — [Architecture/brd-schema.md](../Architecture/brd-schema.md) §1, §2, §3b.
+- Commit trailers `Scope:` / `Screen:` binding each commit to an S03 requirement and a Screen
+  Contract SCR-ID — [Architecture/integration-map.md](../Architecture/integration-map.md) §3.
+- `tools/delivery-log.py` + `tools/test_delivery_log.py` — generates S17 rows, validates every sha,
+  exit 1 on unbound shas, exit 2 unevaluable. Stdlib only, no credentials.
+- Guard `C_DELIVERY` + [Checklists/delivery-log.md](../Checklists/delivery-log.md) — blocks
+  `Implementation` exit and `Tech Review` → `PR` while any sha is unbound; satisfiable by trailer or
+  backfill row; a bounce does not count against `L_QA`.
+- `Delivery (PO)` Notion view, created per project at onboarding.
+
+### Changed
+- `Workflows/git.md`, `implementation.md`, `backend-integration.md`, `release.md` write S17 and the
+  three properties at push, PR, merge and release.
+- `Architecture/permission-matrix.md`: S17 column, **A** for all sixteen roles (S16's rule).
+- `AI/brd-update-protocol.md`: S17 write rules — one Notion write per push, state changes are new
+  rows.
+- `Templates/pull-request.md`: scope-coverage section.
+
+### Migration
+Additive; no property changes type or meaning, no rights removed. A BRD already past
+`Implementation` at cutover carries no S17 and the guard does not apply. A BRD at or before
+`Implementation` gets S17 scaffolded at its next stage entry; pre-cutover shas are covered by one
+backfill row with the reason `pre-v2.1 history` ([brd-schema](../Architecture/brd-schema.md) §5
+invariant 6).
+
 ## [2.0.0] — 2026-08-27
 
 **Development splits into two gated phases.** The front-end is built on mocks and approved by a
