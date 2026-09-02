@@ -91,13 +91,15 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | Dev Planning | plan validated ∧ `C_RESOURCES` pass | Implementation |
 | Dev Planning | `C_RESOURCES` fail | Blocked (`resource: <slot>`) until Resource Decision resolves |
 | Dev Planning | plan exposes design gap | Design |
-| Implementation | complete claim + S12 current + `C_SECURITY` pass | QA |
+| Implementation | complete claim + S12 current + `C_SECURITY` pass ∧ `C_DELIVERY` pass | QA |
+| Implementation | `C_DELIVERY` fail | Implementation (unbound shas named; fixed by trailered commits or S17 backfill rows, not by history rewrite) |
 | Implementation | `C_SECURITY` fail (`not-certified`) | Implementation (fix findings; counts against `L_QA`) |
 | Implementation | certification exposes authz/contract-level flaw | Dev Planning (S16 `Affects: S10`) |
 | QA | all ACs verified, zero open blockers ∧ `C_PARITY` pass (`Phase: BE` only) | Tech Review |
 | QA | blocker bugs | Implementation (loop `L_QA`) |
 | QA (`Phase: BE`) | `C_PARITY` fail | Implementation (`Phase: BE`), loop `L_QA` |
-| Tech Review | verdict `approve` ∧ `C_ISOLATION` pass | PR |
+| Tech Review | verdict `approve` ∧ `C_ISOLATION` pass ∧ `C_DELIVERY` pass | PR |
+| Tech Review | `C_DELIVERY` fail | Implementation (same phase), unbound shas named in S16 |
 | Tech Review | verdict `request-changes` | Implementation (loop `L_REVIEW`) |
 | Tech Review | `C_ISOLATION` fail | Implementation (same phase), offending paths named in S16 |
 | PR | PR open + CI green | Human Review |
@@ -129,6 +131,7 @@ Gate). `Phase: single` runs the segment once and is the pre-v2.0 path exactly. T
 | `C_SERVER_SCOPE` | Two-step. **Provisional**, decided at **`Planning` exit** from S02 business goal/scope, S03 acceptance criteria, and S06 risks (S07 does not exist yet — it is a `Design` output, §2 row 03): does anything imply persistence, authentication, or an external service? Logged S16 with its evidence; sets the provisional `Phase`. **Confirmed**, at **`Design Review` exit**, against the actual S07 flow transitions once they exist: does any S07 flow transition touch persistence, authentication, or an external service? A flip from the provisional value is logged S16 naming the flow transition that caused it, and `Phase` is re-tagged before `Dev Planning`. True → `Phase: FE` (two passes); false → `Phase: single` (one pass, pre-v2.0 behaviour). BE-only BRDs are `single` by the same test — there is no UI to validate. |
 | `C_PARITY` | Checked at **Phase-2 QA exit**: (1) every AC marked `mocks` in S13 also carries an `integrated` verdict; (2) every method of the cited `CTR-<brd-id>-v<n>` has a `provided` API block in its screen's contract, and the shipped real adapter implements the contract interface unmodified; (3) zero live mock paths in shipped code — the mock adapter is deleted or demoted to test-only; (4) the Phase-1 exposure control is removed, and its removal is in the BE PR diff. Fail → Implementation (`Phase: BE`). |
 | `C_ISOLATION` | Checked at **each phase's Tech Review**, mechanically, against the S10 touched-areas list: a `Phase: BE` branch touches no front-end paths and no contract files; a `Phase: FE` branch touches no server paths. The single bounded exception is integration's adapter wiring — one file per domain, declared in the Phase-2 S10. Fail → Tech Review stops with the offending paths named. |
+| `C_DELIVERY` | Every commit sha in `<base>..<current-phase branch>`, in every repo bound to the BRD, appears in S17 bound to at least one resolving `Scope:` token (`R<n>` present in S03 · `SCR-<nnn>` present in the screens registry · `chore`), and the BRD `Compare` property is set for the current phase. Coverage is satisfied by a commit trailer **or** by an S17 backfill row naming the sha (or range), its scope and its reason — pushed history is never rewritten to satisfy this guard ([git](../Workflows/git.md) forbids rewriting after review starts). Checked at **`Implementation` exit** (and at [backend-integration](../Workflows/backend-integration.md) exit, the same stage class) and re-checked at **`Tech Review` → `PR`**, because QA-loop and re-certification commits land after the first check. Validator: [../Checklists/delivery-log.md](../Checklists/delivery-log.md), mechanically `tools/delivery-log.py`. Fail → stop, report the unbound shas, route to Implementation. **A `C_DELIVERY` bounce does not count against `L_QA`** — it is a thirty-second backfill, and charging it against a ceiling would create pressure to weaken the guard. |
 
 A forward transition fires only when its guard conjunction holds; otherwise the stage's failure path runs (retry → escalate → Blocked).
 

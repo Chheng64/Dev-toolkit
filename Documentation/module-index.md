@@ -56,6 +56,7 @@ Every module, one line. Load only what the task needs — this index is the map,
 - Guards: [screen-contract](../Checklists/screen-contract.md) (`C_CONTRACT` validator) · [security](../Checklists/security.md) (`C_SECURITY` validator)
 - [product-validation](../Checklists/product-validation.md) — the Product Gate validator
 - [integration-parity](../Checklists/integration-parity.md) — the `C_PARITY` validator
+- [delivery-log](../Checklists/delivery-log.md) — the `C_DELIVERY` validator
 
 ## Prompts/ (invocation patterns)
 - [planning](../Prompts/planning.md) · [research](../Prompts/research.md) · [architecture](../Prompts/architecture.md) · [design](../Prompts/design.md) · [development](../Prompts/development.md) · [refactoring](../Prompts/refactoring.md) · [testing](../Prompts/testing.md) · [debugging](../Prompts/debugging.md) · [documentation](../Prompts/documentation.md) · [review](../Prompts/review.md) · [prompt-improvement](../Prompts/prompt-improvement.md)
