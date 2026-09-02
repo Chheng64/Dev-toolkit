@@ -40,6 +40,7 @@ Establish all project metadata, **bind every external resource the project owns*
    | Provider | Slots | Required? | Connect Existing | Create New |
    |----------|-------|-----------|------------------|------------|
    | Notion | BRD Database | **yes** | **inherited from the [Toolkit Registry](../Architecture/toolkit-registry.md)** — confirmed, never re-asked | only if the registry has none (first project ever): create per [notion-setup](../Documentation/notion-setup.md), write to the registry first, then inherit |
+   | Notion | Delivery (PO) view | n/a — created, not bound | confirm the view is present on the bound BRD DB (no identifier to resolve) | create it via `notion-create-view`: columns `Name`, `Status`, `Phase`, `Compare`, `PR`, `Merge SHA`, `Release Tag`, filtered to this project, grouped by Status ([notion-setup](../Documentation/notion-setup.md) §1) |
    | Notion | Project Page | optional | identity page from step 0 binds automatically; or resolve URL → page id | create identity page (if step 0 didn't) |
    | Notion | Sprint DB · Decision-log DB | optional | resolve URL → database id | create (only on explicit need — no ceremony DBs) |
    | Figma | Product Design File | optional¹ | file key from URL, verify access | create file via Figma MCP |
@@ -53,6 +54,11 @@ Establish all project metadata, **bind every external resource the project owns*
    ¹ Skipped Figma → prototype-only design flow ([screen-contract](../Architecture/screen-contract.md) §4).
    ² Communication asked **ONCE** (v1.4 rule): Yes / No / Configure later. Yes → token via `TELEGRAM_BOT_TOKEN` env (never stored in repo/manifest; registry `telegram_bot: none` → route through bot creation first, [extension README](../extensions/telegram/README.md) Setup 1); mode private | group | **topic (recommended)**; **chat_id discovery:** user sends any message in the target chat, then the plugin/`getUpdates` reports `chat_id` (+`topic_id`) back — never typed from memory. The test-send "✅ <Project Name> has been successfully connected to the Dev Toolkit." (`telegram-plugin.mjs --test`) runs at step 6 **after the manifest is written** (the plugin reads it) and must succeed before `enabled: true` stands — failure reverts to `enabled: false, deferred: true` without consuming the ask-once. No → `enabled: false`. Later → `enabled: false, deferred: true`; the completion report prints the re-open phrase. Neither is ever re-asked except via the Re-Onboarding phrases. Slack/Discord/email: future siblings, same shape; do not ask in v1.
    Monorepo: bind the same repo (same id) to frontend + backend slots. Set `git.primary_repository` — the slot hosting manifest, toolkit pin, `screens/`; confirm each repo's default branch as it is bound (⚙ via `gh`). Each binding records `binding: connected|created`, `bound: <date>`.
+
+   - **Shared Contract** — offered **only** when the frontend and backend repositories are different
+     bindings. Connect existing / create new; **skip is not offered**, because a split-repo project
+     with two-phase BRDs has nowhere else to put the artifact. Single-repo projects are not asked:
+     `phases.contracts_path` (default `contracts/`) applies and is recorded without a question.
 
 4. **Validate integrations** — run [integration-validation](integration-validation.md), **tool checks only on this first run** (the binding rows of its table belong to re-validation; step 5 owns first-run binding validation). Failures on *required* integrations (Notion MCP, git access) block completion; optional ones (Figma, browser automation) record warnings. During onboarding, all results accumulate in the candidate config and are written into the manifest at step 6.
 
@@ -126,6 +132,7 @@ Triggered **only** by the Manifest Gate ([../AI/orchestrator.md](../AI/orchestra
 - [ ] **Every supported resource slot explicitly resolved** — `connected` / `created` / `skipped`; no silent absences
 - [ ] **Every binding stores a stable identifier** (id/key/repo-id/chat-id) — no display names, no unresolved URLs
 - [ ] Required bindings (`resources.notion.brd_database`, ≥1 GitHub repo) validated; `resources.status: bound` + `bound` date stamped
+- [ ] `Delivery (PO)` view exists on the bound BRD DB, filtered to this project
 - [ ] Required integrations `validated`; optional failures recorded as warnings, not silently
 - [ ] All bound resources access-checked this run via stable id (no dead bindings in the registry)
 - [ ] Validation checklist (step 5 format) shown to the user, skips listed

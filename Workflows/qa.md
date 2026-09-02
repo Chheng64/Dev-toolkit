@@ -26,6 +26,17 @@ Verify the implementation against S03 acceptance criteria and S09 states — adv
 
 S13 (edit), S09 (append — newly discovered edge cases), S06 (append), S16 (append).
 
+## Phase modes (v2.0)
+
+| | `Phase: FE` (mock-backed) | `Phase: BE` (integrated) |
+|---|---|---|
+| Verify | every front-end-observable AC · every S09 state via its fixture · a11y · responsive · arrangement tests | every Phase-1 AC **re-run against the real service** · server-only ACs · latency, ordering, partial failure, retry, webhook delay |
+| S13 | mark `Verified on: mocks` | mark `Verified on: integrated` |
+| Exit | Tech Review | Tech Review, after `C_PARITY` ([integration-parity](../Checklists/integration-parity.md)) |
+
+An AC verified on mocks is **not** verified. It is verified on mocks, which is why the column
+exists. `Phase: single` BRDs use the integrated column only.
+
 ## Responsibilities
 
 1. Execute every AC as written. AC untestable as written → `blocked` + S16 `Affects: S03` (BA owns AC quality); never reinterpret silently.

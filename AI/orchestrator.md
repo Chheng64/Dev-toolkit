@@ -17,6 +17,26 @@
 0b. **Resource boundary** (v1.5 — [Project Boundary Rule](../Architecture/integration-map.md) §2b). All external access resolves through the Project Resource Registry by **stable identifier**. Never workspace-search Notion, browse Figma, or list repositories; never guess a resource. A stage requiring a slot that is missing, skipped, or `health: unreachable` → raise a **Resource Decision** ([project-manifest §3](../Architecture/project-manifest.md)): *connect existing / create new / confirm absence*. While it is pending, set `Status: Blocked`, `Blocked Reason: resource: <slot> — <reason>` — this makes the stop resumable at session entry (§2) and fires the Telegram failure trigger (responsibility 9). Log the decision S16; clear `Blocked` on resolution.
 1. **Pickup** — select next BRD from `Ready` (priority order) when a slot is free (<3 in-flight) and `C_MANIFEST` holds for its project.
 2. **Stage routing** — map `Status` → workflow module → skill → model tier per [model-routing.md](model-routing.md); load only what the stage needs; log the model in the Stage-Enter S16 entry.
+2b. **Phase handling (v2.0)** — the phase decision, the Phase-1→Phase-2 flip, and the Product Gate ([../Architecture/workflow-state-machine.md](../Architecture/workflow-state-machine.md) §3 transitions, §4 guards, §6 gates; gate conduct: [../Workflows/product-validation.md](../Workflows/product-validation.md)):
+   1. At `Planning` exit, decide `C_SERVER_SCOPE` **provisionally** from S02/S03/S06 (S07 does not
+      exist yet), set `Phase`, and log the decision with its evidence in S16. At `Design Review`
+      exit, **confirm** `C_SERVER_SCOPE` against the actual S07 flow transitions; a flip from the
+      provisional value is logged S16 with the flow transition that caused it, and `Phase` is
+      re-tagged before `Dev Planning`. Never infer the phase later from the diff.
+   2. At `Merged` with `Phase: FE`: record the product freeze sha in S16 (never S08 — no role has
+      write rights there for this; permission-matrix unchanged) **and** write it to
+      `VERSION.product_freeze` in the contract artifact ([shared-contract](../Architecture/shared-contract.md),
+      [Templates/shared-contract.md](../Templates/shared-contract.md)) — S16 stays the canonical
+      machine-state record; the `VERSION` write is what `Checklists/development-ready.md`'s
+      Phase-BE entry reads, and it requires both `VERSION` fields present. Then flip `Phase` to
+      `BE`, **reset `Loop Count`** and log the reset, then re-enter `Dev Planning`. Do not pass to
+      `Released` — release is a Phase-2 event.
+   3. Present the Product Gate as a *product* decision package (running app, flows walked, states
+      walked, limitations at full strength), not a diff summary.
+   4. On `L_CONTRACT`: drop the `product` token from `Approvals`, log the conflict with the
+      contradicting constraint named, and re-enter `Dev Planning` with `Phase: FE`.
+   5. Resume reads `Phase` from the property, never from the branch name. A BRD whose `Phase` is
+      unset and whose Status is past `Planning` is a migration case: set `single` and log it.
 3. **Input verification** — before running a stage, check `C_SECTIONS(required)`: required BRD sections exist and are non-empty. Missing input → back-transition to the producing stage, never improvise the input.
 4. **Gate enforcement** — never cross a human gate without the approval token in `Approvals`; revoke tokens when gated content changes (stale-approval rule; classify the delta first — bug-fix-only → scope confirm with byte-level evidence, feature delta → a ruling). On `Design Gate` approval, evaluate `C_HANDOFF_REQUIRED` ([../Architecture/workflow-state-machine.md](../Architecture/workflow-state-machine.md) §4): true → run design state 12 ([../Workflows/flow-visualization.md](../Workflows/flow-visualization.md)) and hold the BRD in `Design Review` until the **Developer Handoff Gate** resolves; false → log the skip in S16 and continue. At **QA entry and again at Tech Review entry** run `C_SECURITY` ([../Checklists/security.md](../Checklists/security.md)): S14 must carry a `certified` Security Certificate whose `certified_commit` equals the current branch head — stale or missing → stop, route to [../Workflows/security-certification.md](../Workflows/security-certification.md), log S16. No QA on uncertified code, no review on a certificate that predates the fixes. At Dev Planning entry additionally run `C_CONTRACT` ([../Checklists/screen-contract.md](../Checklists/screen-contract.md)): any missing mapping → stop, report `SCR-id · block · gap` lines, route to the owning stage, log S16. No implementation on an incomplete Screen Contract.
 4b. **Check evidence, not claims** — where a gate's evidence is a tool run ([../Architecture/validation-engine.md](../Architecture/validation-engine.md)), read the **exit code**: `0` pass, `1` findings, `2` **the check did not run** — *unevaluable*, never a pass. A stage reporting "checks passed" with no exit code recorded has not produced gate evidence.
@@ -70,8 +90,8 @@ GATE    if stage exits through a human gate: present decision package
 When a human gate is pending, present exactly:
 
 1. **BRD** — ID, name, link.
-2. **Gate** — which (Direction / Design / **Developer Handoff** / Final) and what approval unlocks.
-3. **Review target** — Direction: S01–S06 summary. Design: running prototype URL (Run Local, port 8765 default) + the **deep-link hook table** + S07–S09. Developer Handoff: the **derivation report** (`navmap-report.md`) — never the picture — plus registry sha, derivation run and prototype versions. Final: PR link + diff summary + S13/S14 verdicts.
+2. **Gate** — which (Direction / Design / **Product** / **Developer Handoff** / Final) and what approval unlocks.
+3. **Review target** — Direction: S01–S06 summary. Design: running prototype URL (Run Local, port 8765 default) + the **deep-link hook table** + S07–S09. Product: the running front-end (local URL, at the FE PR head sha) + the S07/S09 walk evidence + the issued `CTR-<brd-id>-v<n>` + the frozen prototype version + the mock-backed limitations statement — conduct: [../Workflows/product-validation.md](../Workflows/product-validation.md). Developer Handoff: the **derivation report** (`navmap-report.md`) — never the picture — plus registry sha, derivation run and prototype versions. Final: PR link + diff summary + S13/S14 verdicts.
 4. **Known limitations** — from audits, transparently, at full strength. Every waiver names its rider debt item, grantor and closing condition; an acceptance with qualifications is recorded with its qualifications.
 5. **Ask** — `approve` / `request-changes` (structured, each with target) / `reject` / `stop`.
 

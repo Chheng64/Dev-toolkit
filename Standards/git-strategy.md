@@ -6,8 +6,8 @@
 ## Rules
 
 ### Model
-1. Trunk-based with short-lived feature branches: `main` always releasable, one branch per BRD (`feat/<brd-id>-<slug>`), no develop/release branch ceremony solo work doesn't need.
-2. One BRD = one branch = one PR — the invariant everything else leans on. Mixed-concern branches are the root of unrevertable history.
+1. Trunk-based with short-lived feature branches: `main` always releasable, one branch per BRD per phase (`feat/<brd-id>-<slug>` for `Phase: single`; `feat/<brd-id>-<slug>-fe` / `-be` for split BRDs, v2.0 — [brd-schema §1](../Architecture/brd-schema.md)), no develop/release branch ceremony solo work doesn't need.
+2. One BRD = one branch = one PR **per phase** — the invariant everything else leans on. Mixed-concern branches are the root of unrevertable history.
 3. Branch lifetime target: days, not weeks. A branch outliving its second rebase is a slicing failure — feedback to planning.
 4. Hotfixes ride the same model (`fix/<brd-id>-<slug>` from main) via the hotfix playbook — reduced ceremony, same gates that matter (QA on the fix path, Final Gate).
 

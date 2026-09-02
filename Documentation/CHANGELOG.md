@@ -4,6 +4,87 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-09-02
+
+**The Product Owner can see what shipped, per feature, per requirement, per screen.** Git links
+reached Notion only at lifecycle state 09 and only at PR granularity; the whole of Implementation
+was invisible and the commit-to-requirement mapping was never recorded at all.
+
+### Added
+- BRD section `S17 · Delivery Log` (append-only) + properties `Compare`, `Merge SHA`, `Release Tag`
+  — [Architecture/brd-schema.md](../Architecture/brd-schema.md) §1, §2, §3b.
+- Commit trailers `Scope:` / `Screen:` binding each commit to an S03 requirement and a Screen
+  Contract SCR-ID — [Architecture/integration-map.md](../Architecture/integration-map.md) §3.
+- `tools/delivery-log.py` + `tools/test_delivery_log.py` — generates S17 rows, validates every sha,
+  exit 1 on unbound shas, exit 2 unevaluable. Stdlib only, no credentials.
+- Guard `C_DELIVERY` + [Checklists/delivery-log.md](../Checklists/delivery-log.md) — blocks
+  `Implementation` exit and `Tech Review` → `PR` while any sha is unbound; satisfiable by trailer or
+  backfill row; a bounce does not count against `L_QA`.
+- `Delivery (PO)` Notion view, created per project at onboarding.
+
+### Changed
+- `Workflows/git.md`, `implementation.md`, `backend-integration.md`, `release.md` write S17 and the
+  three properties at push, PR, merge and release.
+- `Architecture/permission-matrix.md`: S17 column, **A** for all sixteen roles (S16's rule).
+- `AI/brd-update-protocol.md`: S17 write rules — one Notion write per push, state changes are new
+  rows.
+- `Templates/pull-request.md`: scope-coverage section.
+
+### Migration
+Additive; no property changes type or meaning, no rights removed. A BRD already past
+`Implementation` at cutover carries no S17 and the guard does not apply. A BRD at or before
+`Implementation` gets S17 scaffolded at its next stage entry or its next push, whichever comes
+first; pre-cutover shas are covered by one backfill row with the reason `pre-v2.1 history`. For a
+BRD already inside `Implementation` at cutover, `Compare` is set at the next push, in the same
+write as the first S17 rows ([brd-schema](../Architecture/brd-schema.md) §5 invariant 6).
+
+## [2.0.0] — 2026-08-27
+
+**Development splits into two gated phases.** The front-end is built on mocks and approved by a
+human as the product; the back-end then derives its contract from that approved behaviour instead of
+from documents. The two phases communicate only through a third artifact.
+
+### Added
+- `Architecture/shared-contract.md` + `Templates/shared-contract.md` — `CTR-<brd-id>-v<n>`:
+  `contract.ts`, `contract.md`, `fixtures/`, `VERSION`. Superseded, never edited.
+- `Workflows/product-validation.md` + `Checklists/product-validation.md` — the **Product Gate**.
+- `Workflows/backend-integration.md` + `Checklists/integration-parity.md` — the Phase-2 seam and
+  `C_PARITY`.
+- `Standards/service-contracts.md` — adapter boundary, fixture discipline, exposure control.
+- `tools/toolkit-check.py` — consistency checker: links, guard/loop vocabulary, approval tokens,
+  module-index coverage, phase vocabulary. Exit 2 = unevaluable, never passing.
+- Guards `C_SERVER_SCOPE`, `C_PARITY`, `C_ISOLATION`; loop `L_CONTRACT` (ceiling 2); BRD property
+  `Phase`; approval token `product`; manifest `phases:` block and the `contracts` registry slot.
+
+### Changed
+- Loop ceilings are per phase and reset at the flip.
+- S11 **cites** the contract instead of holding it; S13 gains `Verified on: mocks | integrated`.
+- Screen-contract API block becomes `demanded` → `provided`.
+- Backend planning's inputs are the contract; front-end source is explicitly not an input.
+
+### Fixed — whole-branch review (spec amendments)
+- `C_SERVER_SCOPE` was specified as a single decision at `Planning` exit sourced from S07 — but S07
+  is a `Design` output and does not exist at `Planning` exit. Amended to a two-step guard:
+  **provisional** at `Planning` exit (from S02/S03/S06), **confirmed** at `Design Review` exit
+  against the actual S07 flow transitions, with a logged flip and `Phase` re-tag before
+  `Dev Planning` (spec §3.3, `Architecture/workflow-state-machine.md` §3/§4,
+  `AI/orchestrator.md` responsibility 2b, `Checklists/development-ready.md`).
+- The migration invariant (`brd-schema.md` §migration) stated two clauses that both matched a
+  pre-cutover BRD not yet past `Planning`, with opposite results. Reduced to one clause: only a BRD
+  already past `Planning` at cutover is `Phase: single`; anything at or before `Planning` is
+  evaluated by `C_SERVER_SCOPE` like any other BRD (mirrored below).
+
+### Migration
+Two Notion edits, once per workspace: add the `Phase` select (`FE`, `BE`, `single`) and add
+`product` to the `Approvals` multi-select. **Every BRD already past `Planning` at cutover becomes
+`Phase: single`** and behaves exactly as it did under v1.10.0; a BRD at or before `Planning` is
+evaluated by `C_SERVER_SCOPE` like any other BRD under v2.0.0.
+
+### Notes
+- No `Status` value is added, renamed or removed; the 13 stages stand. The major bump is for the
+  manual Notion migration and the changed meaning of `Merged` for split BRDs.
+- Design sub-machine states 01–12 are untouched.
+
 ## [1.10.0] — 2026-08-25
 
 **Gap sweep against the vendored source.** A double-check of the vendored toolkit's process docs against what the toolkit actually carries found ten missing pieces. All ten are now in.

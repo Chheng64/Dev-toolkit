@@ -2,6 +2,9 @@
 
 > **Module:** Playbooks. Stages 1–4 as the whole engagement: the deliverable is a validated, user-approved design (prototype + spec), no build. For explorations, client-style design work, or design-ahead-of-build batching.
 
+> **Phase:** `single` — this path never splits. A hotfix under time pressure and a design-only BRD
+> both run one pass; the two-phase split applies to full features with server scope.
+
 ## Sequence
 
 | # | Status | Do | Exit |

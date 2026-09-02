@@ -42,7 +42,7 @@ Five mapping blocks, filled by the stage that owns each ([../Templates/design-ma
 | **Design** | UI planning / prototype | UI Designer | Figma frame + component refs (when manifest has Figma) · **Reading order · Chrome / presentation · Alignment** per bound frame (§4a) · DS components + tokens used · states designed · deviations from the frame as findings with the ruling that allowed them |
 | **Prototype** | Prototype | UI Designer | prototype route, interactive behaviors wired, recovery routes reachable |
 | **Frontend** | Dev Planning | FE Engineer | frontend route, page component file, shared components, layout, state mgmt refs (S10/S11 pointers) |
-| **API** | Dev Planning | BE/FS Engineer | required APIs (S11 spec names), request/response models, error states → screen states |
+| **API** | `demanded` at Phase-1 exit · `provided` in Phase 2 | FE demands, BE provides | **`demanded:`** the contract methods this screen needs, by `CTR-<brd-id>-v<n>` method name, each with the S09 state its errors render · **`provided:`** the endpoint/action satisfying each, filled in Phase 2. Screens with no server needs state `api: none` explicitly |
 | **QA** | Dev Planning (plan) / QA (verdicts) | QA Engineer | ACs covering this screen, test cases, edge cases (S09 states landing here), a11y checks, responsive checks |
 
 Screens with no API dependencies state `api: none` explicitly — absence is declared, never implied.
@@ -86,7 +86,10 @@ Run at Dev Planning entry, automatically, per owning BRD ([../Checklists/screen-
 2. Every registry entry owned by this BRD has a complete Design mapping (Figma per §4 rule).
 3. Every approved (Design-Gate-passed) screen has a Frontend mapping plan.
 4. Every Frontend mapping references approved DS components only (no unmapped/one-off components).
-5. Every API dependency is documented (API block ↔ S11 contract, or explicit `api: none`).
+5. Every API dependency is documented: for `Phase: single` BRDs, the API block ↔ S11 contract; for
+   split BRDs, every `demanded:` line names a method of the cited `CTR-<brd-id>-v<n>`, and at
+   Phase-2 QA exit every `demanded:` line has a `provided:` line (`C_PARITY` check 2). Or explicit
+   `api: none`.
 6. Every screen has QA coverage (ACs + edge cases + a11y + responsive entries).
 7. Every screen at `designed` or beyond whose Design block binds a frame of the **product design file** has an arrangement test naming the screen ID and `readingOrder` (§4a rule 5) — executable form: the project's `arrangement:check` gate.
 

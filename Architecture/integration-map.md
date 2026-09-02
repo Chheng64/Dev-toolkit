@@ -15,14 +15,15 @@
 
 **Knowledge separation rule (hard):** feature knowledge → Notion BRD. Global process knowledge → toolkit. Project-specific technical knowledge (stack quirks, env setup, project conventions that override standards) → project repo `CLAUDE.md` + `project-overrides.md`. Anything written in the wrong layer gets moved, not duplicated.
 
-**Three sources of truth (v1.2):**
+**Four sources of truth (v2.0):**
 | Artifact | Truth for | Lives in |
 |----------|-----------|----------|
 | [`project-manifest.yaml`](project-manifest.md) | project configuration + **resource registry** | project repo root |
 | Living BRD | feature requirements + decisions | Notion |
 | [Screen Contract](screen-contract.md) (`screens/`) | design→development traceability | project repo |
+| [Shared Contract](shared-contract.md) (`contracts/<brd-id>/`) | FE↔BE API contract for a split BRD, issued once at the phase flip | project repo (or bound `resources.contracts`, split-repo shape) |
 
-Workflows consume these; they never re-collect or duplicate their content. Config change → manifest; requirement change → BRD; mapping change → contract.
+Workflows consume these; they never re-collect or duplicate their content. Config change → manifest; requirement change → BRD; mapping change → contract; API-seam change → Shared Contract.
 
 ## 2. Wiring Diagram
 
@@ -74,11 +75,12 @@ A stage that needs a resource the registry doesn't hold — or holds skipped or 
 | BRD ID | `BRD-<project-code>-<nnn>` | `BRD-RP-042` |
 | Branch | `feat/<brd-id-lower>-<slug>` | `feat/brd-rp-042-identity-resolution` |
 | Commit | `<type>(<brd-id>): <subject>` | `feat(BRD-RP-042): add profile lookup state` |
+| Commit trailers (v2.1) | `Scope: <token>[, …]` mandatory; `Screen: SCR-<nnn>` when the diff touches a screen-bound file | `Scope: R3, R4` + `Screen: SCR-014` |
 | PR title | `[<brd-id>] <feature name>` | `[BRD-RP-042] Identity resolution` |
 | PR body | from Templates/pull-request; first line links the BRD page URL | — |
 | Prototype dir | `design/prototype/<brd-id-lower>/` | `design/prototype/brd-rp-042/` |
 
-Bidirectional links: BRD `Branch` + `PR` properties point at Git; PR body + commits point at BRD. Either side reachable from the other in one hop.
+Bidirectional links: BRD `Branch` + `PR` + `Compare` properties point at Git; PR body + commits point at BRD. Either side reachable from the other in one hop. **At scope and screen granularity** (v2.1) the bridge is the commit trailer plus its S17 row: `Scope:` names the S03 requirement (`R<n>`), `SCR-<nnn>` names the Screen Contract entity, `chore` is the reserved token for commits that deliver no requirement. Trailers are written at commit time — a rewrite to add or fix one is forbidden once review has started ([git workflow](../Workflows/git.md)); the sanctioned repair is an S17 backfill row.
 
 **Multi-repo BRDs** (backend/infra repos bound beyond the primary): the same branch name is used in every affected repo; one PR per affected repo; the BRD `PR` property holds the primary repo's PR, whose body links the sibling PRs (and S16 lists them). The Final Gate reviews **all** PRs of the set — merge is atomic in intent: none merge until the gate approves the set.
 

@@ -8,6 +8,13 @@
 
 Builds the approved design exactly, to standard, with tests — and keeps the BRD truthful while doing it. Boring-by-preference: standard patterns, smallest state altitude, DS vocabulary in code. Treats the S09 edge states as first-class requirements, not polish.
 
+## Phase ownership (v2.0)
+
+Owns `Phase: FE` end to end, and **issues** the Shared Contract at phase exit
+([shared-contract](../Architecture/shared-contract.md)) — written from the running app and its mock
+adapter, never from the plan. Writes no server code in Phase 1. In Phase 2 owns nothing but the
+selection point, and only when integration touches it.
+
 ## Responsibilities
 
 - Plan: component/file mapping, state ownership, data-fetching + server/client boundaries, test plan per AC, touched-areas list
