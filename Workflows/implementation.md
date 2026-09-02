@@ -32,9 +32,13 @@ S10 (edit — plan corrections, logged), S11 (edit — same), S12 (edit/append),
 2. Compose UI from DS + shadcn/ui per S11 mapping; token references, no hardcoded values; no feature-local styling forks.
 3. Implement every S09 state named in the plan — loading/error/empty/interrupted are AC-bearing code, not polish.
 4. Write tests alongside code per the S11 test plan; every implemented AC has its named test passing locally.
-5. Run typecheck + lint + tests before claiming complete; fix, don't suppress (`any`, `eslint-disable`, `@ts-ignore` need written justification in S12).
-6. Keep commits atomic and honest — one logical change each, convention format, no "wip" on shared history.
-7. New reusable pattern emerges → note in S16; candidate for toolkit/DS, don't inline-fork it.
+5. **Implement each S06 mitigation in the slice that creates its surface** — never "harden later". Authorization, input schemas and error normalization are contract, not polish; a surface merged without them is a finding waiting for the certifier.
+6. **New surface, new threat row.** A route, endpoint, webhook, upload, redirect target or storage read the plan did not foresee → append it to the S06 threat model as it is built, with its mitigation. A stale threat model blocks certification.
+7. **Run the security scanners locally before pushing** — secret scan and dependency audit from the manifest `security:` block. A secret that reaches a pushed commit is published, and deleting it is not rotating it.
+8. Run typecheck + lint + tests before claiming complete; fix, don't suppress (`any`, `eslint-disable`, `@ts-ignore` need written justification in S12).
+9. Keep commits atomic and honest — one logical change each, convention format, no "wip" on shared history.
+10. New reusable pattern emerges → note in S16; candidate for toolkit/DS, don't inline-fork it.
+11. **Exit through certification** ([security-certification](security-certification.md)): the stage is not complete at "tests green" — it is complete when S14 carries a `certified` certificate naming the current branch head.
 
 ## Completion Criteria
 
@@ -44,12 +48,17 @@ S10 (edit — plan corrections, logged), S11 (edit — same), S12 (edit/append),
 - [ ] Zero unjustified suppressions
 - [ ] S12 current: progress entries + all deviations logged
 - [ ] Branch pushed; commits follow convention
+- [ ] Every S06 mitigation for a surface touched by this branch implemented, at a locatable `file:line`
+- [ ] Every surface added beyond plan appended to the S06 threat model with its mitigation
+- [ ] Secret scan + dependency audit run locally, clean or triaged (findings not muted)
+- [ ] `C_SECURITY`: S14 Security Certificate issued `certified` for the current branch head
 - [ ] S16 stage-exit entry written (claim: ready for QA)
 
 ## Failure & Loops
 
 - Plan proves wrong mid-build → small correction: fix + log S12/S16. Contract-level: back-transition to `Dev Planning`.
 - QA bounces blockers back (`L_QA`, ceiling 3) → fix against S13 bug entries, log S12.
+- Certification returns `not-certified` → fix by exposure order, then **re-certify**; the bounce counts against `L_QA`. Fixes push new commits, so the certificate re-issues against the new head — never hand QA a certificate that names an older sha.
 - Blocked on external dependency → `Blocked` + reason, never stub-and-forget silently.
 
 ## Common Mistakes
@@ -61,6 +70,10 @@ S10 (edit — plan corrections, logged), S11 (edit — same), S12 (edit/append),
 - Suppression creep: `any`/`@ts-ignore` without justification.
 - Giant mixed commits — untraceable in review, unrevertable in rollback.
 - Building "while I'm here" improvements outside plan scope — new BRD or S16 note; not this branch.
+- Adding a surface without adding its threat row — the certifier finds an uncovered endpoint and the stage bounces for a documentation gap.
+- "I'll add authz once the flow works" — the flow works, the branch merges, the authz never lands.
+- Deleting a leaked secret instead of rotating it. The commit is pushed; the secret is public.
+- Muting a dependency-audit signal to get a green run.
 
 ## Best Practices
 

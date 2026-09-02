@@ -4,6 +4,9 @@
 > **Stage:** `Planning` (lifecycle state 02)
 > **Skill:** Product Manager
 > **Machine:** [workflow-state-machine.md](../Architecture/workflow-state-machine.md) §2; executes [design-state-machine.md](../Architecture/design-state-machine.md) state 03 `PRODUCT_REVIEW`
+> **Cloned from:** vendored [`03-product-review`](../design-toolkit/skills/03-product-review/SKILL.md) @ `4081c24` — output shape, V-rules, recovery and gate rules below are the skill's; only artifact locations are remapped (`product-review.md` → S03 prioritized + S06 + S16).
+
+**This is the last cheap place to stop or re-cut scope.** Everything downstream — UX plan, flows, UI plan, prototype — compounds on the direction ratified here. This state **judges** scope; it never **adds** scope.
 
 ## Purpose
 
@@ -34,7 +37,67 @@ S02 (edit), S01/S03/S04/S05/S06 (append), S16 (append). Product Manager row in t
    - `proceed` — direction sound; present cut-line (what's in, what's deferred)
    - `re-scope` — evidence contradicts scope; name what changes; → back to Analysis
    - `stop` — feature isn't worth building; say why plainly
-5. Raise **Direction Gate** (orchestrator §4 format): S01–S06 summary + recommendation + cut-line. Capture outcome in S16 + `Approvals: direction`.
+5. **Record the decision and its triggers** — what evidence would reverse it.
+6. Raise the **Direction Gate** (orchestrator §4 format): S01–S06 summary + recommendation + cut-line. Capture outcome in S16 + `Approvals: direction`.
+
+Present at the gate: the recommendation and its rationale, the priority bands, the high-risk items with their mitigation-or-acceptance, and the cut list. **Unresolved contradictions are presented as unresolved** — a gate answered on a tidied-up picture is not an approval of the real direction.
+
+## Output shape (write into S03 / S06 / S16 verbatim)
+
+```markdown
+---
+artifact: product-review
+version: pr-<brd-id>-NN
+produced_by: product-review
+reads_versions: { requirements: req-<brd-id>-NN, research: res-<brd-id>-NN }
+recommendation: proceed | re-scope | stop
+gate: direction-approval
+gate_state: pending | approved | denied
+---
+
+## Recommendation                      [S16]
+
+**<proceed | re-scope | stop>** — <rationale, tied to the scores and
+contradictions below. Name the two or three findings that actually drove it.>
+
+## Prioritized requirements            [S03]
+
+| ID | Requirement | Value | Effort | Risk | Band | Evidence |
+|---|---|---|---|---|---|---|
+| R1 | <text, verbatim from S03> | H/M/L | H/M/L | H/M/L | must | [T1, T4] |
+| R7 | ... | | | | cut | unevidenced |
+
+## Risk register                       [S06]
+
+| ID | Risk | Sev | Mitigation **or** accept-risk | Owner |
+|---|---|---|---|---|
+| K2 | <risk statement> | high | **ACCEPTED** — <why, and by whom> | <role> |
+
+## Scope contradictions                [S16]
+
+- X1: <brief wants A> vs <research theme T3 shows B> — <resolution, or
+  explicitly left open with an open-decision id>
+
+## Decision record                     [S16]
+
+- D1: <decision> — trigger: <what evidence or event would reverse it>
+- Deferred: <open decisions handed to later states, with ids>
+
+## Cut list                            [S03, marked `deferred (see S16)`]
+
+- <requirement id> — <why it is out for this cycle, and what would bring it back>
+```
+
+Every decision names **what would reverse it**. A decision with no reversal trigger cannot be re-examined when the evidence changes — which is how three revision cycles once went to the wrong root cause.
+
+## Validation rules
+
+- **V1:** `recommendation` ∈ {`proceed`, `re-scope`, `stop`} **and** the rationale block is non-empty.
+- **V2:** Every risk with `Sev = high` carries a mitigation **or** an explicit accept-risk note **with a named owner**.
+- **V3:** The prioritized set is a **subset** of the validated requirements — every ID resolves in S03. **No new scope is introduced here.**
+- **V4:** Every prioritized requirement cites its evidence (research theme IDs) **or** is explicitly marked `unevidenced`.
+
+Exit: rules pass **and** the Direction Gate is resolved.
 
 ## Completion Criteria
 
@@ -50,6 +113,14 @@ S02 (edit), S01/S03/S04/S05/S06 (append), S16 (append). Product Manager row in t
 - Validation failure → re-run scoring with the failed rule as constraint, ceiling 2 → `Blocked`.
 - Gate denied → route to `Analysis` with the user's denial notes logged in S16 (they are the corrective input).
 - `stop` recommended but user disagrees → treat as `proceed` with the disagreement logged; user owns the call.
+
+## Failure & Loops (design state 03)
+
+- Validation failure → re-run **scoring only**, with the failed rule as an explicit constraint. Retry ceiling **2**.
+- **Escalate rather than widen scope to satisfy a rule** — a V3 failure means an upstream requirement is missing, not that this state should invent one.
+- Gate **denied** → back-transition to `Analysis` carrying the denial notes as input.
+- `re-scope` → `Analysis` with the cut list and contradictions attached. `stop` + gate confirms → `Stopped`.
+- A later revision of the recommendation **re-opens the gate** — an approval is scoped to the artifact version it saw.
 
 ## Common Mistakes
 

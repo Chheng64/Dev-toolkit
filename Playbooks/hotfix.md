@@ -13,7 +13,7 @@ Live regression/incident: users blocked, data at risk, or revenue path down. Not
 3. **Branch** `fix/<brd-id>-<slug>` from main.
 4. **Fix + regression test** — fails-before/passes-after proven. Fix stays minimal: no refactors, no bystander cleanup (S16-note them).
 5. **Compressed QA** (not skipped): regression test + suite green + smoke the broken flow + its S09 recovery neighbors + quick boundary check around the change. Evidence in S13 — three rows beat zero rows.
-6. **Compressed review**: correctness + security + plan-conformance dimensions minimum (the three that page you at night). S14 verdict.
+6. **Compressed certification + review**: certification is **not** compressible on the fix diff — a hotfix touches production directly. Run [security-certification](../Workflows/security-certification.md) scoped to the fix (`C_SECURITY` stands); then the compressed review: correctness + certificate-currency + plan-conformance (the three that page you at night). S14 verdict.
 7. **PR + Final Gate** — [pull-request template](../Templates/pull-request.md) with incident context; **Final Gate stands** (one message; the gate protects against tired-panic-you). CI green.
 8. **Merge, deploy, verify live** — smoke the previously-broken flow on production. Watch logs through the smoke window.
 9. **Close honest**: S15 hotfix note, root-cause S16 entry, and **mandatory follow-up sweep**: prevention candidates (missing test layer? checklist gap? standard gap?) → toolkit change or seed BRD. Every hotfix feeds prevention or it will repeat.
@@ -25,6 +25,7 @@ Live regression/incident: users blocked, data at risk, or revenue path down. Not
 | Design stages (skipped — no design surface) | Repro before fix |
 | Full S09 walk (→ affected neighborhood) | Regression test |
 | 7-dimension review (→ 3 core) | Final Gate |
+| Certification **scope** (→ the fix diff) | Certification **itself** (`C_SECURITY`) |
 | Analysis depth (S01 symptom-level) | Live verification after deploy |
 | | Root-cause honesty (S16) |
 

@@ -20,6 +20,11 @@
 - [ ] Every decision point: mutually exhaustive branches (no gaps, no overlaps)
 - [ ] Transitions annotated with triggers + guards
 
+## Decisions carried, not defaulted
+- [ ] Every unanswered guard recorded as an open decision (`o-<id>`) — zero branches invented at planning time
+- [ ] Facts promised at a flow boundary appear in **both** flows' decision logs
+- [ ] Clearance claims state their scope inside the claim ("no dead ends in FLOW-03", not "no dead ends")
+
 ## Strategy
 - [ ] Accessibility strategy present, feature-specific (focus order, announcements, motion risks) — not boilerplate
 - [ ] Reduced-motion behavior decided at strategy level

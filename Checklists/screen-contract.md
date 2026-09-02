@@ -9,7 +9,7 @@
 
 ## Design mapping (per owned screen)
 - [ ] Design block complete: DS components + tokens listed; states designed listed
-- [ ] Figma mapping present when `manifest.design.figma_file` non-null (frame + component refs); prototype mapping otherwise (§4 Figma-optional rule)
+- [ ] Figma mapping present when `manifest.resources.figma.product_design_file` bound (frame + component refs); prototype mapping otherwise ([screen-contract](../Architecture/screen-contract.md) §4 Figma-optional rule)
 - [ ] Figma and prototype agree where both exist (divergence = design-qa finding, not a tick)
 
 ## Frontend mapping (per approved screen)

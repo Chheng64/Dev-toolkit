@@ -56,7 +56,7 @@ Sections are H2 headings in the page body, in this order. Each heading carries i
 | S11 | Component Plan & API Notes | revise | Files/components to create or modify; API contracts |
 | S12 | Implementation Notes & Progress | append | Dated progress entries; deviations from plan with reason |
 | S13 | Test Cases, Bugs & Verification | revise | Test cases mapped to ACs; bug list with severity; verification status per AC |
-| S14 | Review Summary & Approval | revise | Review findings, concerns, recommendations, approval status |
+| S14 | Review Summary & Approval | revise | Review findings, concerns, recommendations, approval status. **Subsections (append-only, each owned by its issuing role):** `design-audit` (design state 08), `security-certificate` (`C_SECURITY`, before QA — [template](../Templates/security-certificate.md)), `handoff-gate` (design state 12, when in scope) |
 | S15 | Release Notes | revise | User-facing change summary; version; date |
 | S16 | Decision Log | append-only | See format below. Never edited or deleted, only appended |
 

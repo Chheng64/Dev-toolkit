@@ -4,6 +4,7 @@
 > **Stage:** `Analysis` (lifecycle state 01)
 > **Skill:** Business Analyst
 > **Machine:** [workflow-state-machine.md](../Architecture/workflow-state-machine.md) §2; executes [design-state-machine.md](../Architecture/design-state-machine.md) states 01 `REQUIREMENT_ANALYSIS` + 02 `RESEARCH`
+> **Cloned from:** vendored [`01-requirement-analysis`](../design-toolkit/skills/01-requirement-analysis/SKILL.md) · [`02-research`](../design-toolkit/skills/02-research/SKILL.md) @ `4081c24` — output shapes, V-rules and recovery below are the skills'; only artifact locations are remapped (`requirements.md` → S01–S04, `research.md` → S05).
 
 ## Purpose
 
@@ -38,6 +39,92 @@ S01–S06 (edit), S16 (append). Per [permission-matrix.md](../Architecture/permi
 5. Research per design-machine state 02: derive questions from requirements, fan out (domain / competitor / pattern / technical constraint), cite every theme, list contradictions openly, map every goal to ≥1 theme or mark `no-research-needed`.
 6. Surface assumptions explicitly; never silently promote `assumed` → `confirmed` (confirmation = user answer or cited evidence, logged S16).
 
+## Output shapes (write these into the BRD sections verbatim)
+
+### State 01 → S01–S04
+
+```markdown
+---
+artifact: requirements
+version: req-<brd-id>-NN
+produced_by: requirement-analysis
+scope_class: small | medium | large
+effort_tier: <tier>
+---
+
+## Problem statement          [S01]
+<normalized one-paragraph statement>
+
+## Goals                      [S02]
+- G1: <goal>
+
+## Actors                     [S01]
+- <actor>: <role/need>
+
+## Constraints                [S04]
+- <constraint>
+
+## Non-goals                  [S01/S03]
+- <explicitly out of scope>
+
+## Requirements & acceptance criteria   [S03]
+- R1: <requirement>
+  - AC1.1: <falsifiable, observable pass/fail condition>
+
+## Assumptions                [S04]
+- A1 [assumed|confirmed]: <assumption>
+
+## Open questions             [S16 + Clarification Gate]
+- Q1 [blocking|non-blocking]: <question>
+```
+
+### State 02 → S05
+
+```markdown
+---
+artifact: research
+version: res-<brd-id>-NN
+produced_by: research
+reads_versions: { requirements: req-<brd-id>-NN }
+coverage: <mapped-or-waived % of goals>
+---
+
+## Themes
+- T1: <theme statement>
+  - sources: [S1, S3]
+  - relevance: <which ACs / goals this informs>
+  - maps_to: [G1, G2]
+
+## Evidence & citations
+- S1 [resolvable]: <claim/finding> — <source: url or reference>
+
+## Competitor notes
+- <competitor>: <observation> (sources: [S2])
+
+## Pattern catalog
+- P1: <interaction/design pattern> — <where observed> (sources: [S4])
+
+## Constraints
+- <technical / domain / regulatory constraint> (sources: [S5])
+
+## Contradictions
+- C1: <finding A> vs <finding B> — <both sources cited, left unresolved>
+
+## Goal coverage
+- G1 → [T1] | G2 → [T2] | G3 → no-research-needed
+
+## Gaps
+- GAP1: <unresolved evidence gap or downgraded theme> [reason]
+```
+
+## Validation rules
+
+**State 01:** **V1** ≥1 goal AND ≥1 acceptance criterion · **V2** every requirement has ≥1 falsifiable AC · **V3** no requirement or assumption tagged both `assumed` and `confirmed` · **V4** `open_questions` empty, or every item carries a severity.
+
+**State 02:** **V1** every theme cites ≥1 source · **V2** each goal maps to ≥1 theme **or** is explicitly `no-research-needed` · **V3** contradictions listed, not silently resolved · **V4** **no fabricated citations** — every source resolvable.
+
+Exit 01: rules pass **and** no `blocking` open question remains — resolved by a user answer or an explicit assumption acceptance recorded in S04. Exit 02: rules pass **and** goal coverage ≥ threshold (default 100% mapped-or-waived).
+
 ## Completion Criteria
 
 - [ ] S01–S06 populated; no section empty or placeholder
@@ -52,9 +139,15 @@ S01–S06 (edit), S16 (append). Per [permission-matrix.md](../Architecture/permi
 
 ## Failure & Loops
 
-- Validation failure → re-run with the failed rule as corrective constraint. Retry ceiling 3 (`L_CLARIFY`) → `Blocked`.
+- Validation failure → re-run steps 1–5 **with the failed rule injected as a corrective constraint**. Retry ceiling 3 (`L_CLARIFY`) → `Blocked`.
 - Research coverage gap → targeted re-run on failed goals only, ceiling 2, then logged `gap` and continue.
 - User unavailable at Clarification Gate → `Blocked` (resumable), never guess through a blocking question.
+- Research reveals a requirement is **malformed or contradictory** → back-transition to state 01; the root cause is upstream, and re-researching around a broken requirement produces evidence for the wrong question.
+- Repeated fabrication-risk failure → downgrade unreachable themes to a logged `gap` and continue. A `gap` is a visible line; silence is not.
+
+## Approval gate
+
+**Clarification Gate** — fires only when blocking ambiguity exists; no approval otherwise. Gate state persists in `Approvals`, and **an approval is scoped to the artifact version it saw**.
 
 ## Common Mistakes
 

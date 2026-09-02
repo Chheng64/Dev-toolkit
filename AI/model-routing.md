@@ -27,6 +27,11 @@ Pin to latest within each family; exact IDs live here so projects inherit update
 | Design: UI planning (06) | T2 | DS mapping against explicit inventory |
 | Design: Prototype (07) | T2 | Assembly against spec; DS check is procedural |
 | Design: Self-audit (08) | **T3** | Adversarial pass; catches what the builder can't (§5 cross-model rule) |
+| Design Review: user review (09) | T2 | Packaging + capture; the judgment is the user's |
+| Design Review: revision triage (10) | **T3** | Root-cause routing — a misroute costs three cycles, and did |
+| Design Review: final output (11) | T2 | Freeze, hash and completeness are mechanical against the matrix |
+| Design: flow visualization (12) | T2; **T3** for the first derivation's reconciliation and the state-vocabulary normalization | Derivation is a tool; deciding registry-vs-flows disagreements is not |
+| Security certification (`C_SECURITY`) | **T3** | Adversarial, and a miss ships to production (§6 T4 reserve applies to auth/payment/PII scope) |
 | Dev Planning (FE/BE) | **T3** | Architecture + contracts freeze here; rework cost peaks |
 | Implementation | T2; T1 for mechanical slices (boilerplate, config, copy, codemods) | Plan quality already bought; assembly is standard work |
 | QA | T2 | Procedural verification + exploratory judgment |
@@ -43,7 +48,7 @@ Every S16 stage-enter entry appends the model: `— Stage-Enter (model: T2/sonne
 ## 4. Escalation Rules
 
 1. **Retry escalation:** a stage failing its exit checklist twice at its default tier re-runs at +1 tier, with the failed rules as corrective constraints. (First retry stays at-tier — most failures are attention, not capability.)
-2. **Loop escalation:** re-entry via a loop (`L_QA`, `L_REVIEW`, `L_DESIGN` second iteration onward) escalates the **producing** stage's model +1 tier — the bounce is evidence the work needed more depth, not more speed.
+2. **Loop escalation:** re-entry via a loop (`L_QA`, `L_REVIEW`, `L_DESIGN`/`L_REVISION` second iteration onward) escalates the **producing** stage's model +1 tier — the bounce is evidence the work needed more depth, not more speed.
 3. **Debug escalation:** T2 → T3 when 2 hypotheses die without narrowing the mechanism, or at half the timebox — whichever first.
 4. **No mid-stage downgrade.** Tier changes happen at stage boundaries only; a stage finishes at the tier it escalated to.
 5. **De-escalation:** next BRD's same stage returns to the table default — escalations don't ratchet permanently; recurring escalation of the same stage across BRDs = routing-table bug, fix it here (minor bump).

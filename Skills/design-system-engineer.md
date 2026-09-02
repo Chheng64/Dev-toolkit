@@ -1,7 +1,7 @@
 # Skill — Design System Engineer
 
 > **Module:** Skills
-> **Used by:** [Workflows/design-system-workflow.md](../Workflows/design-system-workflow.md); supports ui-workflow on DS questions
+> **Used by:** [Workflows/design-system-workflow.md](../Workflows/design-system-workflow.md); supports ui-workflow on DS questions (design system named by **source id** before any plan validates against it)
 > **Matrix row:** Design System Engineer — [permission-matrix.md](../Architecture/permission-matrix.md) (authoritative)
 
 ## Role

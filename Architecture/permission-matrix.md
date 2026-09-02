@@ -11,6 +11,7 @@
 - **A** — append: may add new entries; may not modify existing content
 - **R** — read only
 - All roles have **A** on S16 (Decision Log). S16 is append-only for everyone, always.
+- **S14 append rights** cover audit findings and gate records — new entries produced by a self-audit or a gate, never edits to another role's review content. UI Designer holds it for the design-audit subsection (design state 08) and the Developer Handoff Gate record (design state 12).
 
 ## 2. Matrix
 
@@ -19,7 +20,7 @@
 | Business Analyst | E | E | E | E | E | E | R | R | R | R | R | R | R | R | R | A |
 | Product Manager | A | E | A | A | A | A | R | R | R | R | R | R | R | R | R | A |
 | UX Designer | R | R | R | R | A | R | E | A | E | R | R | R | R | R | R | A |
-| UI Designer | R | R | R | R | A | R | A | E | A | R | R | R | R | R | R | A |
+| UI Designer | R | R | R | R | A | R | A | E | A | R | R | R | R | A | R | A |
 | Design System Engineer | R | R | R | R | A | R | R | E | R | R | A | R | R | R | R | A |
 | Frontend Engineer | R | R | R | A | A | R | R | R | R | E | E | E | R | R | R | A |
 | Backend Engineer | R | R | R | A | A | R | R | R | R | E | E | E | R | R | R | A |

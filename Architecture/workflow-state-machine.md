@@ -24,11 +24,15 @@ The 13-stage lifecycle every BRD moves through. Machine state lives in Notion pr
 BRD stages run per-BRD; these run **once per project** (re-run on evolution) and gate the whole pipeline:
 
 ```
+TOOLKIT_SETUP (once ever: BRD DB + Toolkit Registry)
+        ↓
 PROJECT_ONBOARDING → INTEGRATION_VALIDATION → MANIFEST_GENERATED
+        ↑
+MANIFEST_V1 ──(Manifest Gate detects old version)──→ MIGRATION ──→ MANIFEST_GENERATED (v2)
 ```
 
-- Executed by [../Workflows/project-onboarding.md](../Workflows/project-onboarding.md) + [../Workflows/integration-validation.md](../Workflows/integration-validation.md); state lives in `project-manifest.yaml` (`onboarding.status`), not in Notion Status values.
-- Guard **`C_MANIFEST`** (see §4) blocks BRD pickup for any project without a complete, validated manifest. No BRD, workflow, or skill executes before it.
+- Executed by [../Workflows/project-onboarding.md](../Workflows/project-onboarding.md) (+ its §Migration) + [../Workflows/integration-validation.md](../Workflows/integration-validation.md); state lives in `project-manifest.yaml` (`onboarding.status`, `manifest_version`) and `~/.toolkit/registry.yaml` ([toolkit-registry](toolkit-registry.md)), not in Notion Status values.
+- Guard **`C_MANIFEST`** (see §4) blocks all project work without a complete, validated, current-version manifest. No BRD, workflow, or skill executes before it. Version migration is a *gate outcome*, not a user chore — the Manifest Gate runs it automatically ([../AI/orchestrator.md](../AI/orchestrator.md) responsibility 0).
 
 ## 2. State Catalog
 
@@ -40,9 +44,9 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | 01 | `Analysis` | business-analysis | S01 seed | S01–S06 populated; ACs falsifiable | Clarification Gate (only on blocking ambiguity) |
 | 02 | `Planning` | product-planning | S01–S06 valid | S03 prioritized; S06 risks scored; direction recommendation in S16 | **Direction Gate** (human) |
 | 03 | `Design` | ux-workflow → ui-workflow (runs [design-state-machine.md](design-state-machine.md) states 04–08) | Direction approved | S07, S08, S09 populated; prototype link; self-audit pass | — (machine self-gates via SELF_AUDIT) |
-| 04 | `Design Review` | — (human review, orchestrator-managed) | Self-audit verdict `pass` | Approval `design` granted, or structured change requests in S16 | **Design Gate** (human) |
+| 04 | `Design Review` | [design-review](../Workflows/design-review.md) (runs [design-state-machine.md](design-state-machine.md) states 09 `USER_REVIEW` + 10 `REVISION` + 11 `FINAL_OUTPUT`) | Self-audit verdict `pass` | Approval `design` granted with freeze hashes + `reads_versions`, or structured change requests in S16 | **Design Gate** (human) |
 | 05 | `Dev Planning` | frontend-planning / backend-planning | Design approved | S10, S11 populated; plan traceable to S03 + S07/S08 | — |
-| 06 | `Implementation` | implementation | S10–S11 valid; branch created | Code on branch; S12 progress entries; deviations logged | — |
+| 06 | `Implementation` | implementation → security-certification | S10–S11 valid; branch created | Code on branch; S12 progress entries; deviations logged; **S14 Security Certificate `certified`** | — (machine self-gates via `C_SECURITY`) |
 | 07 | `QA` | qa | Implementation complete claim | S13: every AC verified `pass`/`fail`; bugs filed with severity | — |
 | 08 | `Tech Review` | code-review | S13 zero open blockers | S14 review summary; concerns; verdict | — |
 | 09 | `PR` | git | Tech review verdict `approve` | PR opened from template; BRD `PR` property set | — |
@@ -50,7 +54,11 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | 11 | `Merged` | git + release | Final approval | Branch merged; S15 release notes; BRD frozen sections | — |
 | 12 | `Released` | release | Merged; deploy done (if applicable) | S15 final; terminal S16 entry | — |
 
+**Conditional sub-state on the `Design Review → Dev Planning` edge.** When `C_HANDOFF_REQUIRED` holds, design state 12 `FLOW_VISUALIZATION` runs between them ([flow-visualization](../Workflows/flow-visualization.md)): the navigation map is derived from the Screen Contract, validated, and put to the **Developer Handoff Gate**. It is not a lifecycle `Status` value — the BRD stays in `Design Review` until the gate resolves, and `Stage Owner` reads `UI Designer (handoff)`. When `C_HANDOFF_REQUIRED` is false (**the default**), the edge is unchanged and the skip is logged in S16.
+
 **Off-path states:** `Blocked` (resumable; `Blocked Reason` set), `Stopped` (deliberate terminal, rationale in S16), `Backlog` (pre-Ready).
+
+**`Blocked Reason` taxonomy (typed, machine-readable prefix):** `resource: <slot> — <missing|skipped-but-required|unreachable>` (Resource Decision pending — [project-manifest](project-manifest.md) §3) · `paused-by-user` · `ceiling: <loop>` · `ambiguity: <question>` · `error: <note>`. Session entry surfaces every Blocked BRD with its typed reason and unblock action; the Telegram failure trigger fires on every entry into `Blocked`.
 
 ## 3. Transition Table
 
@@ -64,13 +72,19 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | Planning | recommendation `stop` + human confirms | Stopped |
 | Design | design machine reaches SELF_AUDIT `pass` | Design Review |
 | Design | design machine HALT | Blocked |
-| Design Review | approval `design` ∧ `C_CONTRACT` pass | Dev Planning |
+| Design Review | approval `design` ∧ ¬`C_HANDOFF_REQUIRED` ∧ `C_CONTRACT` pass | Dev Planning |
+| Design Review | approval `design` ∧ `C_HANDOFF_REQUIRED` | Design Review (design state 12 `FLOW_VISUALIZATION` runs) |
+| Design Review (state 12) | Developer Handoff Gate granted ∧ `C_NAVMAP_CLEAN` ∧ `C_CONTRACT` pass | Dev Planning |
+| Design Review (state 12) | unratified registry route / registry ↔ prototype conflict | Design (design machine states 05 / 10) |
 | Design Review | approval `design` ∧ `C_CONTRACT` fail | owning stage per validator report (Design / Dev Planning owners), S16 logged |
 | Design Review | change requests | Design (design machine REVISION routing) |
 | Design Review | reject (direction wrong) | Analysis |
-| Dev Planning | plan validated | Implementation |
+| Dev Planning | plan validated ∧ `C_RESOURCES` pass | Implementation |
+| Dev Planning | `C_RESOURCES` fail | Blocked (`resource: <slot>`) until Resource Decision resolves |
 | Dev Planning | plan exposes design gap | Design |
-| Implementation | complete claim + S12 current | QA |
+| Implementation | complete claim + S12 current + `C_SECURITY` pass | QA |
+| Implementation | `C_SECURITY` fail (`not-certified`) | Implementation (fix findings; counts against `L_QA`) |
+| Implementation | certification exposes authz/contract-level flaw | Dev Planning (S16 `Affects: S10`) |
 | QA | all ACs verified, zero open blockers | Tech Review |
 | QA | blocker bugs | Implementation (loop `L_QA`) |
 | Tech Review | verdict `approve` | PR |
@@ -80,6 +94,7 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | Human Review | change requests | Implementation (loop `L_HUMAN`) |
 | Human Review | reject | Analysis |
 | Merged | release steps done | Released |
+| any in-flight | required resource missing / skipped-but-required / unreachable → Resource Decision raised | Blocked (`resource: <slot>`) — cleared by the decision, stage resumes where it stopped |
 | any | unrecoverable error / ceiling breach | Blocked |
 
 ## 4. Guards
@@ -91,8 +106,12 @@ Each state maps to one Workflow module (Phase 1 build). Format per state: primar
 | `C_LOOP_OK(loop)` | `Loop Count` < ceiling for that loop. |
 | `C_SLOT_FREE` | In-flight BRDs (Status between Analysis and Human Review) < 3. |
 | `C_SECTIONS(ids)` | Required BRD sections exist and are non-empty. |
-| `C_MANIFEST` | Project's `project-manifest.yaml` exists, schema-valid, `onboarding.status: complete`, required integrations `validated`, `last_validated` ≤ 30 days (else re-validate first). Checked at every BRD pickup. |
+| `C_MANIFEST` | Toolkit Registry present ([toolkit-registry](toolkit-registry.md)); `project-manifest.yaml` exists, `manifest_version` current (older → Manifest Gate runs Migration first, automatically), schema-valid, `onboarding.status: complete`, `resources.status: bound` with required bindings validated and `health: ok` ([project-manifest](project-manifest.md) §3), required integrations `validated`, `last_validated` ≤ 30 days (else re-validate first). Checked at **session entry for any project work — pickup and resume alike**. |
 | `C_CONTRACT` | Screen-contract validation passes for the BRD's owned screens ([../Checklists/screen-contract.md](../Checklists/screen-contract.md) — all six checks). Checked at Dev Planning entry. Fail → stop + missing-mappings report + route to owning stage. |
+| `C_SECURITY` | A [Security Certificate](../Templates/security-certificate.md) exists in S14 with verdict `certified`, and its `certified_commit` **equals the current branch head**. Zero open `blocker` findings; every waiver carries a user grantor + rider debt item. Checked at **QA entry** and again at **Tech Review entry** — a certificate on superseded bytes is not a certificate. Fail → stop, report findings, route to Implementation ([security-certification](../Workflows/security-certification.md)). |
+| `C_HANDOFF_REQUIRED` | The design goes to a build audience that was not in the room, so the navigation map is in scope. Source: `project-manifest.yaml` `design.handoff_required` (**default `false`**), overridable per BRD via a `Handoff Required` property. False → design state 12 is skipped, and the skip is logged S16. |
+| `C_NAVMAP_CLEAN` | Navigation derivation ([design-state-machine](design-state-machine.md) §10, `navgraph.mjs`) exits clean at the configured severity, or every remaining finding carries a granted waiver + rider debt item. Checked at the Developer Handoff Gate only. |
+| `C_RESOURCES` | Every registry slot the plan implies is bound and healthy: repos named by S10/S11, design file behind Design blocks, APIs' backing repo, doc targets the plan writes to. Checked at **Dev Planning exit** — moves resource gaps to the cheapest stop point instead of mid-Implementation. Fail → Resource Decision ([project-manifest](project-manifest.md) §3). |
 
 A forward transition fires only when its guard conjunction holds; otherwise the stage's failure path runs (retry → escalate → Blocked).
 
@@ -115,9 +134,12 @@ A forward transition fires only when its guard conjunction holds; otherwise the 
 | Clarification | leaving Analysis with blocking ambiguity | user | answers logged S16 |
 | **Direction** | entering Design | user | scoped to S01–S06 content seen |
 | **Design** | entering Dev Planning | user | scoped to prototype + S07–S09 seen |
+| **Developer Handoff** *(conditional)* | leaving Design Review for Dev Planning when `C_HANDOFF_REQUIRED` | user | scoped to registry sha + derivation run + prototype versions named in the gate record |
 | **Final** | merging | user | scoped to PR diff + BRD state seen |
 
 **Stale-approval rule:** if gated content changes after approval, the orchestrator removes the approval token from `Approvals` and logs S16. No shipping on stale approval.
+
+**Stale-certificate rule (machine gate, no human token):** the Security Certificate is scoped to the commit it names. Branch head moves → the certificate is stale → delta re-verification and re-issue before the next gate ([security-certification](../Workflows/security-certification.md)). Delta touching auth, payment, PII, data export, or any file carrying an S06 mitigation → full pass, not delta.
 
 ## 7. Parallelism
 

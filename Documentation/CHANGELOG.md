@@ -4,6 +4,163 @@ All notable toolkit changes. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.10.0] — 2026-08-25
+
+**Gap sweep against the vendored source.** A double-check of the vendored toolkit's process docs against what the toolkit actually carries found ten missing pieces. All ten are now in.
+
+### Added
+- `Architecture/validation-engine.md` — **the checker catalogue**, cloned from the vendored `VALIDATION_ENGINE.md`. The toolkit previously had a 7-row tool table and nothing else. Now: per-tool checks and failure/fix tables (`smoke`, `audit`, `navgraph`, `stategraph`, `stateprobe`, `annotate`, `linkcheck`, `mermaidcheck`), **exit-code semantics** (`2` = tool error = *unevaluable*, **not passing** — a gate reading exit 2 as green ships unchecked bytes), the severity ladder and `--fail-on`, the common flags, the **false-positive catalogue** (10 classes, each corrected in the harness and re-run — never waived), the **waiver rule** with its missing clause (*a failing check not confirmed at source is not eligible for a waiver*), the **full-suite run order** (`annotate` reads `navgraph.json` — order matters) and the gate-check script ending in a **scoped** `READY FOR DEVELOPMENT`, never a bare "handoff ready".
+- `Architecture/design-state-machine.md` §9b **Cross-state rules** — the four rules binding more than one state (scope your clearance claims · an unruled question is carried, never defaulted · a shared component is a cross-flow contract · facts promised at a boundary are contracts), and §9c **Trimming the pipeline** — what may legitimately be skipped (state 12 without handoff; state 02 **per goal** marked `no-research-needed`) and what never may (08 before 09; 09 before 11).
+- `Workflows/project-onboarding.md` step 8b — **design harness bootstrap**: generate `toolkit.config.json` from the manifest, seed `design/navmap/` from the vendored templates, verify Node ≥ 22 and Chrome. Without it states 08 and 12 cannot run at all, and a missing Chrome makes every rendering-class check exit 2.
+
+### Changed
+- `Workflows/business-analysis.md` (74 → 167 lines) — **full clone of skills 01 + 02**, the same fix v1.9.0 applied to states 04–12. Adds the `requirements` and `research` output shapes with frontmatter, both V-rule sets, the exit conditions, and the recovery edges that were missing entirely: research revealing a malformed requirement back-transitions to state 01, and repeated fabrication risk downgrades a theme to a **logged gap** rather than silence.
+- `Workflows/product-planning.md` (67 → 138 lines) — **full clone of skill 03**: the scored prioritization table with bands, the risk register with named owners, scope contradictions, the decision record where **every decision names what would reverse it**, the cut list, V1–V4, and the gate rule that **unresolved contradictions are presented as unresolved** — a gate answered on a tidied-up picture is not an approval of the real direction.
+- `Architecture/screen-contract.md` — **the registry is the spine**: state 12 derives the entire navigation model from these cells, so if the diagram and the derivation disagree the diagram is wrong, and prose where an id belongs is a finding (`N10-unparsed`) that silently drops an edge. Adds the separator rule — `states` is **comma**-separated, `entry_from` / `navigates_to` are **pipe**-separated.
+- `Workflows/ui-workflow.md`, `Workflows/flow-visualization.md`, `Workflows/design-review.md`, `Checklists/design-qa.md`, `Checklists/flow-visualization.md`, `Documentation/module-index.md` — cite the validation engine for exit codes, run order and the waiver clause.
+
+### Fixed — alignment sweep (cloned method vs this toolkit's process)
+- `AI/model-routing.md` — **five stages had no model tier at all**: design states 09, 10, 11, 12 and security certification. The orchestrator routes tier per stage, so an unlisted stage had none. Revision triage (10) is **T3** — a misroute costs three cycles, and did; certification is **T3** because a miss ships. Loop escalation now names `L_REVISION` alongside `L_DESIGN`.
+- `Workflows/design-review.md` — **one loop, two names**: `L_REVISION` (design machine) *is* `L_DESIGN` (lifecycle), counted in the S16 entry and Notion `Loop Count`, bumped in the same edit. Two counters for one loop is exactly the failure R7 was written by.
+- `Architecture/design-state-machine.md` §2 — **version-id prefix table** (`req-` … `cert-`), one prefix per artifact. The clones introduced twelve id shapes with nothing naming them; a gate record that cannot resolve a version id is the defect `reads_versions` exists to prevent.
+- `Workflows/code-review.md` — specialist append rights were stated as a blanket `S05/S06/S10`, which the matrix grants to Security Reviewer but **not** to Accessibility Specialist (S06/S10 = read) or Performance Optimizer (S06 = read). Now enumerated per role, with the `Affects:` route for anything outside a row.
+- `AI/orchestrator.md` responsibility 4b — where a gate's evidence is a tool run, **read the exit code**: `2` means the check did not run. A stage reporting "checks passed" with no exit code recorded has not produced gate evidence.
+
+Verified after the sweep: 0 vendored artifact paths (`artifacts/*`, `machine_state.yaml`, `reference/screen-registry.csv`) outside `design-toolkit/` · 0 vendored terminal or gate names (`HALT_BLOCKED`, `HALT_STOPPED`, `Primary User Approval Gate`) · every workflow's claimed BRD sections within its role's matrix rights · every lifecycle stage carries a model tier · 211 md files, 0 broken links.
+
+### Notes
+- States 01–12 are now all cloned rather than summarized. The remaining vendored docs (`ARCHITECTURE.md`, `ARTIFACT_FLOW.md`, `DESIGN_PRINCIPLES.md`, `WORKFLOW_GUIDE.md`) are reference reading; their normative content is in the workflows and the two state machines.
+
+## [1.9.0] — 2026-08-25
+
+**The design method is now the workflow, not a citation of one.** v1.7.0 vendored the design toolkit and *summarized* its skills into the workflow files. Executing a workflow therefore never loaded the hardened method, and prototype output showed it. Every design state's skill is now **cloned in full** into its workflow file.
+
+### Added
+- `Workflows/design-review.md` (603 lines) — **states 09 `USER_REVIEW` + 10 `REVISION` + 11 `FINAL_OUTPUT`**, cloned from the vendored skills. This stage previously had **no workflow file at all** ("orchestrator-managed"), leaving 1,121 lines of method unloaded: the Run Local rule and its player URL evidence, delta classification before asking (G4), waivers-with-riders (G6), honest pass counts (G7), root-cause routing (R3), class-not-instance sweeps (R2), loop counting (R7), the Conflict Mini-Gate (R8), freeze-is-a-hash (P2), audit-ran-on-the-frozen-bytes (P4), and completeness checked against the matrix (P3).
+- `Templates/prototype/` — the **Run Local review player** (`run-local.sh`, `serve.py`, `play.html`, README). v1.7.0 told state 07 to "ship run-local.sh" without shipping the file. Carries a toolkit adaptation note: machine state lives in Notion, so the absent state file means live reload is ON by design.
+- `Templates/traceability.md` — the seven-table traceability shape state 07 owes: it is state 08's V1/V2 evidence, the Design Gate's review packet, state 12's deep-link source, and state 11's completeness basis.
+
+### Changed
+- `Workflows/ui-workflow.md` (120 → 621 lines) — full clone of skills 06 + 07 + 08. Recovers **B7b, the harness contract** (`.view` / `active` / `data-view` / `data-sid` / `#sid` — what makes registry↔prototype id drift measurable rather than asserted, and what the three harnesses actually read), the B8 self-check command set, the traceability output shape, the `ui-plan` and `audit-report` frontmatter, the STRICT colour allowlist with its BANNED list, all V1–V6 rule sets, and the three recorded-failure-mode catalogues (assembly defects, build-ops, harness false-positives — including the run that reported 60 failures of which 3 were real).
+- `Workflows/ux-workflow.md` (90 → 273 lines) — full clone of skills 04 + 05: the `ux-plan` and `flows` output shapes, the edge-case matrix, the reachability/recovery/boundary tables, and the five flow-generation failure modes.
+- `Workflows/flow-visualization.md` (100 → 377 lines) — full clone of skill 12: E1–E7 in full (lane derivation, cross-feature seams, measured heat, deep-link scanning, the closed state vocabulary with its qualifier rule, the six annotation fields split by who owns the answer, the provenance block), V1–V13, the `S*`/`E*`/`N*` validation codes, and "what a first derivation finds".
+- **§0.3 config bridge** in `ui-workflow.md` — the harnesses read `toolkit.config.json` from the project root. It is now defined as a **generated** file (manifest `design:` block + the BRD's S08 colour allowlist), regenerated on change, never hand-authored. An allowlist that lives only in S08 is an allowlist nothing enforces.
+- `Architecture/design-state-machine.md` — states the executable procedure lives in the workflows and points at each clone; `Architecture/workflow-state-machine.md` — `Design Review` now names its workflow module instead of "human review, orchestrator-managed".
+- `Documentation/module-index.md`, `Playbooks/full-feature.md`, `Playbooks/design-only.md`, `Skills/ui-designer.md`, `README.md`.
+
+### Notes
+- Clones carry a `Cloned from: <skill> @ 4081c24` line. On a vendor upgrade, re-clone — a summarized clone is how this defect happened in the first place.
+- Only artifact locations are remapped (vendored `artifacts/*.md` → BRD sections + `design/` repo dirs). Method text is the skills' text.
+
+## [1.8.0] — 2026-08-24
+
+**Security certification before QA** — security stops being review dimension 4 (spent *after* a full QA cycle) and becomes a precondition with an artifact: a certificate issued against a named commit, gating `Implementation → QA`.
+
+### Added
+- `Workflows/security-certification.md` — exit step of Implementation, owned by the Security Reviewer. Freezes the sha, runs the configured evidence with exit codes, verifies every S06 mitigation at `file:line`, classifies findings, issues `certified` / `not-certified`. Loud degradation: an unavailable scanner is a recorded `gap` with a closing condition plus its manual equivalent — never a silent pass. Every scanner hit is a hypothesis confirmed at source before it is reported.
+- `Templates/security-certificate.md` — the artifact: `certified_commit`, scope stated inside the claim, automated-evidence table (tool · version · command · exit code · gap), threat-model verification matrix, manual results, findings, waivers (rule · why · user grantor · rider · closing condition), verdict, currency record.
+- **Guard `C_SECURITY`** (`Architecture/workflow-state-machine.md` §4) — checked at QA entry **and** Tech Review entry: S14 must carry a `certified` certificate whose `certified_commit` equals the current branch head. Machine gate, no human token; human signs only residual-risk waivers.
+- **Stale-certificate rule** — branch head moves → certificate stale → delta re-verification and re-issue. Delta touching `high_risk_scopes` (auth, payment, PII, data-export) → full pass, never delta.
+- `Architecture/project-manifest.md` §2 — `security:` block: `scanners.{secrets,dependencies,sast,licenses}`, `fail_on`, `high_risk_scopes`, `rotate_on_secret_hit`. An empty command is a recorded gap by construction.
+
+### Changed
+- `Workflows/implementation.md` — three new duties: each S06 mitigation implemented **in the slice that creates its surface**; every unplanned surface appended to the threat model as it is built; scanners run locally before push. Stage completes at a certificate, not at "tests green".
+- `Workflows/backend-planning.md` + `Checklists/development-ready.md` — Dev Planning now produces the **S06 threat model**: surface → asset → attacker → mitigation → **verification method**. A mitigation with no verification method is a wish, and certification bounces it.
+- `Workflows/qa.md` — `C_SECURITY` is an entry precondition and re-checked at exit (QA-loop fixes push commits, which stale the certificate).
+- `Workflows/code-review.md` — dimension 4 **verifies the certificate is current** and spot-checks the highest-exposure claims, instead of repeating the pass. Anything it catches that the certificate missed is filed against the certification method, so the checklist gains the rule.
+- `Checklists/security.md` — rewritten as the `C_SECURITY` validator: preconditions, automated evidence, threat-model verification, the original four dimension sections, verdict + closure, currency/re-verification. Added: rotation (not deletion) on a secret in a pushed commit.
+- `Skills/security-reviewer.md` — owns the certificate and its currency; explicit certification boundary (reviewer files, implementer fixes, reviewer re-verifies).
+- `Standards/security.md`, `AI/orchestrator.md`, `Architecture/brd-schema.md` (S14 subsections named), `Playbooks/full-feature.md` (step 6b), `Playbooks/hotfix.md` (certification **scope** compresses; certification itself does not), `Documentation/module-index.md`, `README.md`.
+
+### Notes
+- Still 13 stages and 3 human gates — `C_SECURITY` is a machine gate in the `C_CONTRACT` idiom, so no progress counters, Telegram status strings or playbook numbering change.
+- A project with every scanner command empty still certifies: the certificate then carries four `gap` lines and the manual pass. The gap is visible to everyone downstream, which is the point.
+
+## [1.7.0] — 2026-08-24
+
+**Design process replaced from source** — the UI/UX design workflows now execute the current 12-state AI Product Design Agent machine, vendored into the repo as its normative process source instead of paraphrased from a 2026-08 snapshot.
+
+### Added
+- `design-toolkit/` — **vendored** design toolkit @ `4081c24` (2026-08-08), verbatim minus `.git/` and `.github/`: the 12-state spec (`docs/workflow.md`), the hardened rule catalogue (`docs/method-rules.md` — `B`/`F`/`M`/`G`/`R`/`P`/`W`/`E` codes), artifact contracts, 12 per-state skills, 22 templates, 10 verification tools, and the `signin` worked example. `design-toolkit/VENDORED.md` states provenance, the two overrides, and the no-hand-patch upgrade rule.
+- `Workflows/flow-visualization.md` + `Checklists/flow-visualization.md` — design **state 12 `FLOW_VISUALIZATION`**: the navigation map is *derived* from the Screen Contract by `navgraph.mjs`, validated V1–V13, and put to the new **Developer Handoff Gate**. Conditional on `C_HANDOFF_REQUIRED`, **default off** — a fourth human gate is never imposed silently.
+- `Architecture/project-manifest.md` §2 — `design:` block: `handoff_required`, `design_system.{name,source_id}`, `viewport`, `scripts`, `review_port`, `navmap_path`, `prototype_path`, `loops`. Replaces the vendored `toolkit.config.json` as this toolkit's one config per project.
+- `Architecture/screen-contract.md` §3 — optional Prototype-block navigation fields (`entry_from`, `navigates_to`, `states`). Additive: `C_CONTRACT` is unchanged, and a missing route is *reported* by the derivation, never guessed.
+
+### Changed
+- `Architecture/design-state-machine.md` — rewritten as the adapter over the vendored spec: states 01–**12**, artifact remapping (incl. `design/navmap/<brd-id>/`), artifact discipline (`reads_versions`, sha256 gate records, freeze-is-a-hash), conditions, gates, loops, a method-rule index, a harness map, and an explicit deltas list.
+- `Workflows/ux-workflow.md` — unruled guards carried as open decisions; boundary facts recorded in both flows' logs; scoped clearance claims; state 05 stated as screen-free against state 12's screen-only mandate.
+- `Workflows/ui-workflow.md` — DS named by **source id** before planning; build rules `B1`–`B8` + Figma traps `F1`–`F3` (deep-link hooks, destination-paints, namespace claims, duplicate keys across locales, token layer as base, supersession deletes); self-audit is **rendering-class** with screenshots read, probes confirmed at source, source swept, verdict scoped to bytes.
+- `Workflows/design-system-workflow.md` — DS source id confirmed first; base-layer token/asset completeness (`B5`); supersession strip recorded (`B7`); sweep the class, not the instance (`R2`).
+- `Checklists/design-qa.md` rewritten around `M1`–`M6`; `Checklists/ui-review.md` gains the DS-source-id and screen-registration checks; `Checklists/ux-review.md` gains the carried-decisions section.
+- `Architecture/workflow-state-machine.md` — `C_HANDOFF_REQUIRED` + `C_NAVMAP_CLEAN` guards, the conditional state-12 edge on `Design Review → Dev Planning`, and the Developer Handoff Gate row.
+- `AI/orchestrator.md` — evaluates `C_HANDOFF_REQUIRED` on Design-Gate approval; gate presentation ships the hook table at the Design Gate and the **derivation report, not the picture**, at the Handoff Gate; post-approval deltas classified before they are asked about.
+- `Playbooks/full-feature.md` (step 4b, skipped by default) · `Playbooks/design-only.md` (handoff **on** — the deliverable is built from later; re-derive the map before resuming into build).
+- `Skills/ui-designer.md`, `Skills/ux-designer.md`, `Skills/design-system-engineer.md`, `AI/mcp-setup.md`, `Architecture/integration-map.md`, `Documentation/module-index.md`, `README.md` — updated for state 12, the vendored source, and the conditional gate.
+
+### Fixed
+- `Architecture/permission-matrix.md` — UI Designer gains **A** on S14. The design-audit subsection (state 08) and the handoff gate record (state 12) are written by that role, and the matrix said read-only; the workflow and the matrix now agree.
+
+### Notes
+- Nothing in the pipeline changes for a project that leaves `design.handoff_required: false`: same 13 stages, same three gates, same `C_CONTRACT`.
+- The vendored directory is read-only by policy. Upgrade by re-vendoring the whole tree and reconciling the adapter's deltas — a hand-patched vendor is indistinguishable from a stale one.
+
+## [1.6.0] — 2026-08-24
+
+**Telegram remote execution** — the chat adapter gains an opt-in executor daemon: a message in the bound chat can run Claude Code headless on the host, default-closed behind two independent switches.
+
+### Added — Telegram remote execution (extension v2, opt-in)
+- `extensions/telegram/executor.mjs` — **inbox executor daemon**: consumes `type: "command"` spool events and runs them through Claude Code headless (`claude -p --output-format stream-json`) in the project root, streaming `exec_started` / `exec_progress` / `exec_result` / `exec_error` back through the outbox. Separate process from the adapter — the filesystem spool stays the whole contract, so the executor is optional and removable.
+- `extensions/telegram/config.mjs` — shared `communication.telegram` manifest reader, now the single parser for both processes (the adapter's inline copy is gone). Adds the `exec` block: `enabled`, `allowed_user_ids`, `permission_mode`, `allowed_tools`, `timeout_minutes`.
+- Chat surface: free text → queued command, `/new <text>` → fresh Claude session, `/cancel` → SIGTERM the running command. `/status` unchanged. One Claude session is reused per project (`.toolkit/telegram/.session`) so follow-ups keep context.
+- `extensions/telegram/*.test.mjs` — 81 `node --test` cases covering parsing, message routing, authorization, session lifecycle, single-flight locking, timeout, and cancellation.
+
+### Security
+- Remote execution is **default-closed on two independent switches** — `exec.enabled: true` and a non-empty `exec.allowed_user_ids`; an empty allow-list authorizes nobody and a missing block refuses all free text. Chat identity (adapter, `chat_id`) and sender identity (executor, `allowed_user_ids`) are enforced separately.
+- `permission_mode` defaults to `acceptEdits`; the executor never passes `--dangerously-skip-permissions`. `bypassPermissions` remains available but is documented as granting unrestricted execution to anyone who can post in the bound chat.
+- Prompts are passed as a single argv entry to a shell-less spawn; `cwd` is pinned to the project root with no `--add-dir`. Runs are bounded by a single-flight lock (reclaimed if the holder dies) and a `timeout_minutes` SIGTERM.
+- The executor never consumes `approval` events — gate decisions remain the orchestrator's, under its stale-approval and scope rules.
+
+### Changed
+- `extensions/telegram/telegram-plugin.mjs` — free-text messages are now spooled as `command` events instead of being silently dropped; outbox sends are chunked to Telegram's 4096-character limit; `formatEvent` takes notifications explicitly and gained the `exec_*` cases; module entry is guarded so the file can be imported by tests without connecting.
+- `Architecture/project-manifest.md` §2 — documents `communication.telegram.exec` and the remote-execution rule.
+
+## [1.5.0] — 2026-08-21
+
+**Project Resource Binding** — every project explicitly owns and binds its external resources; the toolkit never searches the user's workspace once a project is onboarded.
+
+### Added — architecture (flow-review hardening)
+- `Architecture/ecosystem-map.md` — **Ecosystem Map**: concept-level bridge between this toolkit and the `paul` / `gsd-*` / `carl-mcp` systems the user also runs (equivalence table, state-ownership boundaries). Informational — no runtime dependency, not executed by the orchestrator.
+- `Architecture/toolkit-registry.md` — **Toolkit Registry** (`~/.toolkit/registry.yaml`): user-global config layer owning the BRD DB identity (one DB, all projects = toolkit-level resource), projects parent page, bot presence. Written at one-time setup; inherited by every manifest. Kills the registration↔binding bootstrap circularity — step 0 reads it, never searches.
+- **Resource lifecycle model** (`project-manifest.md` §3): `binding` (disposition — immutable decision) split from `health` (`ok`/`unreachable` — runtime, restamped by validation). One **Resource Decision** primitive (connect / create / confirm-absence) covers missing, skipped-but-required, and unreachable slots; per-slot **absence behavior** table generalizes the Figma prototype-only rule; rebind-fallout + rebind-logging rules.
+- **Manifest Gate pipeline** (`orchestrator.md` responsibility 0): fixed order — Toolkit Registry → manifest → **version migration** → staleness → C_MANIFEST — at session entry, pickup and resume alike. `Migration (v1→v2)` is now an orchestrator-triggered, seeded, resumable procedure (`project-onboarding.md` §Migration, with per-field seeding table); the "v1 remains pickable" contradiction removed.
+- **State machine**: `Blocked Reason` taxonomy (typed: `resource:` / `paused-by-user` / `ceiling:` / `ambiguity:` / `error:`); missing-resource transition (any in-flight → Blocked, resumable, fires Telegram trigger); new guard **`C_RESOURCES`** at Dev Planning exit (plan-implied slots must be bound + healthy — gaps stop at the cheap point, not mid-Implementation).
+- **Onboarding end-to-end fixes**: step 0 reads the registry + creates the identity page (circularity gone); GitHub create-new pushes so the default branch exists for validation; step 6 writes `incomplete`, step 9 scaffolds CI + pushes + applies branch protection (`gh api`, actor defined) + stamps complete; unified rebind rule (any mutation = step 3+4+5 for the slot); re-open phrases defined as say-to-Claude routes; Telegram yes-path made executable (user creates chat, `getUpdates` discovery, test-send after manifest write, failure → `deferred` without consuming ask-once).
+- Screen contract: pre-existing screens seed as `implemented (pre-toolkit)` (backfill-on-claim rule); §4 keys off "no **healthy** Figma binding"; multi-repo BRD branch/PR contract (`integration-map.md` §3).
+
+### Added
+- `Architecture/project-manifest.md` §3 — **Project Resource Registry**: `resources:` block (manifest_version 2) as the sole home of external resource identity. Slots per provider — Notion (BRD DB **required**, project page, sprint/decision-log DBs), Figma (product design file, design-system library), GitHub (frontend/backend — ≥1 **required** — + optional infrastructure repo), documentation (API/architecture/product), communication (Telegram, stable `communication.*` path kept for the plugin), other MCP-backed resources. Uniform binding record: **stable identifier** (database id / file key / numeric repo id / chat id — never display names) + `binding: connected | created | skipped` + `bound`/`validated` stamps. Explicit-skip rule: optional slots are resolved or skipped, never silently absent, never re-asked, never guessed.
+- `Architecture/integration-map.md` §2b — **Project Boundary Rule (hard)**: after onboarding, orchestrator + workflows access only registry resources; workspace-wide Notion search, Figma browsing, and repo listing are forbidden. Missing resource → stop + *connect existing / create new* offer (targeted rebind). §6 gains a per-integration boundary-scope column.
+- `Workflows/project-onboarding.md` step 3 — **Project Resource Binding stage**: per-slot Connect Existing / Create New / Skip table with per-provider stable-ID resolution; step 5 binding validation with verbatim `✓ / ○ Skipped` checklist; "After Onboarding — the Boundary Holds" section. Communication step (v1.4 7b) folded into the binding stage; asked-once rule unchanged.
+- `AI/orchestrator.md` responsibility 0b + anti-rule — resource-boundary enforcement: registry-scoped access, connect/create escalation, S16 logging.
+- Manifest v1→v2 migration path (`project-manifest.md` §1): first pickup offers a binding re-run seeded from existing `notion.*`/`design.*`/`git.repository` values.
+
+### Changed
+- `Architecture/project-manifest.md` — `design:` reduced to code-side config (figma resource identity → `resources.figma`); `notion:` block dissolved into `resources.notion`; `git:` keeps behavior only (`primary_repository` names the manifest-hosting repo slot; identity → `resources.github`); consumption rule 2 (registry-only access) + validation §5 require `resources.status: bound` and stable ids.
+- `Architecture/workflow-state-machine.md` — `C_MANIFEST` now also requires `resources.status: bound` with required bindings validated.
+- `Workflows/integration-validation.md` — checks resolve via registry ids; new registry re-check row (staleness re-validates bindings, restamps `resources.*.validated`); validation never becomes workspace discovery.
+- `Templates/project-configuration.md` — Design/Notion/Git resource questions replaced by a Project Resource Binding section (connect/create/skip per slot); Git Behavior section retains strategy-only fields.
+- `Architecture/screen-contract.md` §4 + `Checklists/screen-contract.md` — Figma-optional rule keys off `resources.figma.product_design_file` binding.
+- `AI/mcp-setup.md` — Notion toolset drops `notion-search` (boundary); Figma MCP applicability keyed to the registry binding, not BRD mentions; all rows note registry scope.
+- `Architecture/context-package.md` — `design.md` source of truth includes `resources.figma.*`.
+- `extensions/telegram/README.md` — setup points at the Resource Binding stage; re-open phrases limited to the sanctioned two.
+- `Documentation/onboarding.md`, `README.md` — Resource Binding + boundary as first-class architecture concepts; v1.5.0 pins.
+
+### Fixed
+- `extensions/telegram/telegram-plugin.mjs` — manifest reader now strips surrounding quotes from values; previously `chat_id: "-100…"` (as the schema shows) yielded literal quote characters — every send targeted an invalid chat and the allow-list never matched.
+- Manifest schema — undefined `notifications.pipeline` flag removed (no event type maps to it; `failures` already covers pipeline-failed).
+- `extensions/telegram/telegram-plugin.mjs` — project-name reader now strips inline comments and surrounding quotes; `name: "My Project"` previously reached every notification with literal quote characters.
+- `extensions/telegram/telegram-plugin.mjs` — dead `pipeline: true` key dropped from the notifications default (only `approvals` and `failures` are read).
+
 ## [1.4.1] — 2026-07-26
 
 ### Changed
