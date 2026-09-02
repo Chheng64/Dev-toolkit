@@ -176,7 +176,10 @@ def validate(commit, requirements, registry, index, covered):
         elif token.startswith("SCR-") and registry is not None and token not in registry:
             problems.append("%s: scope %s is not in the screens registry" % (short, token))
     for screen in commit["screens"]:
-        if registry is not None and screen not in registry:
+        if not SCR_TOKEN.fullmatch(screen):
+            problems.append("%s: malformed screen token %r "
+                            "(expected SCR-<nnn>)" % (short, screen))
+        elif registry is not None and screen not in registry:
             problems.append("%s: screen %s is not in the screens registry" % (short, screen))
     named = set(commit["screens"]) | set(commit["scopes"])
     for path in commit["files"]:

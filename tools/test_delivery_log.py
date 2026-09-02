@@ -160,6 +160,32 @@ class ValidationTest(RowTest):
         self.assertEqual(code, 1)
         self.assertIn("SCR-999", err)
 
+    def test_screen_trailer_none_is_malformed_and_exits_1(self):
+        # "none" is the tool's own display text for "no screen" — a developer
+        # will type it as a trailer value. It must not bind: format-checked
+        # the same way a malformed Scope: token is, independent of whether
+        # --screens was even given.
+        repo = self.repo([("feat(BRD-RP-042): literal none as a screen\n\n"
+                           "Scope: R1\nScreen: none\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH])
+        self.assertEqual(code, 1)
+        self.assertIn("malformed screen token", err)
+        self.assertIn("none", err)
+
+    def test_wellformed_unregistered_screen_still_exits_1_via_membership(self):
+        # Guards against the format check swallowing the pre-existing
+        # membership check: a well-formed SCR-<nnn> that just isn't
+        # registered must still fail, and for the membership reason.
+        screens = self.screens_dir({"SCR-014": ["src/profile.ts"]})
+        repo = self.repo([("feat(BRD-RP-042): unregistered but well-formed\n\n"
+                           "Scope: R1\nScreen: SCR-999\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 1)
+        self.assertIn("SCR-999", err)
+        self.assertIn("not in the screens registry", err)
+        self.assertNotIn("malformed", err)
+
     def test_touching_a_bound_path_without_naming_its_screen_exits_1(self):
         screens = self.screens_dir({"SCR-014": ["src/profile.ts"]})
         repo = self.repo([("feat(BRD-RP-042): silent screen edit\n\nScope: R1\n",
