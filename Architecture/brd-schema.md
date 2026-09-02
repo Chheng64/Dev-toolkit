@@ -137,7 +137,7 @@ A page may start with only S01 empty-scaffolded + a one-line problem note. The B
    grandfathered just because it existed before v2.0.0.
 6. **v2.1 migration.** One clause: a BRD **already past `Implementation`** at cutover carries no S17,
    and the delivery guard does not apply to it. A BRD **at or before `Implementation`** gets S17
-   scaffolded at its next stage entry; the guard applies to every commit made from that point, and
+   scaffolded at its next stage entry or its next push, whichever comes first; the guard applies to every commit made from that point, and
    any pre-cutover sha already on its branch is covered by a single backfill row naming the sha
    range with the reason `pre-v2.1 history`. For a BRD already inside `Implementation` at cutover,
    `Compare` is set at the next push, in the same write as the first S17 rows.
