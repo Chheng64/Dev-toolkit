@@ -205,9 +205,57 @@ class ValidationTest(RowTest):
 
     def test_unreadable_screens_dir_is_unevaluable(self):
         repo = self.repo([("feat(BRD-RP-042): fine\n\nScope: R1\n", ["src/a.ts"])])
+        missing = os.path.join(repo, "no-such-dir")
         code, out, err = run(["--repo", repo, "--branch", BRANCH,
-                              "--screens", os.path.join(repo, "no-such-dir")])
+                              "--screens", missing])
         self.assertEqual(code, 2)
+        self.assertIn("registry.md", err)
+        self.assertIn(missing, err)
+
+    def test_bound_but_empty_registry_rejects_a_stray_screen(self):
+        # A screens/ directory that exists and has a registry.md, but one
+        # that declares no SCR-IDs yet, is "bound" — not the same as no
+        # --screens at all. It must still reject an unregistered SCR-<nnn>.
+        screens = tempfile.mkdtemp(prefix="delivery-log-screens-")
+        self.repos.append(screens)
+        with open(os.path.join(screens, "registry.md"), "w") as handle:
+            handle.write("# Screen Registry\n\n(no screens registered yet)\n")
+        repo = self.repo([("feat(BRD-RP-042): stray screen, empty registry\n\n"
+                           "Scope: R1\nScreen: SCR-014\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 1)
+        self.assertIn("SCR-014", err)
+
+    def test_unset_screens_disables_registry_resolution(self):
+        # Without --screens at all, resolution is off entirely: an SCR-<nnn>
+        # scope token is well-formed and passes on trust.
+        repo = self.repo([("feat(BRD-RP-042): screen scope, no registry given\n\n"
+                           "Scope: SCR-014\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH])
+        self.assertEqual(code, 0, err)
+
+    def test_index_only_harvests_frontend_and_prototype_blocks(self):
+        screens = self.screens_dir({"SCR-014": []})
+        with open(os.path.join(screens, "SCR-014.md"), "w") as handle:
+            handle.write("## Design\n\nSee also `src/other.ts` for context.\n\n"
+                         "## Frontend\n\n- page component: `src/profile.ts`\n")
+
+        # A path mentioned only in prose (the Design block) does not bind.
+        prose_repo = self.repo([("feat(BRD-RP-042): design prose mention only\n\n"
+                                 "Scope: R1\n", ["src/other.ts"])])
+        code, out, err = run(["--repo", prose_repo, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 0, err)
+
+        # A path named in the Frontend block still binds.
+        bound_repo = self.repo([("feat(BRD-RP-042): frontend block silent\n\n"
+                                 "Scope: R1\n", ["src/profile.ts"])])
+        code, out, err = run(["--repo", bound_repo, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 1)
+        self.assertIn("SCR-014", err)
+        self.assertIn("src/profile.ts", err)
 
 
 if __name__ == "__main__":

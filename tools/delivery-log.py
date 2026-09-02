@@ -27,6 +27,8 @@ STATES = ("pushed", "pr-open", "merged", "released")
 SCOPE_TOKEN = re.compile(r"^(?:R\d+|SCR-\d{3}|chore)$")
 SCR_TOKEN = re.compile(r"SCR-\d{3}")
 PATHISH = re.compile(r"`([A-Za-z0-9_./@-]+/[A-Za-z0-9_.@-]+\.[A-Za-z0-9]{1,5})`")
+HEADING = re.compile(r"^##[ \t]+(.*)$", re.M)
+BOUND_HEADING = re.compile(r"(?i)^(frontend|prototype)\b")
 
 
 class Unevaluable(Exception):
@@ -84,9 +86,17 @@ def remote_slug(repo):
 
 
 def registry_ids(screens_dir):
-    """SCR-IDs declared in screens/registry.md. Empty set = no registry bound."""
-    if not screens_dir:
-        return set()
+    """SCR-IDs declared in screens/registry.md, or None if no registry is bound.
+
+    None is a distinct value from an empty set. None means resolution is
+    disabled — `--screens` was not given, so an SCR-<nnn> token is accepted
+    on trust. An empty set means the directory *is* bound but its
+    registry.md declares no SCR-IDs yet, so it still resolves: every
+    SCR-<nnn> token is rejected as not-yet-registered, rather than silently
+    passing because the set happened to be empty.
+    """
+    if screens_dir is None:
+        return None
     path = os.path.join(screens_dir, "registry.md")
     if not os.path.isfile(path):
         raise Unevaluable("no registry.md in %s — cannot resolve SCR-IDs" % screens_dir)
@@ -94,16 +104,37 @@ def registry_ids(screens_dir):
         return set(SCR_TOKEN.findall(handle.read()))
 
 
-def screen_index(screens_dir):
-    """Repo-relative path -> SCR-ID, harvested from screens/SCR-<nnn>.md.
+def _bound_block_paths(text):
+    """Backticked paths inside ## Frontend / ## Prototype blocks only.
 
-    Only backticked path tokens are indexed, so a file no contract file names
-    is not indexed: the check yields no false positives and may yield false
-    negatives. Screen bindings belonging in the contract is the pre-existing
-    rule (Architecture/screen-contract.md §3), not a demand made here.
+    Those are the blocks that name files (Architecture/screen-contract.md §3;
+    design spec §4). A path mentioned in prose elsewhere in the contract file
+    — Design rationale, an example, a QA note — must not bind, or a later
+    legitimate commit touching that path gets false-flagged as silent.
+    """
+    headings = list(HEADING.finditer(text))
+    paths = []
+    for i, heading in enumerate(headings):
+        if not BOUND_HEADING.match(heading.group(1).strip()):
+            continue
+        start = heading.end()
+        end = headings[i + 1].start() if i + 1 < len(headings) else len(text)
+        paths.extend(PATHISH.findall(text[start:end]))
+    return paths
+
+
+def screen_index(screens_dir):
+    """Repo-relative path -> SCR-ID, harvested from the Frontend/Prototype
+    blocks of screens/SCR-<nnn>.md — the blocks that name files.
+
+    Only backticked path tokens inside those blocks are indexed, so a file no
+    Frontend/Prototype block names is not indexed: the check yields no false
+    positives and may yield false negatives. Screen bindings belonging in the
+    contract is the pre-existing rule (Architecture/screen-contract.md §3),
+    not a demand made here.
     """
     index = {}
-    if not screens_dir:
+    if screens_dir is None:
         return index
     if not os.path.isdir(screens_dir):
         raise Unevaluable("screens directory not found: %s" % screens_dir)
@@ -112,13 +143,20 @@ def screen_index(screens_dir):
         if not match:
             continue
         with open(os.path.join(screens_dir, name)) as handle:
-            for path in PATHISH.findall(handle.read()):
-                index.setdefault(path, match.group(1))
+            text = handle.read()
+        for path in _bound_block_paths(text):
+            index.setdefault(path, match.group(1))
     return index
 
 
 def validate(commit, requirements, registry, index, covered):
-    """Problems with one commit's bindings. Empty list = bound."""
+    """Problems with one commit's bindings. Empty list = bound.
+
+    `requirements` and `registry` are `None` when the corresponding CLI flag
+    was not given (resolution disabled) and a set — possibly empty — when it
+    was: an empty set still resolves, rejecting every token of that kind,
+    rather than being mistaken for "not bound" and silently passing.
+    """
     short = commit["sha"][:7]
     if short in covered or commit["sha"] in covered:
         return []
@@ -129,12 +167,12 @@ def validate(commit, requirements, registry, index, covered):
         if not SCOPE_TOKEN.match(token):
             problems.append("%s: malformed scope token %r "
                             "(expected R<n>, SCR-<nnn> or chore)" % (short, token))
-        elif token.startswith("R") and requirements and token not in requirements:
+        elif token.startswith("R") and requirements is not None and token not in requirements:
             problems.append("%s: scope %s is not a requirement in S03" % (short, token))
-        elif token.startswith("SCR-") and registry and token not in registry:
+        elif token.startswith("SCR-") and registry is not None and token not in registry:
             problems.append("%s: scope %s is not in the screens registry" % (short, token))
     for screen in commit["screens"]:
-        if registry and screen not in registry:
+        if registry is not None and screen not in registry:
             problems.append("%s: screen %s is not in the screens registry" % (short, screen))
     named = set(commit["screens"]) | set(commit["scopes"])
     for path in commit["files"]:
@@ -168,11 +206,14 @@ def build_parser():
     parser.add_argument("--base", default="main", help="base branch (default: main)")
     parser.add_argument("--phase", default="single", choices=PHASES)
     parser.add_argument("--state", default="pushed", choices=STATES)
-    parser.add_argument("--requirements", default="",
+    parser.add_argument("--requirements", default=None,
                         help="comma-separated R<n> IDs from the BRD's S03; "
-                             "empty disables requirement resolution")
-    parser.add_argument("--screens", default="",
-                        help="path to the project's screens/ directory")
+                             "omit to disable requirement resolution "
+                             "(a given-but-empty list still resolves, "
+                             "rejecting every R<n> token)")
+    parser.add_argument("--screens", default=None,
+                        help="path to the project's screens/ directory; "
+                             "omit to disable screen/registry resolution")
     parser.add_argument("--covered", default="",
                         help="comma-separated shas already carried by S17 "
                              "backfill rows")
@@ -191,7 +232,9 @@ def main(argv=None):
         sys.stderr.write("unevaluable: %s\n" % problem)
         return 2
 
-    requirements = set(item.strip() for item in args.requirements.split(",") if item.strip())
+    requirements = None
+    if args.requirements is not None:
+        requirements = set(item.strip() for item in args.requirements.split(",") if item.strip())
     covered = set(item.strip() for item in args.covered.split(",") if item.strip())
 
     problems = []
