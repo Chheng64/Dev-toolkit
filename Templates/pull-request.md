@@ -24,6 +24,10 @@ notes if needed>
 - Suite: `<command>` ✅ · typecheck ✅ · lint ✅
 - Edge states walked: <list the S09 states QA exercised>
 
+### Scope coverage (from S17)
+- Requirements: <R-IDs this branch delivered> · Screens: <SCR-IDs> · <n> commits
+- Compare: <compare URL> · unbound shas: none
+
 ### Review (from S14)
 - Verdict: approve · dimensions clean: <list> · findings resolved: <n>
 
@@ -42,3 +46,4 @@ notes if needed>
 - Screenshots mandatory for anything visual; include ≥1 non-happy state — the happy screenshot hides the work that matters.
 - Verification section quotes real command results, not intentions.
 - New commits after Final approval → approval revoked, PR body's verification section re-stamped ([git workflow](../Workflows/git.md)).
+- Scope coverage is copied from the S17 rollup row, not retyped from memory. "unbound shas: none" is the delivery guard's verdict — a PR cannot open while it says otherwise.
