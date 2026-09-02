@@ -11,6 +11,8 @@ missing/unreadable screens registry, bad arguments). Exit 2 is never a pass.
 """
 
 import argparse
+import datetime
+import json
 import os
 import re
 import subprocess
@@ -24,6 +26,8 @@ SLUG_SSH = re.compile(r"^(?:ssh://)?git@[^:/]+[:/](?P<slug>[^/]+/[^/]+?)(?:\.git
 CONVENTIONAL_PREFIX = re.compile(r"^\w+(?:\([^)]*\))?:\s*")
 PHASES = ("FE", "BE", "single")
 STATES = ("pushed", "pr-open", "merged", "released")
+STAGE_BY_STATE = {"pushed": "Implementation", "pr-open": "PR",
+                  "merged": "Merged", "released": "Released"}
 SCOPE_TOKEN = re.compile(r"^(?:R\d+|SCR-\d{3}|chore)$")
 SCR_TOKEN = re.compile(r"SCR-\d{3}")
 PATHISH = re.compile(r"`([A-Za-z0-9_./@-]+/[A-Za-z0-9_.@-]+\.[A-Za-z0-9]{1,5})`")
@@ -198,6 +202,37 @@ def commit_row(commit, slug, phase, state):
                slug.split("/")[-1], state, commit_url(slug, commit["sha"])))
 
 
+def compare_url(slug, base, branch):
+    return "https://github.com/%s/compare/%s...%s" % (slug, base, branch)
+
+
+def scope_summary(commits):
+    tokens = []
+    for commit in commits:
+        for token in commit["scopes"]:
+            if token not in tokens:
+                tokens.append(token)
+    return ", ".join(tokens) or "—"
+
+
+def screen_summary(commits):
+    screens = []
+    for commit in commits:
+        for screen in commit["screens"]:
+            if screen not in screens:
+                screens.append(screen)
+    return ", ".join(screens) or "none"
+
+
+def rollup_row(commits, slug, state, link, compare):
+    return ("- **[%s] [%s] [Git Manager]** — %d commits · Scope covered: %s · Screens: %s.\n"
+            "  State: %s · Repo: %s\n"
+            "  Link: %s · Compare: %s"
+            % (datetime.date.today().isoformat(), STAGE_BY_STATE[state], len(commits),
+               scope_summary(commits), screen_summary(commits), state,
+               slug.split("/")[-1], link, compare))
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Generate S17 Delivery Log rows from commit trailers.")
@@ -217,6 +252,14 @@ def build_parser():
     parser.add_argument("--covered", default="",
                         help="comma-separated shas already carried by S17 "
                              "backfill rows")
+    parser.add_argument("--compare-only", action="store_true",
+                        help="print just the Compare URL (for the BRD property "
+                             "at branch creation) and exit")
+    parser.add_argument("--rollup", default="",
+                        help="emit a rollup row instead of commit rows; the value "
+                             "is the PR, merge-commit or tag URL it links")
+    parser.add_argument("--json", action="store_true",
+                        help="emit {compare, repo, rows, unbound, scopes, screens}")
     return parser
 
 
@@ -225,6 +268,16 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         slug = remote_slug(args.repo)
+    except Unevaluable as problem:
+        sys.stderr.write("unevaluable: %s\n" % problem)
+        return 2
+
+    compare = compare_url(slug, args.base, args.branch)
+    if args.compare_only:
+        sys.stdout.write(compare + "\n")
+        return 0
+
+    try:
         commits = read_commits(args.repo, args.base, args.branch)
         registry = registry_ids(args.screens)
         index = screen_index(args.screens)
@@ -237,19 +290,39 @@ def main(argv=None):
         requirements = set(item.strip() for item in args.requirements.split(",") if item.strip())
     covered = set(item.strip() for item in args.covered.split(",") if item.strip())
 
+    rows = []
     problems = []
+    bound = []
     for commit in commits:
         found = validate(commit, requirements, registry, index, covered)
         problems.extend(found)
         if found:
             continue
+        bound.append(commit)
         row = commit_row(commit, slug, args.phase, args.state)
         if commit["sha"][:7] in covered or commit["sha"] in covered:
             row += "\n  Backfill: <reason — fill in>"
-        sys.stdout.write(row + "\n")
+        rows.append(row)
 
-    for problem in problems:
-        sys.stderr.write("unbound: %s\n" % problem)
+    if args.rollup:
+        rows = [rollup_row(bound, slug, args.state, args.rollup, compare)]
+
+    if args.json:
+        sys.stdout.write(json.dumps({
+            "compare": compare,
+            "repo": slug.split("/")[-1],
+            "rows": rows,
+            "unbound": problems,
+            "scopes": [token for token in scope_summary(bound).split(", ")
+                       if token != "—"],
+            "screens": [screen for screen in screen_summary(bound).split(", ")
+                        if screen != "none"],
+        }, indent=2) + "\n")
+    else:
+        for row in rows:
+            sys.stdout.write(row + "\n")
+        for problem in problems:
+            sys.stderr.write("unbound: %s\n" % problem)
     return 1 if problems else 0
 
 

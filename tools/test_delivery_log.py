@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for tools/delivery-log.py. Stdlib only: python3 tools/test_delivery_log.py"""
 
+import json
 import os
 import shutil
 import subprocess
@@ -256,6 +257,59 @@ class ValidationTest(RowTest):
         self.assertEqual(code, 1)
         self.assertIn("SCR-014", err)
         self.assertIn("src/profile.ts", err)
+
+
+class OutputModeTest(RowTest):
+    def test_compare_only_prints_the_compare_url(self):
+        repo = self.repo([("feat(BRD-RP-042): a\n\nScope: R1\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH, "--compare-only"])
+        self.assertEqual(code, 0, err)
+        self.assertEqual(out.strip(),
+                         "https://github.com/acme/widget/compare/main...%s" % BRANCH)
+
+    def test_compare_only_works_on_an_empty_branch(self):
+        repo = self.repo([])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH, "--compare-only"])
+        self.assertEqual(code, 0, err)
+        self.assertIn("/compare/main...", out)
+
+    def test_rollup_row_summarizes_scopes_and_screens(self):
+        repo = self.repo([
+            ("feat(BRD-RP-042): a\n\nScope: R1\nScreen: SCR-014\n", ["src/a.ts"]),
+            ("feat(BRD-RP-042): b\n\nScope: R2\nScreen: SCR-015\n", ["src/b.ts"]),
+            ("chore(BRD-RP-042): tidy\n\nScope: chore\n", ["src/c.ts"]),
+        ])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH, "--state", "pr-open",
+                              "--rollup", "https://github.com/acme/widget/pull/7"])
+        self.assertEqual(code, 0, err)
+        self.assertIn("[PR] [Git Manager]", out)
+        self.assertIn("3 commits", out)
+        self.assertIn("Scope covered: R1, R2, chore", out)
+        self.assertIn("Screens: SCR-014, SCR-015", out)
+        self.assertIn("State: pr-open · Repo: widget", out)
+        self.assertIn("Link: https://github.com/acme/widget/pull/7 · Compare: "
+                      "https://github.com/acme/widget/compare/main...%s" % BRANCH, out)
+
+    def test_rollup_stage_label_follows_state(self):
+        repo = self.repo([("feat(BRD-RP-042): a\n\nScope: R1\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH, "--state", "merged",
+                              "--rollup", "https://github.com/acme/widget/commit/deadbee"])
+        self.assertEqual(code, 0, err)
+        self.assertIn("[Merged] [Git Manager]", out)
+
+    def test_json_carries_rows_compare_and_unbound(self):
+        repo = self.repo([
+            ("feat(BRD-RP-042): bound\n\nScope: R1\n", ["src/a.ts"]),
+            ("feat(BRD-RP-042): unbound\n", ["src/b.ts"]),
+        ])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH, "--json"])
+        self.assertEqual(code, 1)
+        payload = json.loads(out)
+        self.assertEqual(payload["repo"], "widget")
+        self.assertEqual(len(payload["rows"]), 1)
+        self.assertEqual(len(payload["unbound"]), 1)
+        self.assertEqual(payload["scopes"], ["R1"])
+        self.assertIn("/compare/main...", payload["compare"])
 
 
 if __name__ == "__main__":
