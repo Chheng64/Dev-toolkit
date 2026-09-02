@@ -119,7 +119,9 @@ deleted, and a sha may legitimately appear several times.
   so the grammar has no conditional form.
 - `State:` — closed vocabulary `pushed` · `pr-open` · `merged` · `released`. For any sha, the
   newest row wins.
-- Dates are the write date, `YYYY-MM-DD`, matching S16.
+- Dates: a **commit row carries its commit's date**, a **rollup row carries the write date**, both
+  `YYYY-MM-DD`. Commit rows must regenerate identically weeks later — a write-date commit row would
+  change every time the tool ran, and a log whose rows change is not a log.
 
 **Scaffold.** S17 is created empty at BRD creation like every other section, and it is **never named
 in a `C_SECTIONS(ids)` requirement** ([workflow-state-machine](../../Architecture/workflow-state-machine.md)
@@ -140,8 +142,14 @@ Screen: SCR-014
 ```
 
 - `Scope:` — **mandatory** on every commit on a BRD branch. Same vocabulary as the S17 field.
-- `Screen:` — **mandatory when** the diff touches a file bound to a SCR-ID in the screens registry;
-  omitted otherwise (the S17 row then reads `Screens: none`).
+- `Screen:` — **mandatory when** the diff touches a file bound to a SCR-ID, omitted otherwise (the
+  S17 row then reads `Screens: none`). "Bound" is mechanical: the tool indexes every backticked path
+  token appearing in a `screens/SCR-<nnn>.md` contract file (the Frontend and Prototype blocks name
+  them), and a commit touching an indexed path must name that SCR in `Screen:` or `Scope:`. The
+  index's limitation is stated rather than hidden: a file no contract file names is not indexed, so
+  the check produces no false positives and may produce false negatives. Screen bindings living in
+  the contract is the pre-existing rule ([screen-contract](../../Architecture/screen-contract.md)
+  §3), not a new demand made by this tool.
 - Trailers are git trailers proper (last paragraph, `Key: value`), so `git log
   --format=%(trailers:key=Scope,valueonly)` reads them and `git interpret-trailers` writes them.
 
@@ -192,8 +200,8 @@ deliberate and is documented in the tool's `--help`.
 
 **Tests** — `tools/test_delivery_log.py`, stdlib `unittest`, building temp git repos per case:
 trailered commit → row; missing `Scope:` → exit 1 naming the sha; `R9` not in `--requirements` →
-exit 1; `SCR-999` not in registry → exit 1; `chore` → row with no scope claim; screen-touching diff
-without `Screen:` → exit 1; `--covered` sha → not reported unbound; multi-repo remote forms
+exit 1; `SCR-999` not in registry → exit 1; `chore` → row with no scope claim; a commit touching a path indexed to `SCR-014` without
+naming it → exit 1; `--covered` sha → not reported unbound; multi-repo remote forms
 (`git@` and `https://`) → same URL; rollup mode → rollup row.
 
 ## 6. Guard **C_DELIVERY**
