@@ -4,7 +4,7 @@
 > **Status:** Stable — breaking changes require major version bump (see [versioning.md](versioning.md))
 > **Consumed by:** all Workflows, all Skills, permission-matrix, brd-update-protocol, Templates
 
-Canonical structure of a Living BRD — one Notion page per feature/project area. Every module in this toolkit references sections by their stable ID (`S01`–`S16`). Never reference sections by heading text alone; headings may be localized or renamed, IDs may not.
+Canonical structure of a Living BRD — one Notion page per feature/project area. Every module in this toolkit references sections by their stable ID (`S01`–`S17`). Never reference sections by heading text alone; headings may be localized or renamed, IDs may not.
 
 ---
 
@@ -139,4 +139,5 @@ A page may start with only S01 empty-scaffolded + a one-line problem note. The B
    and the delivery guard does not apply to it. A BRD **at or before `Implementation`** gets S17
    scaffolded at its next stage entry; the guard applies to every commit made from that point, and
    any pre-cutover sha already on its branch is covered by a single backfill row naming the sha
-   range with the reason `pre-v2.1 history`.
+   range with the reason `pre-v2.1 history`. For a BRD already inside `Implementation` at cutover,
+   `Compare` is set at the next push, in the same write as the first S17 rows.
