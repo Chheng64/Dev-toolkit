@@ -22,7 +22,7 @@ Name: **`BRDs`** (or preference). Create once, share with the Notion integration
 | Compare | URL | — |
 | Merge SHA | URL | — |
 | Release Tag | URL | — |
-| Approvals | Multi-select | `direction`, `design`, `final` |
+| Approvals | Multi-select | `direction`, `design`, `product`, `final` |
 | Phase | Select | `FE`, `BE`, `single` |
 | Loop Count | Number | — |
 | Blocked Reason | Text | — |

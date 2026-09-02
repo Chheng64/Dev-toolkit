@@ -140,9 +140,12 @@ class ValidationTest(RowTest):
 
     def test_missing_scope_trailer_exits_1_and_names_the_sha(self):
         repo = self.repo([("feat(BRD-RP-042): untrailered\n", ["src/a.ts"])])
+        sha = subprocess.check_output(["git", "-C", repo, "rev-parse", "HEAD"],
+                                      universal_newlines=True).strip()
         code, out, err = run(["--repo", repo, "--branch", BRANCH])
         self.assertEqual(code, 1)
         self.assertIn("no Scope: trailer", err)
+        self.assertIn(sha[:7], err)
 
     def test_requirement_not_in_s03_exits_1(self):
         repo = self.repo([("feat(BRD-RP-042): stray\n\nScope: R9\n", ["src/a.ts"])])
@@ -213,15 +216,18 @@ class ValidationTest(RowTest):
                               "--requirements", "R1", "--screens", screens])
         self.assertEqual(code, 0, err)
 
-    def test_covered_sha_prints_a_backfill_row(self):
+    def test_covered_sha_produces_no_row(self):
+        # A sha already carried by a hand-written S17 backfill row must not
+        # get a generated row on re-run — not a backfill row, not any row —
+        # or every re-run duplicates the hand-written one (design spec §5).
         repo = self.repo([("feat(BRD-RP-042): pre-v2.1 history\n", ["src/a.ts"])])
         sha = subprocess.check_output(["git", "-C", repo, "rev-parse", "HEAD"],
                                       universal_newlines=True).strip()
         code, out, err = run(["--repo", repo, "--branch", BRANCH,
                               "--covered", sha[:7]])
         self.assertEqual(code, 0, err)
-        self.assertIn("Backfill:", out)
-        self.assertIn("State: pushed", out)
+        self.assertEqual(out.strip(), "")
+        self.assertNotIn("Backfill:", out)
 
     def test_malformed_scope_token_exits_1(self):
         repo = self.repo([("feat(BRD-RP-042): bad token\n\nScope: requirement-3\n",
@@ -284,6 +290,36 @@ class ValidationTest(RowTest):
         self.assertIn("SCR-014", err)
         self.assertIn("src/profile.ts", err)
 
+    def test_path_bound_to_two_screens_resolves_by_set(self):
+        # A shared component named in both SCR-014.md and SCR-020.md's
+        # Frontend blocks is the documented norm (Architecture/screen-
+        # contract.md §3), not a conflict: naming either screen must pass,
+        # and only naming neither is a finding — one that names both IDs.
+        screens = self.screens_dir({"SCR-014": ["src/components/Button.tsx"],
+                                    "SCR-020": ["src/components/Button.tsx"]})
+
+        names_014 = self.repo([("feat(BRD-RP-042): shared button, SCR-014\n\n"
+                                "Scope: R1\nScreen: SCR-014\n",
+                                ["src/components/Button.tsx"])])
+        code, out, err = run(["--repo", names_014, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 0, err)
+
+        names_020 = self.repo([("feat(BRD-RP-042): shared button, SCR-020\n\n"
+                                "Scope: R1\nScreen: SCR-020\n",
+                                ["src/components/Button.tsx"])])
+        code, out, err = run(["--repo", names_020, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 0, err)
+
+        names_neither = self.repo([("feat(BRD-RP-042): shared button, silent\n\n"
+                                    "Scope: R1\n", ["src/components/Button.tsx"])])
+        code, out, err = run(["--repo", names_neither, "--branch", BRANCH,
+                              "--requirements", "R1", "--screens", screens])
+        self.assertEqual(code, 1)
+        self.assertIn("SCR-014", err)
+        self.assertIn("SCR-020", err)
+
 
 class OutputModeTest(RowTest):
     def test_compare_only_prints_the_compare_url(self):
@@ -322,6 +358,17 @@ class OutputModeTest(RowTest):
                               "--rollup", "https://github.com/acme/widget/commit/deadbee"])
         self.assertEqual(code, 0, err)
         self.assertIn("[Merged] [Git Manager]", out)
+
+    def test_rollup_with_default_pushed_state_is_an_argument_error(self):
+        # §3b's rollup grammar only has stage labels PR/Merged/Released.
+        # --rollup with the default --state pushed would print "[Implementation]",
+        # which is not a valid rollup stage — reject the combination outright.
+        repo = self.repo([("feat(BRD-RP-042): a\n\nScope: R1\n", ["src/a.ts"])])
+        code, out, err = run(["--repo", repo, "--branch", BRANCH,
+                              "--rollup", "https://github.com/acme/widget/pull/7"])
+        self.assertEqual(code, 2)
+        self.assertIn("--state pushed", err)
+        self.assertEqual(out, "")
 
     def test_json_carries_rows_compare_and_unbound(self):
         repo = self.repo([

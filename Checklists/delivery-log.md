@@ -1,7 +1,7 @@
 # Checklist — Delivery Log (`C_DELIVERY`)
 
 > Validator run at **`Implementation` exit** (and [backend-integration](../Workflows/backend-integration.md) exit) and again at **`Tech Review` → `PR`**. Guard: [../Architecture/workflow-state-machine.md](../Architecture/workflow-state-machine.md) §4.
-> Mechanical form: `python3 toolkit/tools/delivery-log.py --repo <repo> --branch <branch> --requirements <R-ids from S03> --screens <repo>/screens --covered <shas already carried by S17 backfill rows>` — exit 0 passes, exit 1 lists the unbound shas, exit 2 means the run could not judge and is never a pass. Read the `--covered` shas from the BRD's S17 backfill rows before running — a backfilled sha is accounted for and is not a finding.
+> Mechanical form: `python3 toolkit/tools/delivery-log.py --repo <repo> --branch <branch> --phase <BRD's current Phase> --requirements <R-ids from S03> --screens <repo>/screens --covered <shas already carried by S17 backfill rows>` — exit 0 passes, exit 1 lists the unbound shas, exit 2 means the run could not judge and is never a pass. Read the `--covered` shas from the BRD's S17 backfill rows before running — a backfilled sha is accounted for and is not a finding.
 > Any unchecked item → stop, report the unbound shas, route to Implementation. A bounce here does not count against `L_QA`.
 
 ## 1. Coverage

@@ -46,7 +46,7 @@ edits to another role's content, and never the contract artifact.
    `C_PARITY` check 3 accepts either end state, deleted or demoted to test-only. A dual path
    behind an environment variable is a mock in production.
 6. **Log every deviation** in S12 with reason, as any implementation stage does.
-7. **Push with trailers, log at every push** — `Scope:`/`Screen:` on every commit, S17 rows appended per push. The selection-point swap is scope-bearing work like any other; `chore` on it would be a false record.
+7. **Push with trailers, log at every push** — `Scope:`/`Screen:` on every commit. At every push, run `tools/delivery-log.py --repo <repo> --branch <branch> --phase BE --requirements <S03 R-IDs> --screens <repo>/screens` and append its rows to S17 in one write. The selection-point swap is scope-bearing work like any other; `chore` on it would be a false record.
 
 ## Completion Criteria
 

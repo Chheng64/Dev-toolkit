@@ -128,8 +128,14 @@ def _bound_block_paths(text):
 
 
 def screen_index(screens_dir):
-    """Repo-relative path -> SCR-ID, harvested from the Frontend/Prototype
-    blocks of screens/SCR-<nnn>.md — the blocks that name files.
+    """Repo-relative path -> set of SCR-IDs, harvested from the
+    Frontend/Prototype blocks of screens/SCR-<nnn>.md — the blocks that name
+    files.
+
+    A path may be named by more than one screen file — shared components are
+    the documented norm (Architecture/screen-contract.md §3, Frontend block:
+    "shared components"), not an edge case — so the index maps each path to
+    the *set* of SCR-IDs that claim it, never collapsing to just one.
 
     Only backticked path tokens inside those blocks are indexed, so a file no
     Frontend/Prototype block names is not indexed: the check yields no false
@@ -149,7 +155,7 @@ def screen_index(screens_dir):
         with open(os.path.join(screens_dir, name)) as handle:
             text = handle.read()
         for path in _bound_block_paths(text):
-            index.setdefault(path, match.group(1))
+            index.setdefault(path, set()).add(match.group(1))
     return index
 
 
@@ -184,9 +190,9 @@ def validate(commit, requirements, registry, index, covered):
     named = set(commit["screens"]) | set(commit["scopes"])
     for path in commit["files"]:
         bound = index.get(path)
-        if bound and bound not in named:
+        if bound and not (bound & named):
             problems.append("%s: touches %s (bound to %s) without naming it"
-                            % (short, path, bound))
+                            % (short, path, ", ".join(sorted(bound))))
     return problems
 
 
@@ -269,6 +275,12 @@ def build_parser():
 def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.rollup and args.state == "pushed":
+        sys.stderr.write(
+            "unevaluable: --rollup is not valid with --state pushed — rollup rows "
+            "exist only at PR, Merged or Released (Architecture/brd-schema.md §3b); "
+            "pass --state pr-open, merged or released\n")
+        return 2
     try:
         slug = remote_slug(args.repo)
     except Unevaluable as problem:
@@ -302,10 +314,12 @@ def main(argv=None):
         if found:
             continue
         bound.append(commit)
-        row = commit_row(commit, slug, args.phase, args.state)
         if commit["sha"][:7] in covered or commit["sha"] in covered:
-            row += "\n  Backfill: <reason — fill in>"
-        rows.append(row)
+            # Already carried by a hand-written S17 backfill row (design spec
+            # §5): a re-run after a backfill invents no row for it — not even
+            # a backfill row, which would duplicate the one already in S17.
+            continue
+        rows.append(commit_row(commit, slug, args.phase, args.state))
 
     if args.rollup:
         rows = [rollup_row(bound, slug, args.state, args.rollup, compare)]

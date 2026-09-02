@@ -33,7 +33,7 @@ S15 (edit), S16 (append), S17 (append), `Branch`/`PR`/`FE PR`/`BE PR`/`Compare`/
 ## Responsibilities
 
 1. **Branch creation** (Implementation entry): from up-to-date main, exactly one branch **per phase** — `Phase: single` cuts `feat/<brd-id>-<slug>` once; a split BRD cuts `feat/<brd-id>-<slug>-fe` for Phase 1, then cuts `feat/<brd-id>-<slug>-be` **fresh from main** (containing the FE merge) for Phase 2, after the flip. Long-lived branch → rebase on main at stage boundaries, never mid-QA (invalidates verification). Set `Compare` in the same step as `Branch` — a branch whose diff the PO cannot open is half a link.
-2. **Commit hygiene:** convention format, atomic commits; interactive-rebase cleanup before PR if history is noisy (never after review starts).
+2. **Commit hygiene:** convention format, atomic commits; interactive-rebase cleanup before PR if history is noisy, limited to commits whose shas are not yet logged in S17 (never after review starts) — S17 is append-only, so a row already written against a rewritten sha can never be repointed.
 3. **PR assembly:** title/body contracts; first line links the BRD; includes: what/why summary (from S01/S03), test evidence (S13), review verdict (S14), known limitations, screenshots for UI. CI must be green before Human Review is raised. Before opening the PR, run the delivery validator (`C_DELIVERY`, [Checklists/delivery-log.md](../Checklists/delivery-log.md)); on pass, append the S17 rollup row (`--rollup <pr url> --state pr-open`) and fill the PR body's scope-coverage line from it.
 4. **CI failure:** route to Implementation with the failing check named — PR stage doesn't fix code.
 5. **Merge:**
@@ -61,6 +61,7 @@ S15 (edit), S16 (append), S17 (append), `Branch`/`PR`/`FE PR`/`BE PR`/`Compare`/
 - Branch from stale main — guaranteed conflict tax at merge.
 - Mixed-BRD commits on one branch — breaks 1 BRD = 1 branch = 1 PR **per phase**, unrevertable.
 - History rewrite after review started — invalidates what the reviewer saw.
+- Rebasing a commit already logged in S17 — the row is append-only and cannot be repointed, so the rewritten sha's link 404s for the Product Owner once the old branch is deleted.
 - Merging on stale approval ("only tiny commits since") — the rule exists because "tiny" is where regressions hide.
 - PR body that's just a link — the PR is the human gate's decision package; make it decidable in one read.
 - Deleting the branch before confirming main is green post-merge.

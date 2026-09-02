@@ -130,7 +130,7 @@ A page may start with only S01 empty-scaffolded + a one-line problem note. The B
 1. One BRD = one feature/area. Split before Analysis if scope class is `large` across unrelated areas.
 2. The BRD evolves; it is never replaced, duplicated, or forked into side documents. All feature knowledge lives here (Notion = single source of truth).
 3. Global knowledge (standards, workflows, conventions) never gets copied into a BRD — link to the toolkit module instead.
-4. Section IDs are stable forever. New sections get new IDs (`S17+`); removed sections are deprecated, never reused.
+4. Section IDs are stable forever. New sections get new IDs (`S18+`); removed sections are deprecated, never reused.
 5. **v2.0 migration.** One clause, not two: a BRD **already past `Planning`** at cutover is
    `Phase: single` and behaves exactly as it did under v1.10.0. A BRD still **at or before**
    `Planning` at cutover is evaluated by `C_SERVER_SCOPE` like any other BRD — it is not
