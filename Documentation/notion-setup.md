@@ -19,6 +19,9 @@ Name: **`BRDs`** (or preference). Create once, share with the Notion integration
 | Ready | Checkbox | — |
 | Branch | Text | — |
 | PR | URL | — |
+| Compare | URL | — |
+| Merge SHA | URL | — |
+| Release Tag | URL | — |
 | Approvals | Multi-select | `direction`, `design`, `final` |
 | Loop Count | Number | — |
 | Blocked Reason | Text | — |
@@ -30,10 +33,11 @@ Name: **`BRDs`** (or preference). Create once, share with the Notion integration
 - **Gates pending** — filter Status ∈ {Planning, Design Review, Human Review} (your attention queue)
 - **Blocked** — filter `Status=Blocked` (with Blocked Reason visible)
 - **Per project** — group by Project
+- **Delivery (PO)** — columns `Name`, `Status`, `Phase`, `Compare`, `PR`, `Merge SHA`, `Release Tag`; filter by `Project`; group by Status; sort last-edited ↓ (what changed, and what completed, without opening a page)
 
 ## 2. Page Body Scaffold
 
-Every new BRD page gets the 16 H2 headings, empty sections preserved as scaffolds:
+Every new BRD page gets the 17 H2 headings, empty sections preserved as scaffolds:
 
 ```
 ## S01 · Problem Statement
@@ -52,6 +56,7 @@ Every new BRD page gets the 16 H2 headings, empty sections preserved as scaffold
 ## S14 · Review Summary & Approval
 ## S15 · Release Notes
 ## S16 · Decision Log
+## S17 · Delivery Log
 ```
 
 Make this a **Notion template** on the database (`New` dropdown → template with the scaffold + [feature-request](../Templates/feature-request.md) seed block) so every BRD is born conformant.
@@ -63,7 +68,7 @@ With Notion MCP connected, one session can build it:
 ```text
 Create the BRD database per toolkit Documentation/notion-setup.md:
 database "BRDs" with the exact properties/options in §1, a database
-template with the §2 scaffold, and the five views. Then create one
+template with the §2 scaffold, and the six views. Then create one
 sample page [BRD-TEST-001] to verify property options + scaffold render,
 and report what you built with links.
 ```
