@@ -33,9 +33,10 @@ was invisible and the commit-to-requirement mapping was never recorded at all.
 ### Migration
 Additive; no property changes type or meaning, no rights removed. A BRD already past
 `Implementation` at cutover carries no S17 and the guard does not apply. A BRD at or before
-`Implementation` gets S17 scaffolded at its next stage entry; pre-cutover shas are covered by one
-backfill row with the reason `pre-v2.1 history` ([brd-schema](../Architecture/brd-schema.md) §5
-invariant 6).
+`Implementation` gets S17 scaffolded at its next stage entry or its next push, whichever comes
+first; pre-cutover shas are covered by one backfill row with the reason `pre-v2.1 history`. For a
+BRD already inside `Implementation` at cutover, `Compare` is set at the next push, in the same
+write as the first S17 rows ([brd-schema](../Architecture/brd-schema.md) §5 invariant 6).
 
 ## [2.0.0] — 2026-08-27
 
