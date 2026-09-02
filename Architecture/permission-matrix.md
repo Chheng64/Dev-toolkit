@@ -10,29 +10,29 @@
 - **E** — edit: may write and revise own content in the section (per section's update mode in [brd-schema.md](brd-schema.md))
 - **A** — append: may add new entries; may not modify existing content
 - **R** — read only
-- All roles have **A** on S16 (Decision Log). S16 is append-only for everyone, always.
+- All roles have **A** on S16 (Decision Log) and S17 (Delivery Log). Both are append-only for everyone, always — an append-only section has no owner who may revise it. By convention the Git Manager writes S17's rollup rows and the engineer roles write the per-push rows, but no role holds an edit right, so no role can rewrite another's row.
 - **S14 append rights** cover audit findings and gate records — new entries produced by a self-audit or a gate, never edits to another role's review content. UI Designer holds it for the design-audit subsection (design state 08) and the Developer Handoff Gate record (design state 12).
 
 ## 2. Matrix
 
-| Role \ Section | S01 | S02 | S03 | S04 | S05 | S06 | S07 | S08 | S09 | S10 | S11 | S12 | S13 | S14 | S15 | S16 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Business Analyst | E | E | E | E | E | E | R | R | R | R | R | R | R | R | R | A |
-| Product Manager | A | E | A | A | A | A | R | R | R | R | R | R | R | R | R | A |
-| UX Designer | R | R | R | R | A | R | E | A | E | R | R | R | R | R | R | A |
-| UI Designer | R | R | R | R | A | R | A | E | A | R | R | R | R | A | R | A |
-| Design System Engineer | R | R | R | R | A | R | R | E | R | R | A | R | R | R | R | A |
-| Frontend Engineer | R | R | R | A | A | R | R | R | R | E | E | E | R | R | R | A |
-| Backend Engineer | R | R | R | A | A | R | R | R | R | E | E | E | R | R | R | A |
-| Full Stack Engineer | R | R | R | A | A | R | R | R | R | E | E | E | R | R | R | A |
-| QA Engineer | R | R | R | R | R | A | R | R | A | R | R | R | E | R | R | A |
-| Code Reviewer | R | R | R | R | R | R | R | R | R | R | R | R | R | E | R | A |
-| Technical Writer | R | R | R | R | R | R | R | R | R | R | R | R | R | R | E | A |
-| Git Manager | R | R | R | R | R | R | R | R | R | R | R | R | R | R | E | A |
-| Debug Specialist | R | R | R | R | A | R | R | R | A | R | R | A | A | R | R | A |
-| Performance Optimizer | R | R | R | R | A | R | R | R | R | A | R | R | R | A | R | A |
-| Accessibility Specialist | R | R | R | R | A | R | A | A | R | R | R | R | R | A | R | A |
-| Security Reviewer | R | R | R | R | A | A | R | R | R | A | R | R | R | A | R | A |
+| Role \ Section | S01 | S02 | S03 | S04 | S05 | S06 | S07 | S08 | S09 | S10 | S11 | S12 | S13 | S14 | S15 | S16 | S17 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Business Analyst | E | E | E | E | E | E | R | R | R | R | R | R | R | R | R | A | A |
+| Product Manager | A | E | A | A | A | A | R | R | R | R | R | R | R | R | R | A | A |
+| UX Designer | R | R | R | R | A | R | E | A | E | R | R | R | R | R | R | A | A |
+| UI Designer | R | R | R | R | A | R | A | E | A | R | R | R | R | A | R | A | A |
+| Design System Engineer | R | R | R | R | A | R | R | E | R | R | A | R | R | R | R | A | A |
+| Frontend Engineer | R | R | R | A | A | R | R | R | R | E | E | E | R | R | R | A | A |
+| Backend Engineer | R | R | R | A | A | R | R | R | R | E | E | E | R | R | R | A | A |
+| Full Stack Engineer | R | R | R | A | A | R | R | R | R | E | E | E | R | R | R | A | A |
+| QA Engineer | R | R | R | R | R | A | R | R | A | R | R | R | E | R | R | A | A |
+| Code Reviewer | R | R | R | R | R | R | R | R | R | R | R | R | R | E | R | A | A |
+| Technical Writer | R | R | R | R | R | R | R | R | R | R | R | R | R | R | E | A | A |
+| Git Manager | R | R | R | R | R | R | R | R | R | R | R | R | R | R | E | A | A |
+| Debug Specialist | R | R | R | R | A | R | R | R | A | R | R | A | A | R | R | A | A |
+| Performance Optimizer | R | R | R | R | A | R | R | R | R | A | R | R | R | A | R | A | A |
+| Accessibility Specialist | R | R | R | R | A | R | A | A | R | R | R | R | R | A | R | A | A |
+| Security Reviewer | R | R | R | R | A | A | R | R | R | A | R | R | R | A | R | A | A |
 
 ## 3. Cross-Domain Findings Protocol
 
