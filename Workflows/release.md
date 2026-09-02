@@ -19,12 +19,13 @@ Close the loop: ship the merged work, write honest release notes back to the BRD
 
 - Deploy executed per project (or explicit `no-deploy` note for library/internal work)
 - S15 Release Notes — user-facing summary: what changed, why it matters, known limitations, date, version/tag
+- `Release Tag` property + the S17 rollup row with `--state released` — the PO's last link, the one that says shipped
 - BRD closed: `Status: Released`; terminal S16 entry; content sections frozen (post-release edits = new BRD or explicit reopen logged in S16)
 - Deferred items from S03/S13 surfaced as candidate seeds for new BRDs
 
 ## BRD Sections It May Update
 
-S15 (edit), S16 (append), `Status` property.
+S15 (edit), S16 (append), S17 (append), `Status`/`Release Tag` properties.
 
 ## Responsibilities
 
@@ -33,12 +34,13 @@ S15 (edit), S16 (append), `Status` property.
 3. Post-deploy regression signal (feature broken live) → route: hotfix via debug workflow + new fast-tracked BRD, or rollback; log S16 either way.
 4. Write S15 in product language: what a user/future-you gains; honest limitations from S14; no internal jargon.
 5. Sweep deferred/minor items (S03 `deferred`, S13 `minor` bugs, S16 open notes) → list them in the terminal S16 entry as new-BRD candidates. Nothing evaporates silently.
-6. Freeze: terminal S16 entry (date, version, deploy target, toolkit version), `Status: Released`.
+6. Freeze: terminal S16 entry (date, version, deploy target, toolkit version), `Status: Released`. Set `Release Tag` and append the released rollup row before flipping `Status` — a released BRD whose delivery log stops at `merged` is a log that lies by omission.
 
 ## Completion Criteria
 
 - [ ] Deployed and smoke-verified live (or `no-deploy` recorded with reason)
 - [ ] S15 written: changes, limitations, date, version
+- [ ] `Release Tag` set; S17 released rollup row appended
 - [ ] Deferred-items sweep done; candidates listed in terminal S16 entry
 - [ ] `Status: Released`; terminal S16 entry written
 - [ ] No open change items anywhere in the BRD

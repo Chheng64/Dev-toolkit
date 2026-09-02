@@ -20,23 +20,25 @@ Own the Git ↔ BRD bridge: branch lifecycle, commit hygiene, PR assembly, CI st
 - Branch, from current main: `feat/<brd-id>-<slug>` for `Phase: single`; `feat/<brd-id>-<slug>-fe` /
   `feat/<brd-id>-<slug>-be` for split BRDs (v2.0) — BRD `Branch` property set to the current
   phase's name
+- BRD `Compare` property, set at branch creation from `tools/delivery-log.py --compare-only` — the PO's live diff of the current phase, available before the first commit exists
+- S17 rollup rows at `PR`, `Merged` and `Released`, plus `Merge SHA` at merge and `Release Tag` at release
 - PR from template (Phase 4; until then: title `[BRD-ID] name`, body = BRD link + S13/S14 summary + test evidence + known limitations); BRD `PR` property set to the current phase's PR (and `FE PR` / `BE PR` populated for split BRDs, [brd-schema §1](../Architecture/brd-schema.md))
 - Merge per project strategy (default squash); branch deleted **once its phase is fully done with it**, never before — see Responsibility 5; S16 records
 - Commit convention enforced: `<type>(<BRD-ID>): <subject>`
 
 ## BRD Sections It May Update
 
-S15 (edit), S16 (append), `Branch`/`PR`/`FE PR`/`BE PR` properties.
+S15 (edit), S16 (append), S17 (append), `Branch`/`PR`/`FE PR`/`BE PR`/`Compare`/`Merge SHA`/`Release Tag` properties.
 
 ## Responsibilities
 
-1. **Branch creation** (Implementation entry): from up-to-date main, exactly one branch **per phase** — `Phase: single` cuts `feat/<brd-id>-<slug>` once; a split BRD cuts `feat/<brd-id>-<slug>-fe` for Phase 1, then cuts `feat/<brd-id>-<slug>-be` **fresh from main** (containing the FE merge) for Phase 2, after the flip. Long-lived branch → rebase on main at stage boundaries, never mid-QA (invalidates verification).
+1. **Branch creation** (Implementation entry): from up-to-date main, exactly one branch **per phase** — `Phase: single` cuts `feat/<brd-id>-<slug>` once; a split BRD cuts `feat/<brd-id>-<slug>-fe` for Phase 1, then cuts `feat/<brd-id>-<slug>-be` **fresh from main** (containing the FE merge) for Phase 2, after the flip. Long-lived branch → rebase on main at stage boundaries, never mid-QA (invalidates verification). Set `Compare` in the same step as `Branch` — a branch whose diff the PO cannot open is half a link.
 2. **Commit hygiene:** convention format, atomic commits; interactive-rebase cleanup before PR if history is noisy (never after review starts).
-3. **PR assembly:** title/body contracts; first line links the BRD; includes: what/why summary (from S01/S03), test evidence (S13), review verdict (S14), known limitations, screenshots for UI. CI must be green before Human Review is raised.
+3. **PR assembly:** title/body contracts; first line links the BRD; includes: what/why summary (from S01/S03), test evidence (S13), review verdict (S14), known limitations, screenshots for UI. CI must be green before Human Review is raised. Before opening the PR, run the delivery validator (`C_DELIVERY`, [Checklists/delivery-log.md](../Checklists/delivery-log.md)); on pass, append the S17 rollup row (`--rollup <pr url> --state pr-open`) and fill the PR body's scope-coverage line from it.
 4. **CI failure:** route to Implementation with the failing check named — PR stage doesn't fix code.
 5. **Merge:**
-   - `Phase: FE` (post-**Product** Gate, approval `product`): verify approval current (stale-approval rule), squash-merge with convention subject, confirm main green. **Delete the FE branch only after the phase flip records the product freeze sha** (S16) — never in the same step as the merge.
-   - `Phase: BE` | `Phase: single` (post-**Final** Gate, approval `final`): verify approval current, squash-merge with convention subject, delete branch, confirm main green after merge.
+   - `Phase: FE` (post-**Product** Gate, approval `product`): verify approval current (stale-approval rule), squash-merge with convention subject, confirm main green. **Delete the FE branch only after the phase flip records the product freeze sha** (S16) — never in the same step as the merge. On merge: set `Merge SHA`, append the S17 rollup row with `--state merged`.
+   - `Phase: BE` | `Phase: single` (post-**Final** Gate, approval `final`): verify approval current, squash-merge with convention subject, delete branch, confirm main green after merge. On merge: set `Merge SHA`, append the S17 rollup row with `--state merged`.
 6. Cross-BRD conflict at merge time → rebase + re-run QA-relevant checks; conflicts touching another in-flight BRD's declared areas → surface to user before resolving.
 
 ## Completion Criteria (PR stage)
@@ -45,6 +47,7 @@ S15 (edit), S16 (append), `Branch`/`PR`/`FE PR`/`BE PR` properties.
 - [ ] PR open: title/body contracts met, BRD linked both directions (`PR` property set)
 - [ ] CI green — all checks, no skips
 - [ ] Evidence package in PR body: S13 + S14 summaries, limitations, UI screenshots
+- [ ] `C_DELIVERY`: every sha on the branch bound in S17; `Compare` current; rollup row appended
 - [ ] S16 stage-exit entry written
 
 ## Failure & Loops

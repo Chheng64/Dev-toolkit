@@ -23,11 +23,12 @@ the product still behaves the way it was approved.
 - Code on the branch: the selection-point swap (one file per domain), error-variant mappings at
   `file:line`, the exposure control removed, the mock adapter demoted then deleted
 - S12 — dated progress entries; every deviation from plan with reason
+- S17 — delivery rows at every push, `Phase: BE`, exactly as any implementation stage
 - S16 — fixture-mismatch findings routed via `L_CONTRACT`; stage-exit entry
 
 ## BRD Sections It May Update
 
-S12 (edit/append), S05 (append — a fixture-mismatch finding, before it is routed via
+S12 (edit/append), S17 (append), S05 (append — a fixture-mismatch finding, before it is routed via
 `L_CONTRACT`), S16 (append). Per [permission-matrix](../Architecture/permission-matrix.md); no
 edits to another role's content, and never the contract artifact.
 
@@ -45,6 +46,7 @@ edits to another role's content, and never the contract artifact.
    `C_PARITY` check 3 accepts either end state, deleted or demoted to test-only. A dual path
    behind an environment variable is a mock in production.
 6. **Log every deviation** in S12 with reason, as any implementation stage does.
+7. **Push with trailers, log at every push** — `Scope:`/`Screen:` on every commit, S17 rows appended per push. The selection-point swap is scope-bearing work like any other; `chore` on it would be a false record.
 
 ## Completion Criteria
 
@@ -54,6 +56,7 @@ edits to another role's content, and never the contract artifact.
 - [ ] Selection-point diff is one file per domain; no other front-end path touched
 - [ ] Exposure control removed in this PR
 - [ ] Mock adapter deleted or test-only; zero live mock paths
+- [ ] `C_DELIVERY`: every Phase-2 sha bound in S17; `Compare` points at the BE branch
 - [ ] S12 entries current; S16 stage-exit entry written
 
 ## Failure & Loops
