@@ -40,7 +40,7 @@ Establish all project metadata, **bind every external resource the project owns*
    | Provider | Slots | Required? | Connect Existing | Create New |
    |----------|-------|-----------|------------------|------------|
    | Notion | BRD Database | **yes** | **inherited from the [Toolkit Registry](../Architecture/toolkit-registry.md)** — confirmed, never re-asked | only if the registry has none (first project ever): create per [notion-setup](../Documentation/notion-setup.md), write to the registry first, then inherit |
-   | Notion | Delivery (PO) view | **yes** | confirm the view exists on the bound BRD DB | create it via `notion-create-view`: columns `Name`, `Status`, `Phase`, `Compare`, `PR`, `Merge SHA`, `Release Tag`, filtered to this project, grouped by Status ([notion-setup](../Documentation/notion-setup.md) §1) |
+   | Notion | Delivery (PO) view | n/a — created, not bound | confirm the view is present on the bound BRD DB (no identifier to resolve) | create it via `notion-create-view`: columns `Name`, `Status`, `Phase`, `Compare`, `PR`, `Merge SHA`, `Release Tag`, filtered to this project, grouped by Status ([notion-setup](../Documentation/notion-setup.md) §1) |
    | Notion | Project Page | optional | identity page from step 0 binds automatically; or resolve URL → page id | create identity page (if step 0 didn't) |
    | Notion | Sprint DB · Decision-log DB | optional | resolve URL → database id | create (only on explicit need — no ceremony DBs) |
    | Figma | Product Design File | optional¹ | file key from URL, verify access | create file via Figma MCP |

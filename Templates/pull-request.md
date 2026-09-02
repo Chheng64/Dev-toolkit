@@ -25,7 +25,7 @@ notes if needed>
 - Edge states walked: <list the S09 states QA exercised>
 
 ### Scope coverage (from S17)
-- Requirements: <R-IDs this branch delivered> · Screens: <SCR-IDs> · <n> commits
+- Scope covered: <scope tokens this branch delivered — R-IDs, `chore`, SCR-IDs> · Screens: <SCR-IDs> · <n> commits
 - Compare: <compare URL> · unbound shas: none
 
 ### Review (from S14)
